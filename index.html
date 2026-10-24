@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#174c32">
+  <meta name="description" content="ShambaMarket connects Kenyan farmers, buyers, livestock sellers and agricultural opportunities.">
+  <title>ShambaMarket | Soko ya Shamba</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="#home" aria-label="ShambaMarket home">
+      <span class="brand-icon">🌱</span>
+      <span>Shamba<span class="brand-accent">Market</span>
+        <small data-i18n="tagline">Shamba yako, soko yako.</small>
+      </span>
+    </a>
+
+    <nav class="desktop-nav" aria-label="Main navigation">
+      <a href="#home" data-i18n="navHome">Home</a>
+      <a href="#marketplace" data-i18n="navMarket">Marketplace</a>
+      <a href="#assistant" data-i18n="navAssistant">Shamba Assistant</a>
+      <a href="#community" data-i18n="navCommunity">Community</a>
+    </nav>
+
+    <div class="header-actions">
+      <label class="language-control">
+        <span aria-hidden="true">🌐</span>
+        <select id="languageSelect" aria-label="Choose language">
+          <option value="mix">Swahili + English</option>
+          <option value="en">English</option>
+          <option value="sw">Kiswahili</option>
+          <option value="sheng">Sheng</option>
+        </select>
+      </label>
+      <button class="btn btn-dark" id="loginButton" data-i18n="login">Login</button>
+      <button class="menu-toggle" id="menuToggle" aria-label="Open menu" aria-expanded="false">☰</button>
+    </div>
+  </header>
+
+  <nav class="mobile-nav" id="mobileNav" hidden>
+    <a href="#home" data-i18n="navHome">Home</a>
+    <a href="#marketplace" data-i18n="navMarket">Marketplace</a>
+    <a href="#assistant" data-i18n="navAssistant">Shamba Assistant</a>
+    <a href="#community" data-i18n="navCommunity">Community</a>
+  </nav>
+
+  <main>
+    <!-- SEARCH: placed at the top, immediately below navigation -->
+    <section class="search-section" aria-label="Search ShambaMarket">
+      <form id="searchForm" class="search-bar">
+        <span class="search-icon" aria-hidden="true">⌕</span>
+        <input
+          id="searchInput"
+          type="search"
+          placeholder="Search maize, mbolea, ng'ombe..."
+          data-i18n-placeholder="searchPlaceholder"
+          autocomplete="off"
+        >
+        <select id="searchCategory" aria-label="Filter search category">
+          <option value="all" data-i18n="allCategories">Everything</option>
+          <option value="produce" data-i18n="produce">Farm Produce</option>
+          <option value="inputs" data-i18n="inputs">Farm Inputs</option>
+          <option value="livestock" data-i18n="livestock">Livestock</option>
+          <option value="sacco" data-i18n="saccos">SACCOs</option>
+          <option value="opportunity" data-i18n="opportunities">Opportunities</option>
+        </select>
+        <button type="submit" class="btn btn-green" data-i18n="search">Search Soko</button>
+      </form>
+      <div class="search-hint" data-i18n="searchHint">
+        Tafuta bidhaa, livestock, farm inputs na opportunities.
+      </div>
+    </section>
+
+    <!-- HERO -->
+    <section class="hero section-wrap" id="home">
+      <div class="hero-copy">
+        <span class="eyebrow"><span class="live-dot"></span>
+          <span data-i18n="heroEyebrow">BUILT FOR KENYAN FARMERS</span>
+        </span>
+
+        <h1 data-i18n="heroTitle">
+          Your shamba. Your market. <span>Your opportunity.</span>
+        </h1>
+
+        <p data-i18n="heroText">
+          Buy, sell and grow pamoja. Pata farm produce, agricultural inputs,
+          livestock na farming opportunities kwa one place.
+        </p>
+
+        <div class="hero-actions">
+          <a href="#marketplace" class="btn btn-green" data-i18n="exploreMarket">Explore marketplace ↗</a>
+          <button class="btn btn-outline" id="listItemButton" data-i18n="listItem">+ List bidhaa yako</button>
+        </div>
+
+        <div class="hero-trust">
+          <span>✓ <span data-i18n="easyToUse">Easy to use</span></span>
+          <span>✓ <span data-i18n="madeForKenya">Made for Kenya</span></span>
+          <span>✓ <span data-i18n="farmerFirst">Farmer-first</span></span>
+        </div>
+      </div>
+
+      <div class="hero-visual">
+        <img
+          src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1100&q=85"
+          alt="Green agricultural fields"
+        >
+        <div class="floating-card floating-top">
+          <span class="floating-icon">🌾</span>
+          <span><strong>Farm to market</strong><small data-i18n="lessHassle">Less hassle, more connections</small></span>
+        </div>
+        <div class="floating-card floating-bottom">
+          <span class="weather-icon">🌤️</span>
+          <span><strong data-i18n="farmSmarter">Farm smarter</strong><small data-i18n="weatherCropTips">Weather and crop insights</small></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- MARKETPLACE -->
+    <section class="section-wrap section-block" id="marketplace">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow" data-i18n="oneBigMarket">ONE BIG AGRI-MARKET</span>
+          <h2 data-i18n="marketTitle">Soko iko open 🌱</h2>
+          <p data-i18n="marketSubtitle">Chagua category uone what's available.</p>
+        </div>
+        <a class="text-link" href="#listingGrid" data-i18n="viewAll">View all listings ↗</a>
+      </div>
+
+      <div class="category-grid">
+        <button class="category-card" data-category="produce">
+          <span class="category-emoji">🥑</span>
+          <strong data-i18n="produce">Farm Produce</strong>
+          <small data-i18n="produceDesc">Fruits, vegetables, grains na more</small>
+          <span class="category-arrow">↗</span>
+        </button>
+        <button class="category-card" data-category="inputs">
+          <span class="category-emoji">🧪</span>
+          <strong data-i18n="inputs">Farm Inputs</strong>
+          <small data-i18n="inputsDesc">Seeds, tools, fertilizer na equipment</small>
+          <span class="category-arrow">↗</span>
+        </button>
+        <button class="category-card" data-category="livestock">
+          <span class="category-emoji">🐄</span>
+          <strong data-i18n="livestock">Livestock</strong>
+          <small data-i18n="livestockDesc">Cattle, goats, poultry na more</small>
+          <span class="category-arrow">↗</span>
+        </button>
+      </div>
+
+      <div class="filter-row" id="listingFilters">
+        <div class="filter-pills">
+          <button class="filter-pill active" data-filter="all" data-i18n="allItems">All items</button>
+          <button class="filter-pill" data-filter="produce" data-i18n="produce">Produce</button>
+          <button class="filter-pill" data-filter="inputs" data-i18n="inputs">Farm Inputs</button>
+          <button class="filter-pill" data-filter="livestock" data-i18n="livestock">Livestock</button>
+        </div>
+        <span class="results-count" id="resultsCount" aria-live="polite"></span>
+      </div>
+
+      <div class="listing-grid" id="listingGrid" aria-live="polite"></div>
+      <div class="empty-state" id="emptyState" hidden>
+        <span>🔎</span>
+        <h3 data-i18n="noResults">Hakuna results zimepatikana</h3>
+        <p data-i18n="tryAnotherSearch">Try search ingine au badilisha category.</p>
+      </div>
+      <p class="demo-note" data-i18n="demoNote">
+        Demo listings: prices and availability are examples. Real listings will come from Supabase.
+      </p>
+    </section>
+
+    <!-- SHAMBA ASSISTANT -->
+    <section class="assistant-section" id="assistant">
+      <div class="section-wrap assistant-layout">
+        <div class="assistant-copy">
+          <span class="eyebrow light-eyebrow" data-i18n="smartFarming">SMART FARMING</span>
+          <h2 data-i18n="assistantTitle">Shamba Assistant 🌦️</h2>
+          <p data-i18n="assistantText">
+            Usipande tu kubahatisha. Get weather information, crop guidance
+            na alerts za pests zinazoweza kuathiri shamba yako.
+          </p>
+          <div class="assistant-features">
+            <div><span>🌦️</span><span><strong data-i18n="weatherTitle">Weather forecast</strong><small data-i18n="weatherDesc">Check current and upcoming weather.</small></span></div>
+            <div><span>🌱</span><span><strong data-i18n="cropTitle">Crop Advisor</strong><small data-i18n="cropDesc">Explore crops suited to your area.</small></span></div>
+            <div><span>🐛</span><span><strong data-i18n="pestTitle">Pest Watch</strong><small data-i18n="pestDesc">Learn about local pest and disease risks.</small></span></div>
+          </div>
+          <button class="btn btn-white" id="assistantButton" data-i18n="openAssistant">Open Shamba Assistant ↗</button>
+        </div>
+
+        <div class="assistant-panel">
+          <div class="panel-top">
+            <div><span class="panel-icon">🌿</span><strong data-i18n="farmInsights">Farm insights</strong></div>
+            <span class="demo-badge" data-i18n="preview">PREVIEW</span>
+          </div>
+          <label for="countySelect" data-i18n="selectArea">Chagua county yako</label>
+          <select id="countySelect">
+            <option value="">-- Select county --</option>
+            <option>Nairobi</option><option>Kiambu</option><option>Nakuru</option>
+            <option>Machakos</option><option>Nyeri</option><option>Meru</option>
+            <option>Uasin Gishu</option><option>Kisumu</option><option>Murang'a</option>
+            <option>Kirinyaga</option><option>Other</option>
+          </select>
+          <div class="insight-placeholder" id="insightMessage">
+            <span>📍</span>
+            <p data-i18n="selectAreaHint">Select area yako ili tuanze kuandaa farming insights.</p>
+          </div>
+          <p class="small-disclaimer" data-i18n="adviceDisclaimer">
+            Crop advice needs real weather and agricultural data. This preview does not make live forecasts.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FARMER COMMUNITY -->
+    <section class="section-wrap section-block" id="community">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow" data-i18n="growTogether">GROW TOGETHER</span>
+          <h2 data-i18n="communityTitle">Connections za wakulima 🤝</h2>
+          <p data-i18n="communitySubtitle">Find support, learn skills na discover opportunities.</p>
+        </div>
+      </div>
+
+      <div class="community-grid">
+        <article class="community-card sacco-card">
+          <div class="community-icon">🏦</div>
+          <span class="eyebrow" data-i18n="farmerCoops">FARMER CO-OPS</span>
+          <h3 data-i18n="saccoTitle">Local SACCOs</h3>
+          <p data-i18n="saccoText">Discover agricultural SACCOs, check membership details na express interest kujoin.</p>
+          <a href="#saccoDirectory" class="btn btn-green" data-i18n="findSaccos">Find SACCOs ↗</a>
+        </article>
+
+        <article class="community-card opportunity-card">
+          <div class="community-icon">🚀</div>
+          <span class="eyebrow" data-i18n="newPossibilities">NEW POSSIBILITIES</span>
+          <h3 data-i18n="opportunityTitle">Opportunities</h3>
+          <p data-i18n="opportunityText">Training, grants, farmer programs na agricultural competitions.</p>
+          <a href="#opportunityDirectory" class="btn btn-green" data-i18n="findOpportunities">Explore opportunities ↗</a>
+        </article>
+      </div>
+
+      <div class="directory-grid">
+        <div class="directory-panel" id="saccoDirectory">
+          <h3>🏦 <span data-i18n="saccoDirectoryTitle">SACCO directory</span></h3>
+          <p data-i18n="directoryDemo">Verified local listings will appear here when the directory is connected.</p>
+          <div id="saccoResults" class="directory-results"></div>
+        </div>
+        <div class="directory-panel" id="opportunityDirectory">
+          <h3>🎓 <span data-i18n="opportunityDirectoryTitle">Opportunities board</span></h3>
+          <p data-i18n="opportunityDemo">Training and funding opportunities will appear here.</p>
+          <div id="opportunityResults" class="directory-results"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SELL CTA -->
+    <section class="section-wrap sell-banner">
+      <div>
+        <span class="eyebrow light-eyebrow" data-i18n="gotSomethingToSell">GOT SOMETHING TO SELL?</span>
+        <h2 data-i18n="sellTitle">Let the market find you.</h2>
+        <p data-i18n="sellText">List produce, farm inputs ama livestock yako.</p>
+      </div>
+      <button class="btn btn-white" id="sellBannerButton" data-i18n="startListing">Start listing ↗</button>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <a class="brand footer-brand" href="#home">
+      <span class="brand-icon">🌱</span>
+      <span>Shamba<span class="brand-accent">Market</span><small data-i18n="footerTagline">Growing pamoja.</small></span>
+    </a>
+    <p data-i18n="footerText">Connecting farmers, buyers and opportunities across Kenya.</p>
+    <span>© <span id="currentYear"></span> ShambaMarket</span>
+  </footer>
+
+  <!-- LISTING MODAL -->
+  <dialog class="modal" id="listingModal">
+    <form id="listingForm" class="modal-content">
+      <div class="modal-heading">
+        <div><span class="eyebrow" data-i18n="sellerCorner">SELLER CORNER</span><h2 data-i18n="createListing">Create listing</h2></div>
+        <button type="button" class="modal-close" data-close-modal aria-label="Close">✕</button>
+      </div>
+      <p data-i18n="listingDemoNote">This is a local demo form. Publishing real listings requires Supabase setup.</p>
+
+      <label for="listingType" data-i18n="listingCategory">What are you listing?</label>
+      <select id="listingType" required>
+        <option value="produce">Farm Produce</option>
+        <option value="inputs">Agricultural Inputs</option>
+        <option value="livestock">Livestock</option>
+      </select>
+
+      <label for="listingName" data-i18n="productName">Product name</label>
+      <input id="listingName" required maxlength="90" placeholder="e.g. Fresh maize, dairy cow">
+
+      <label for="listingPrice" data-i18n="priceKsh">Price (KSh)</label>
+      <input id="listingPrice" type="number" min="0" step="1" required placeholder="e.g. 2500">
+
+      <label for="listingLocation" data-i18n="location">Location</label>
+      <input id="listingLocation" required maxlength="80" placeholder="e.g. Nakuru, Kenya">
+
+      <label for="listingImage" data-i18n="photoUrl">Photo URL (optional)</label>
+      <input id="listingImage" type="url" placeholder="https://...">
+
+      <label for="listingDescription" data-i18n="description">Description</label>
+      <textarea id="listingDescription" rows="3" maxlength="500" placeholder="Tell buyers more..."></textarea>
+
+      <p class="form-message" id="listingMessage" role="status"></p>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-outline" data-close-modal data-i18n="cancel">Cancel</button>
+        <button type="submit" class="btn btn-green" data-i18n="previewListing">Preview listing</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- LOGIN PLACEHOLDER -->
+  <dialog class="modal" id="loginModal">
+    <div class="modal-content">
+      <div class="modal-heading">
+        <div><span class="eyebrow">SHAMBAMARKET</span><h2 data-i18n="welcomeBack">Karibu tena!</h2></div>
+        <button class="modal-close" data-close-modal aria-label="Close">✕</button>
+      </div>
+      <p data-i18n="loginSetupNote">Account login itaunganishwa na Supabase katika next step.</p>
+      <button class="btn btn-green full-width" data-close-modal data-i18n="okay">Sawa, got it</button>
+    </div>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
