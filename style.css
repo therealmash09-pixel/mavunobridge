@@ -2670,3 +2670,36 @@ footer {
     width: 100%;
   }
 }
+
+.about-details {
+  margin-top: 14px;
+  border: 1px solid #e2e9e1;
+  border-radius: 12px;
+  background: #f8fbf7;
+}
+
+.about-details summary {
+  padding: 14px;
+  color: #24583b;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.about-details-content {
+  padding: 0 15px 15px;
+  color: #627066;
+  font-size: .86rem;
+}
+
+.about-details-content h4 {
+  margin-bottom: 5px;
+  color: #173c2b;
+}
+
+.about-details-content ul {
+  padding-left: 20px;
+}
+
+.about-details-content li {
+  margin-block: 5px;
+}
