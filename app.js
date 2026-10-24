@@ -1,2042 +1,719 @@
 
-/* ==========================================================
-   SHAMBAMARKET — COMPLETE DEMO APPLICATION
-   Version: 2.0
-   Storage: Browser localStorage only
-   No Firebase. No Supabase. No real payments.
-   ========================================================== */
-
 "use strict";
 
-document.addEventListener("DOMContentLoaded", () => {
-  /* --------------------------------------------------------
-     1. CONFIGURATION
-     -------------------------------------------------------- */
+/* SHAMBAMARKET — LOCAL DEMO VERSION
+   No Firebase or Supabase required.
+   Listings are stored in this browser only.
+*/
 
-  const KEYS = {
-    products: "shambamarket_products_v2",
-    cart: "shambamarket_cart_v2",
-    favourites: "shambamarket_favourites_v2",
-    profile: "shambamarket_profile_v2",
-    settings: "shambamarket_settings_v2",
-    requests: "shambamarket_requests_v2",
-    groups: "shambamarket_groups_v2",
-    feedback: "shambamarket_feedback_v2",
-    orders: "shambamarket_orders_v2",
-    tutorial: "shambamarket_tutorial_v2"
-  };
+const $ = id => document.getElementById(id);
+const STORAGE_KEY = "shambamarket-listings";
+const LANGUAGE_KEY = "shambamarket-language";
 
-  const $ = (selector, parent = document) =>
-    parent.querySelector(selector);
+const categoryNames = {
+  all: "All products",
+  fruits: "Fruits",
+  vegetables: "Vegetables",
+  nuts: "Nuts",
+  starchy: "Starchy foods",
+  grains: "Grains",
+  legumes: "Legumes",
+  livestock: "Livestock",
+  inputs: "Farm inputs"
+};
 
-  const $$ = (selector, parent = document) =>
-    [...parent.querySelectorAll(selector)];
+const categoryImages = {
+  fruits: "https://images.unsplash.com/photo-1619566636858-adf3ef46400b?auto=format&fit=crop&w=700&q=80",
+  vegetables: "https://images.unsplash.com/photo-1566385101042-1a0aa0c1268c?auto=format&fit=crop&w=700&q=80",
+  nuts: "https://images.unsplash.com/photo-1508061253366-f7da158b6d46?auto=format&fit=crop&w=700&q=80",
+  starchy: "https://images.unsplash.com/photo-1518977676601-b53f82aba655?auto=format&fit=crop&w=700&q=80",
+  grains: "https://images.unsplash.com/photo-1551754655-cd27e38d2076?auto=format&fit=crop&w=700&q=80",
+  legumes: "https://images.unsplash.com/photo-1515543904379-3d757afe72e4?auto=format&fit=crop&w=700&q=80",
+  livestock: "https://images.unsplash.com/photo-1500595046743-cd271d694d30?auto=format&fit=crop&w=700&q=80",
+  inputs: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=700&q=80"
+};
 
-  const CATEGORY_NAMES = {
+const translations = {
+  en: {
+    tagline: "Your farm, your market.",
+    home: "Home",
+    marketplace: "Marketplace",
+    assistant: "Shamba Assistant",
+    community: "Community",
+    login: "Login",
+    searchPlaceholder: "Search maize, mangoes, fertilizer...",
+    allCategories: "All categories",
+    produce: "Farm produce",
+    inputs: "Farm inputs",
+    livestock: "Livestock",
+    search: "Search",
+    searchHint: "Find farm products from sellers across Kenya.",
+    heroEyebrow: "BUILT FOR KENYAN FARMERS",
+    heroTitle: "Your farm. Your market. Your opportunity.",
+    heroText: "Buy, sell and grow together. Find produce, farm inputs and livestock in one place.",
+    explore: "Explore marketplace ↗",
+    listProduct: "+ List your product",
+    oneMarket: "ONE BIG AGRI-MARKET",
+    marketTitle: "The marketplace is open 🌱",
+    marketSubtitle: "Choose a category to see what's available.",
+    viewAll: "View all listings ↗",
+    allProducts: "All products",
+    allProductsDesc: "Explore the whole market",
     fruits: "Fruits",
     vegetables: "Vegetables",
     nuts: "Nuts",
     starchy: "Starchy foods",
     grains: "Grains",
     legumes: "Legumes",
-    livestock: "Livestock",
-    "farm-inputs": "Farm inputs"
-  };
+    allItems: "All items",
+    retail: "Retail",
+    bulk: "Bulk",
+    both: "Retail + bulk",
+    noResults: "No listings found",
+    demoNote: "Demo listings and prices are examples, not live offers.",
+    assistantTitle: "Shamba Assistant 🌦️",
+    assistantText: "Explore crop guidance and useful farming checklists for your area.",
+    openAssistant: "Open Shamba Assistant ↗",
+    selectCounty: "Choose your county",
+    communityTitle: "Farmer connections 🤝",
+    createListing: "Create a listing",
+    publishListing: "Publish listing",
+    startListing: "Start listing ↗",
+    loginTitle: "Welcome to ShambaMarket",
+    loginNote: "Account sign-in is a demo placeholder. No password is collected."
+  },
+  sw: {
+    tagline: "Shamba lako, soko lako.",
+    home: "Nyumbani",
+    marketplace: "Soko",
+    assistant: "Msaidizi wa Shamba",
+    community: "Jumuiya",
+    login: "Ingia",
+    searchPlaceholder: "Tafuta mahindi, maembe, mbolea...",
+    allCategories: "Makundi yote",
+    produce: "Mazao ya shamba",
+    inputs: "Vifaa vya kilimo",
+    livestock: "Mifugo",
+    search: "Tafuta",
+    searchHint: "Pata bidhaa za kilimo kutoka kwa wauzaji kote Kenya.",
+    heroEyebrow: "IMEUNDWA KWA WAKULIMA WA KENYA",
+    heroTitle: "Shamba lako. Soko lako. Fursa yako.",
+    heroText: "Nunua, uza na uendelee kukua pamoja. Pata mazao, vifaa vya kilimo na mifugo sehemu moja.",
+    explore: "Angalia soko ↗",
+    listProduct: "+ Orodhesha bidhaa",
+    oneMarket: "SOKO KUBWA LA KILIMO",
+    marketTitle: "Soko liko wazi 🌱",
+    marketSubtitle: "Chagua kundi uone bidhaa zilizopo.",
+    viewAll: "Ona bidhaa zote ↗",
+    allProducts: "Bidhaa zote",
+    allProductsDesc: "Angalia bidhaa zote sokoni",
+    fruits: "Matunda",
+    vegetables: "Mboga",
+    nuts: "Karanga na njugu",
+    starchy: "Vyakula vya wanga",
+    grains: "Nafaka",
+    legumes: "Mikunde",
+    allItems: "Bidhaa zote",
+    retail: "Rejareja",
+    bulk: "Kwa wingi",
+    both: "Rejareja na wingi",
+    noResults: "Hakuna bidhaa zilizopatikana",
+    demoNote: "Bidhaa na bei ni mifano ya majaribio, si ofa halisi.",
+    assistantTitle: "Msaidizi wa Shamba 🌦️",
+    assistantText: "Pata mwongozo wa mazao na orodha za kukusaidia kupanga kazi za shamba.",
+    openAssistant: "Fungua Msaidizi wa Shamba ↗",
+    selectCounty: "Chagua kaunti yako",
+    communityTitle: "Mahusiano ya wakulima 🤝",
+    createListing: "Orodhesha bidhaa",
+    publishListing: "Chapisha bidhaa",
+    startListing: "Anza kuorodhesha ↗",
+    loginTitle: "Karibu ShambaMarket",
+    loginNote: "Kuingia kwenye akaunti ni mfano tu. Hakuna nenosiri linalokusanywa."
+  },
+  sheng: {
+    tagline: "Shamba yako, soko yako.",
+    home: "Home",
+    marketplace: "Soko",
+    assistant: "Shamba Assistant",
+    community: "Wasee wa shamba",
+    login: "Ingia",
+    searchPlaceholder: "Tafuta mahindi, maembe, mbolea...",
+    allCategories: "Categories zote",
+    produce: "Mazao",
+    inputs: "Farm inputs",
+    livestock: "Mifugo",
+    search: "Tafuta soko",
+    searchHint: "Pata products za shamba kutoka kwa sellers wa Kenya.",
+    heroEyebrow: "MADE FOR FARMERS WA KENYA",
+    heroTitle: "Shamba yako. Soko yako. Chance yako.",
+    heroText: "Buy, sell na grow pamoja. Mazao, farm inputs na mifugo—zote place moja.",
+    explore: "Check soko ↗",
+    listProduct: "+ List product yako",
+    oneMarket: "SOKO MOJA KUBWA",
+    marketTitle: "Soko iko open 🌱",
+    marketSubtitle: "Chagua category uone vitu ziko.",
+    viewAll: "Check listings zote ↗",
+    allProducts: "Products zote",
+    allProductsDesc: "Explore soko yote",
+    fruits: "Matunda",
+    vegetables: "Mboga",
+    nuts: "Njugu na karanga",
+    starchy: "Vyakula za wanga",
+    grains: "Nafaka",
+    legumes: "Mikunde",
+    allItems: "Vitu zote",
+    retail: "Retail",
+    bulk: "Bulk",
+    both: "Retail + bulk",
+    noResults: "Hakuna product imepatikana",
+    demoNote: "Hizi listings na bei ni demo, si offers za live.",
+    assistantTitle: "Shamba Assistant 🌦️",
+    assistantText: "Pata crop tips na checklists za kupanga kazi za shamba yako.",
+    openAssistant: "Fungua Shamba Assistant ↗",
+    selectCounty: "Chagua county yako",
+    communityTitle: "Connections za wakulima 🤝",
+    createListing: "List product yako",
+    publishListing: "Publish listing",
+    startListing: "Anza ku-list ↗",
+    loginTitle: "Karibu ShambaMarket",
+    loginNote: "Login ni demo tu kwa sasa. Hatukusanyi password."
+  }
+};
 
-  const CATEGORY_EMOJIS = {
-    fruits: "🥭",
-    vegetables: "🥬",
-    nuts: "🥜",
-    starchy: "🥔",
-    grains: "🌽",
-    legumes: "🫘",
-    livestock: "🐄",
-    "farm-inputs": "🌱"
-  };
+function escapeHTML(value) {
+  return String(value ?? "").replace(/[&<>"']/g, char => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  })[char]);
+}
 
-  const UNIT_NAMES = {
-    kg: "kg",
-    piece: "piece",
-    crate: "crate",
-    bag: "bag",
-    bunch: "bunch",
-    litre: "litre",
-    tray: "tray",
-    animal: "animal",
-    sack: "sack",
-    packet: "packet",
-    other: "unit"
-  };
+function money(value) {
+  return Number(value || 0).toLocaleString("en-KE", {
+    maximumFractionDigits: 2
+  });
+}
 
-  /*
-   * Illustrative comparison prices for the science fair demo.
-   * These are NOT verified Kenyan market prices.
-   * Change them only when you have reliable, comparable data.
-   */
-  const DEMO_REFERENCES = {
-    avocado: { kg: 100, piece: 25 },
-    mango: { kg: 100, piece: 30 },
-    banana: { kg: 80, bunch: 100 },
-    tomato: { kg: 100, crate: 1800 },
-    onion: { kg: 100, bag: 2500 },
-    potato: { kg: 80, bag: 2500 },
-    maize: { kg: 60, bag: 3000 },
-    beans: { kg: 150, bag: 6000 },
-    groundnut: { kg: 180 },
-    chicken: { animal: 900 },
-    eggs: { tray: 450 },
-    spinach: { bunch: 30 },
-    cabbage: { piece: 70 },
-    sukuma: { bunch: 30 },
-    milk: { litre: 70 },
-    default: {
-      kg: 100,
-      piece: 50,
-      crate: 1500,
-      bag: 3000,
-      bunch: 40,
-      litre: 80,
-      tray: 450,
-      animal: 1000,
-      sack: 2500,
-      packet: 100,
-      other: 100
+function safeImage(url, fallback) {
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol === "https:" || parsed.protocol === "http:") {
+      return parsed.href;
     }
-  };
+  } catch (_) {}
+  return fallback || "";
+}
 
-  const SEED_PRODUCTS = [
+function makeId() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+}
+
+function toast(message) {
+  const element = $("toast");
+  element.textContent = message;
+  element.classList.add("visible");
+  clearTimeout(toast.timer);
+  toast.timer = setTimeout(() => element.classList.remove("visible"), 2800);
+}
+
+function readListings() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+    if (Array.isArray(saved)) return saved;
+  } catch (error) {
+    console.warn("Could not read saved demo listings.", error);
+  }
+
+  // These sample listings are illustrative demo data.
+  const samples = [
     {
-      id: "demo-avocado-1",
-      name: "Fresh Hass Avocados",
-      variety: "Hass",
-      category: "fruits",
-      condition: "fresh",
-      price: 120,
-      quantity: 80,
-      unit: "kg",
-      location: "Murang'a",
-      contact: "Demo seller",
-      harvestDate: "",
-      description: "Fresh avocados from a sample farm listing. Ask the seller about ripeness and collection.",
-      image: "https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?auto=format&fit=crop&w=800&q=80",
-      negotiable: true,
-      harvestRescue: false,
-      seller: "Green Valley Farm",
-      createdAt: "2026-10-22T09:00:00.000Z",
-      demo: true
-    },
-    {
-      id: "demo-tomato-1",
-      name: "Farm Fresh Tomatoes",
-      variety: "Regular",
-      category: "vegetables",
-      condition: "ripe",
-      price: 150,
-      quantity: 40,
-      unit: "kg",
-      location: "Nakuru",
-      contact: "Demo seller",
-      harvestDate: "",
-      description: "Ripe tomatoes available in this demonstration listing. Check quality and price before arranging a purchase.",
-      image: "https://images.unsplash.com/photo-1546094096-0df4bcaaa337?auto=format&fit=crop&w=800&q=80",
-      negotiable: true,
-      harvestRescue: true,
-      seller: "Nakuru Fresh Produce",
-      createdAt: "2026-10-22T08:00:00.000Z",
-      demo: true
-    },
-    {
-      id: "demo-mango-1",
-      name: "Sweet Mangoes",
-      variety: "Mixed varieties",
-      category: "fruits",
-      condition: "ripe",
-      price: 90,
-      quantity: 60,
-      unit: "kg",
-      location: "Makueni",
-      contact: "Demo seller",
-      harvestDate: "",
-      description: "Sample mango listing. Ask about variety, ripeness and available quantity.",
-      image: "https://images.unsplash.com/photo-1553279768-865429fa0078?auto=format&fit=crop&w=800&q=80",
-      negotiable: true,
-      harvestRescue: true,
-      seller: "Makueni Fruit Growers",
-      createdAt: "2026-10-21T11:00:00.000Z",
-      demo: true
-    },
-    {
-      id: "demo-maize-1",
-      name: "Dry Maize",
-      variety: "White maize",
+      id: "sample-maize",
+      name: "Dry maize",
       category: "grains",
-      condition: "good",
-      price: 65,
-      quantity: 120,
-      unit: "kg",
-      location: "Trans Nzoia",
-      contact: "Demo seller",
-      harvestDate: "",
-      description: "Sample dry maize listing. Confirm moisture condition, quantity and collection arrangements.",
-      image: "https://images.unsplash.com/photo-1601593768792-5e1e4f0f7c8d?auto=format&fit=crop&w=800&q=80",
-      negotiable: true,
-      harvestRescue: false,
-      seller: "North Rift Grain Farm",
-      createdAt: "2026-10-21T10:00:00.000Z",
-      demo: true
-    },
-    {
-      id: "demo-beans-1",
-      name: "Dry Beans",
-      variety: "Mixed beans",
-      category: "legumes",
-      condition: "good",
-      price: 140,
-      quantity: 75,
-      unit: "kg",
-      location: "Embu",
-      contact: "Demo seller",
-      harvestDate: "",
-      description: "Sample dry beans listing. Confirm variety, cleanliness and packaging with the seller.",
-      image: "https://images.unsplash.com/photo-1515543904379-3d757afe72e4?auto=format&fit=crop&w=800&q=80",
-      negotiable: true,
-      harvestRescue: false,
-      seller: "Embu Harvest Co.",
-      createdAt: "2026-10-20T12:00:00.000Z",
-      demo: true
-    },
-    {
-      id: "demo-potatoes-1",
-      name: "Irish Potatoes",
-      variety: "Mixed sizes",
-      category: "starchy",
-      condition: "good",
-      price: 75,
-      quantity: 90,
-      unit: "kg",
-      location: "Nyandarua",
-      contact: "Demo seller",
-      harvestDate: "",
-      description: "Sample potato listing. Ask about size grading, quantity and collection.",
-      image: "https://images.unsplash.com/photo-1518977676601-b53f82aba655?auto=format&fit=crop&w=800&q=80",
-      negotiable: true,
-      harvestRescue: false,
-      seller: "Highland Roots",
-      createdAt: "2026-10-20T09:00:00.000Z",
-      demo: true
-    },
-    {
-      id: "demo-onions-1",
-      name: "Red Onions",
-      variety: "Red",
-      category: "vegetables",
-      condition: "good",
-      price: 110,
-      quantity: 50,
-      unit: "kg",
-      location: "Kajiado",
-      contact: "Demo seller",
-      harvestDate: "",
-      description: "Sample red onion listing. Check size, dryness and storage condition.",
-      image: "https://images.unsplash.com/photo-1508747703725-719777637510?auto=format&fit=crop&w=800&q=80",
-      negotiable: true,
-      harvestRescue: false,
-      seller: "Kajiado Produce",
-      createdAt: "2026-10-19T09:00:00.000Z",
-      demo: true
-    },
-    {
-      id: "demo-peanuts-1",
-      name: "Groundnuts",
-      variety: "Dry groundnuts",
-      category: "nuts",
-      condition: "good",
-      price: 180,
-      quantity: 30,
-      unit: "kg",
-      location: "Busia",
-      contact: "Demo seller",
-      harvestDate: "",
-      description: "Sample groundnut listing. Confirm whether the product is shelled and how it is packaged.",
-      image: "https://images.unsplash.com/photo-1567892737950-30c4db37cd89?auto=format&fit=crop&w=800&q=80",
-      negotiable: true,
-      harvestRescue: false,
-      seller: "Western Nut Growers",
-      createdAt: "2026-10-18T09:00:00.000Z",
-      demo: true
-    },
-    {
-      id: "demo-spinach-1",
-      name: "Fresh Spinach",
-      variety: "Leafy greens",
-      category: "vegetables",
-      condition: "fresh",
-      price: 30,
-      quantity: 45,
-      unit: "bunch",
-      location: "Kiambu",
-      contact: "Demo seller",
-      harvestDate: "",
-      description: "Fresh leafy greens in a sample listing. Confirm freshness and bunch size.",
-      image: "https://images.unsplash.com/photo-1576045057995-568f588f82fb?auto=format&fit=crop&w=800&q=80",
-      negotiable: false,
-      harvestRescue: false,
-      seller: "Kiambu Green Gardens",
-      createdAt: "2026-10-17T09:00:00.000Z",
-      demo: true
-    },
-    {
-      id: "demo-bananas-1",
-      name: "Ripe Bananas",
-      variety: "Sweet bananas",
-      category: "fruits",
-      condition: "ripe",
-      price: 85,
-      quantity: 35,
-      unit: "kg",
-      location: "Kisii",
-      contact: "Demo seller",
-      harvestDate: "",
-      description: "Sample ripe banana listing. Check ripeness and quantity with the seller.",
-      image: "https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?auto=format&fit=crop&w=800&q=80",
-      negotiable: true,
-      harvestRescue: true,
-      seller: "Kisii Banana Growers",
-      createdAt: "2026-10-16T09:00:00.000Z",
-      demo: true
-    },
-    {
-      id: "demo-cabbage-1",
-      name: "Fresh Cabbages",
-      variety: "Green cabbage",
-      category: "vegetables",
-      condition: "fresh",
-      price: 65,
-      quantity: 50,
-      unit: "piece",
+      saleType: "both",
+      retailPrice: 80,
+      retailUnit: "kg",
+      bulkPrice: 3500,
+      bulkUnit: "50 kg bag",
+      bulkMinimum: 5,
+      quantity: 500,
+      stockUnit: "kg",
       location: "Nakuru",
-      contact: "Demo seller",
-      harvestDate: "",
-      description: "Sample cabbage listing. Ask about head size and the number available.",
-      image: "https://images.unsplash.com/photo-1594282486552-05b4d80fbb9f?auto=format&fit=crop&w=800&q=80",
-      negotiable: true,
-      harvestRescue: false,
-      seller: "Rift Fresh Farms",
-      createdAt: "2026-10-15T09:00:00.000Z",
-      demo: true
+      seller: "Green Valley Farm",
+      phone: "",
+      image: "https://images.unsplash.com/photo-1551754655-cd27e38d2076?auto=format&fit=crop&w=700&q=80",
+      description: "Clean, dry maize. Example listing for demonstration.",
+      createdAt: Date.now() - 30000,
+      sample: true
     },
     {
-      id: "demo-eggs-1",
-      name: "Farm Eggs",
-      variety: "Chicken eggs",
-      category: "livestock",
-      condition: "good",
-      price: 450,
-      quantity: 20,
-      unit: "tray",
-      location: "Kiambu",
-      contact: "Demo seller",
-      harvestDate: "",
-      description: "Sample egg listing. Confirm egg size, tray count and safe collection.",
-      image: "https://images.unsplash.com/photo-1506976785307-8732e854ad03?auto=format&fit=crop&w=800&q=80",
-      negotiable: true,
-      harvestRescue: false,
-      seller: "Happy Hen Demo Farm",
-      createdAt: "2026-10-14T09:00:00.000Z",
-      demo: true
-    },
-    {
-      id: "demo-milk-1",
-      name: "Fresh Milk",
-      variety: "Cow milk",
-      category: "livestock",
-      condition: "fresh",
-      price: 70,
-      quantity: 40,
-      unit: "litre",
-      location: "Nyeri",
-      contact: "Demo seller",
-      harvestDate: "",
-      description: "Sample milk listing. Confirm safe handling, storage and collection arrangements.",
-      image: "https://images.unsplash.com/photo-1563636619-e9143da7973b?auto=format&fit=crop&w=800&q=80",
-      negotiable: false,
-      harvestRescue: false,
-      seller: "Nyeri Dairy Demo",
-      createdAt: "2026-10-13T09:00:00.000Z",
-      demo: true
-    },
-    {
-      id: "demo-fertilizer-1",
-      name: "Farm Fertilizer",
-      variety: "Demo farm input",
-      category: "farm-inputs",
-      condition: "good",
-      price: 2500,
-      quantity: 10,
-      unit: "bag",
-      location: "Nairobi",
-      contact: "Demo seller",
-      harvestDate: "",
-      description: "Illustrative farm-input listing. Check the product label, supplier and suitability before purchasing.",
-      image: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=800&q=80",
-      negotiable: false,
-      harvestRescue: false,
-      seller: "Agri Supplies Demo",
-      createdAt: "2026-10-12T09:00:00.000Z",
-      demo: true
-    },
-    {
-      id: "demo-chicken-1",
-      name: "Local Chicken",
-      variety: "Indigenous chicken",
-      category: "livestock",
-      condition: "good",
-      price: 900,
-      quantity: 8,
-      unit: "animal",
+      id: "sample-mango",
+      name: "Fresh mangoes",
+      category: "fruits",
+      saleType: "both",
+      retailPrice: 30,
+      retailUnit: "piece",
+      bulkPrice: 1200,
+      bulkUnit: "crate",
+      bulkMinimum: 3,
+      quantity: 200,
+      stockUnit: "pieces",
       location: "Machakos",
-      contact: "Demo seller",
-      harvestDate: "",
-      description: "Sample livestock listing. Contact the seller to confirm details, welfare and collection requirements.",
-      image: "https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=800&q=80",
-      negotiable: true,
-      harvestRescue: false,
-      seller: "Machakos Poultry Demo",
-      createdAt: "2026-10-11T09:00:00.000Z",
-      demo: true
+      seller: "Sunrise Orchard",
+      phone: "",
+      image: "https://images.unsplash.com/photo-1619566636858-adf3ef46400b?auto=format&fit=crop&w=700&q=80",
+      description: "Fresh seasonal mangoes. Sample prices only.",
+      createdAt: Date.now() - 20000,
+      sample: true
     },
     {
-      id: "demo-sweetpotato-1",
-      name: "Sweet Potatoes",
-      variety: "Mixed sizes",
+      id: "sample-potatoes",
+      name: "Irish potatoes",
       category: "starchy",
-      condition: "good",
-      price: 70,
-      quantity: 60,
-      unit: "kg",
-      location: "Homa Bay",
-      contact: "Demo seller",
-      harvestDate: "",
-      description: "Sample sweet potato listing. Confirm size, variety and available quantity.",
-      image: "https://images.unsplash.com/photo-1596097635121-14b63a7a0e77?auto=format&fit=crop&w=800&q=80",
-      negotiable: true,
-      harvestRescue: false,
-      seller: "Lake Region Roots",
-      createdAt: "2026-10-10T09:00:00.000Z",
-      demo: true
+      saleType: "bulk",
+      retailPrice: 60,
+      retailUnit: "kg",
+      bulkPrice: 2800,
+      bulkUnit: "50 kg bag",
+      bulkMinimum: 4,
+      quantity: 300,
+      stockUnit: "kg",
+      location: "Nyeri",
+      seller: "Highland Produce",
+      phone: "",
+      image: "https://images.unsplash.com/photo-1518977676601-b53f82aba655?auto=format&fit=crop&w=700&q=80",
+      description: "Good for household or business orders.",
+      createdAt: Date.now() - 10000,
+      sample: true
+    },
+    {
+      id: "sample-beans",
+      name: "Dry beans",
+      category: "legumes",
+      saleType: "retail",
+      retailPrice: 160,
+      retailUnit: "kg",
+      bulkPrice: 0,
+      bulkUnit: "bag",
+      bulkMinimum: 1,
+      quantity: 120,
+      stockUnit: "kg",
+      location: "Kiambu",
+      seller: "Kamau Family Farm",
+      phone: "",
+      image: "https://images.unsplash.com/photo-1515543904379-3d757afe72e4?auto=format&fit=crop&w=700&q=80",
+      description: "Dry beans for everyday cooking.",
+      createdAt: Date.now() - 5000,
+      sample: true
+    },
+    {
+      id: "sample-vegetables",
+      name: "Fresh vegetables",
+      category: "vegetables",
+      saleType: "both",
+      retailPrice: 50,
+      retailUnit: "bunch",
+      bulkPrice: 700,
+      bulkUnit: "crate",
+      bulkMinimum: 2,
+      quantity: 80,
+      stockUnit: "bunches",
+      location: "Nairobi",
+      seller: "City Edge Growers",
+      phone: "",
+      image: "https://images.unsplash.com/photo-1566385101042-1a0aa0c1268c?auto=format&fit=crop&w=700&q=80",
+      description: "Mixed fresh vegetables. Example demo offer.",
+      createdAt: Date.now(),
+      sample: true
     }
   ];
 
-  /* --------------------------------------------------------
-     2. SAFE STORAGE AND GENERAL HELPERS
-     -------------------------------------------------------- */
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(samples));
+  } catch (error) {
+    console.warn("Browser storage is unavailable.", error);
+  }
+  return samples;
+}
 
-  function readStorage(key, fallback) {
-    try {
-      const raw = localStorage.getItem(key);
-      if (raw === null) return fallback;
+let listings = readListings();
+let selectedCategory = "all";
+let selectedSaleFilter = "all";
+let language = localStorage.getItem(LANGUAGE_KEY) || "mix";
 
-      const parsed = JSON.parse(raw);
-      return parsed ?? fallback;
-    } catch (error) {
-      console.warn("Could not read local demo data:", key, error);
-      return fallback;
-    }
+function t(key) {
+  const dict = translations[language] || {};
+  return dict[key] || translations.en[key] || key;
+}
+
+function applyLanguage() {
+  document.documentElement.lang = language === "sw" ? "sw" : "en";
+
+  document.querySelectorAll("[data-i18n]").forEach(element => {
+    const key = element.dataset.i18n;
+    const value = t(key);
+    if (value) element.textContent = value;
+  });
+
+  document.querySelectorAll("[data-i18n-placeholder]").forEach(element => {
+    const key = element.dataset.i18nPlaceholder;
+    const value = t(key);
+    if (value) element.placeholder = value;
+  });
+
+  $("languageSelect").value = language;
+  renderListings();
+}
+
+function saveListings() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(listings));
+    return true;
+  } catch (error) {
+    console.error("Could not save listings.", error);
+    toast("Browser storage is full or unavailable. Try a smaller photo URL.");
+    return false;
+  }
+}
+
+function categoryLabel(category) {
+  return t(category) || categoryNames[category] || category;
+}
+
+function saleLabel(type) {
+  if (type === "retail") return t("retail");
+  if (type === "bulk") return t("bulk");
+  return t("both");
+}
+
+function priceMarkup(product) {
+  let html = "";
+
+  if (product.saleType === "retail" || product.saleType === "both") {
+    html += `<div class="price-line"><span>${escapeHTML(t("retail"))} · ${escapeHTML(product.retailUnit || "unit")}</span><strong>KSh ${money(product.retailPrice)}</strong></div>`;
   }
 
-  function writeStorage(key, value) {
-    try {
-      localStorage.setItem(key, JSON.stringify(value));
-      return true;
-    } catch (error) {
-      console.error("Could not save demo data:", error);
-      toast("Your browser could not save this change. Check available storage.");
-      return false;
-    }
+  if (product.saleType === "bulk" || product.saleType === "both") {
+    html += `<div class="price-line"><span>${escapeHTML(t("bulk"))} · ${escapeHTML(product.bulkUnit || "unit")}<small> · Min. ${money(product.bulkMinimum || 1)}</small></span><strong>KSh ${money(product.bulkPrice)}</strong></div>`;
   }
 
-  function escapeHTML(value) {
-    return String(value ?? "").replace(/[&<>"']/g, character => ({
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#39;"
-    })[character]);
-  }
+  return html;
+}
 
-  function safeImageURL(value) {
-    try {
-      const url = new URL(String(value || ""));
-      return url.protocol === "https:" ? url.href : "";
-    } catch {
-      return "";
-    }
-  }
+function renderListings() {
+  if (!$("listingGrid")) return;
 
-  function makeId(prefix = "item") {
-    if (window.crypto && typeof window.crypto.randomUUID === "function") {
-      return `${prefix}-${window.crypto.randomUUID()}`;
-    }
-    return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-  }
+  const query = $("searchInput").value.trim().toLowerCase();
+  const location = $("locationFilter").value;
+  const searchCategory = $("searchCategory").value;
+  const sort = $("sortSelect").value;
 
-  function money(value) {
-    const amount = Number(value);
-    if (!Number.isFinite(amount)) return "KSh 0";
+  let visible = listings.filter(product => {
+    const searchable = [
+      product.name, product.category, product.location,
+      product.seller, product.description
+    ].join(" ").toLowerCase();
 
-    return "KSh " + amount.toLocaleString("en-KE", {
-      minimumFractionDigits: amount % 1 ? 2 : 0,
-      maximumFractionDigits: 2
-    });
-  }
+    const categoryMatch =
+      selectedCategory === "all" || product.category === selectedCategory;
 
-  function formatDate(value) {
-    if (!value) return "";
+    const saleMatch =
+      selectedSaleFilter === "all" ||
+      product.saleType === selectedSaleFilter ||
+      (selectedSaleFilter === "retail" && product.saleType === "both") ||
+      (selectedSaleFilter === "bulk" && product.saleType === "both");
 
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return "";
+    const searchCategoryMatch =
+      searchCategory === "all" ||
+      (searchCategory === "produce" && !["inputs", "livestock"].includes(product.category)) ||
+      (searchCategory === "inputs" && product.category === "inputs") ||
+      (searchCategory === "livestock" && product.category === "livestock");
 
-    return date.toLocaleDateString("en-KE", {
-      day: "numeric",
-      month: "short",
-      year: "numeric"
-    });
-  }
+    return categoryMatch && saleMatch && searchCategoryMatch &&
+      (!location || product.location.toLowerCase() === location.toLowerCase()) &&
+      (!query || searchable.includes(query));
+  });
 
-  function normaliseProduct(product) {
-    return {
-      ...product,
-      id: String(product.id || makeId("product")),
-      name: String(product.name || "Unnamed product"),
-      variety: String(product.variety || ""),
-      category: CATEGORY_NAMES[product.category] ? product.category : "farm-inputs",
-      condition: String(product.condition || "good"),
-      price: Math.max(0, Number(product.price) || 0),
-      quantity: Math.max(0, Number(product.quantity) || 0),
-      unit: UNIT_NAMES[product.unit] ? product.unit : "other",
-      location: String(product.location || "Location not provided"),
-      contact: String(product.contact || ""),
-      harvestDate: String(product.harvestDate || ""),
-      description: String(product.description || ""),
-      image: safeImageURL(product.image),
-      negotiable: Boolean(product.negotiable),
-      harvestRescue: Boolean(product.harvestRescue),
-      seller: String(product.seller || "Community seller"),
-      createdAt: product.createdAt || new Date().toISOString(),
-      demo: Boolean(product.demo)
-    };
-  }
-
-  /* --------------------------------------------------------
-     3. APP STATE
-     -------------------------------------------------------- */
-
-  let products = readStorage(KEYS.products, null);
-
-  if (!Array.isArray(products) || products.length === 0) {
-    products = SEED_PRODUCTS.map(normaliseProduct);
-    writeStorage(KEYS.products, products);
+  if (sort === "price-low") {
+    visible.sort((a, b) => comparablePrice(a) - comparablePrice(b));
+  } else if (sort === "price-high") {
+    visible.sort((a, b) => comparablePrice(b) - comparablePrice(a));
+  } else if (sort === "name") {
+    visible.sort((a, b) => a.name.localeCompare(b.name));
   } else {
-    products = products.map(normaliseProduct);
+    visible.sort((a, b) => b.createdAt - a.createdAt);
   }
 
-  let cart = readStorage(KEYS.cart, []);
-  if (!Array.isArray(cart)) cart = [];
+  $("resultsCount").textContent =
+    `${visible.length} listing${visible.length === 1 ? "" : "s"}`;
 
-  cart = cart
-    .filter(item => item && typeof item.productId === "string")
-    .map(item => ({
-      productId: item.productId,
-      quantity: Math.max(1, Math.floor(Number(item.quantity) || 1))
-    }));
+  $("emptyState").hidden = visible.length > 0;
 
-  let favourites = readStorage(KEYS.favourites, []);
-  if (!Array.isArray(favourites)) favourites = [];
-
-  let profile = readStorage(KEYS.profile, {
-    name: "",
-    role: "buyer"
-  });
-
-  let settings = readStorage(KEYS.settings, {
-    language: "en"
-  });
-
-  let activeCategory = "all";
-  let favouritesOnly = false;
-  let harvestOnly = false;
-  let searchTerm = "";
-  let locationTerm = "";
-  let tutorialStep = 0;
-  let editingProductId = null;
-
-  const tutorialSteps = [
-    {
-      icon: "🌱",
-      label: "WELCOME",
-      title: "Welcome to ShambaMarket",
-      description: "Explore a demo marketplace designed to connect farmers and buyers."
-    },
-    {
-      icon: "🧺",
-      label: "DISCOVER",
-      title: "Find what you need",
-      description: "Search listings, choose categories, compare demo prices and save favourites."
-    },
-    {
-      icon: "🛒",
-      label: "SHOP",
-      title: "Build your basket",
-      description: "Add products, change quantities and create a demo order summary. No payment is collected."
-    },
-    {
-      icon: "🤝",
-      label: "EXPLORE",
-      title: "Try the farmer tools",
-      description: "Visit Smart Assist and SACCO Hub, or try Harvest Rescue and Buyer Requests."
-    }
-  ];
-
-  /* --------------------------------------------------------
-     4. NOTIFICATIONS AND MODALS
-     -------------------------------------------------------- */
-
-  function toast(message) {
-    const container = $("#toastContainer");
-
-    if (!container) {
-      console.info(message);
-      return;
-    }
-
-    const item = document.createElement("div");
-    item.className = "toast";
-    item.setAttribute("role", "status");
-    item.textContent = message;
-
-    container.appendChild(item);
-
-    window.setTimeout(() => {
-      item.classList.add("toast-leaving");
-      window.setTimeout(() => item.remove(), 250);
-    }, 3200);
-  }
-
-  function announce(message) {
-    const region = $("#appStatus");
-    if (region) region.textContent = message;
-  }
-
-  function openModal(id) {
-    const modal = document.getElementById(id);
-    if (!modal) {
-      toast("That feature is not available on this page yet.");
-      return;
-    }
-
-    $$(".modal.is-open").forEach(other => {
-      if (other !== modal) closeModalElement(other);
-    });
-
-    modal.hidden = false;
-    modal.classList.add("is-open");
-    document.body.classList.add("modal-open");
-
-    const firstInput = $("input:not([type=hidden]), select, textarea, button", modal);
-    if (firstInput) {
-      window.setTimeout(() => firstInput.focus(), 30);
-    }
-  }
-
-  function closeModalElement(modal) {
-    modal.classList.remove("is-open");
-    modal.hidden = true;
-
-    if (!$(".modal.is-open")) {
-      document.body.classList.remove("modal-open");
-    }
-  }
-
-  function closeModal(id) {
-    const modal = document.getElementById(id);
-    if (modal) closeModalElement(modal);
-  }
-
-  document.addEventListener("click", event => {
-    const closeTarget = event.target.closest("[data-close-modal]");
-    if (!closeTarget) return;
-
-    const modal = closeTarget.closest(".modal");
-    if (modal) closeModalElement(modal);
-  });
-
-  document.addEventListener("keydown", event => {
-    if (event.key === "Escape") {
-      const modal = $(".modal.is-open");
-      if (modal) closeModalElement(modal);
-    }
-  });
-
-  /* --------------------------------------------------------
-     5. DEMO PRICE GUARD
-     -------------------------------------------------------- */
-
-  function referencePrice(product) {
-    const text = `${product.name} ${product.variety}`.toLowerCase();
-
-    const matches = [
-      ["avocado", "avocado"],
-      ["mango", "mango"],
-      ["banana", "banana"],
-      ["tomato", "tomato"],
-      ["onion", "onion"],
-      ["potato", "potato"],
-      ["maize", "maize"],
-      ["beans", "beans"],
-      ["groundnut", "groundnut"],
-      ["peanut", "groundnut"],
-      ["chicken", "chicken"],
-      ["egg", "eggs"],
-      ["spinach", "spinach"],
-      ["sukuma", "sukuma"],
-      ["cabbage", "cabbage"],
-      ["milk", "milk"]
-    ];
-
-    let key = "default";
-
-    for (const [needle, result] of matches) {
-      if (text.includes(needle)) {
-        key = result;
-        break;
-      }
-    }
-
-    const categoryDefaults = {
-      fruits: "kg",
-      vegetables: "kg",
-      nuts: "kg",
-      starchy: "kg",
-      grains: "kg",
-      legumes: "kg",
-      livestock: "animal",
-      "farm-inputs": "bag"
-    };
-
-    const referenceSet = DEMO_REFERENCES[key] || DEMO_REFERENCES.default;
-    const unit = product.unit;
-    let price = referenceSet[unit];
-
-    if (price === undefined && referenceSet.kg !== undefined && unit === "other") {
-      price = referenceSet.kg;
-    }
-
-    if (price === undefined) {
-      const fallback = DEMO_REFERENCES.default;
-      price = fallback[unit];
-
-      if (price === undefined) {
-        price = fallback[categoryDefaults[product.category]] || 100;
-      }
-    }
-
-    return Number(price);
-  }
-
-  function priceComparison(product) {
-    const reference = referencePrice(product);
-    const price = Number(product.price);
-
-    if (!reference || !Number.isFinite(price)) {
-      return {
-        reference,
-        difference: 0,
-        percentage: 0,
-        status: "unavailable",
-        label: "No comparison available"
-      };
-    }
-
-    const percentage = ((price - reference) / reference) * 100;
-
-    if (percentage >= 30) {
-      return {
-        reference,
-        difference: price - reference,
-        percentage,
-        status: "high",
-        label: "Above demo reference"
-      };
-    }
-
-    if (percentage <= -15) {
-      return {
-        reference,
-        difference: price - reference,
-        percentage,
-        status: "low",
-        label: "Below demo reference"
-      };
-    }
-
-    return {
-      reference,
-      difference: price - reference,
-      percentage,
-      status: "near",
-      label: "Near demo reference"
-    };
-  }
-
-  function renderListingPricePreview() {
-    const preview = $("#listingPricePreview");
-    const name = $("#productName")?.value.trim();
-    const category = $("#productCategory")?.value;
-    const price = Number($("#productPrice")?.value);
-    const unit = $("#productUnit")?.value || "kg";
-
-    if (!preview) return;
-
-    if (!name || !category || !Number.isFinite(price) || price <= 0) {
-      preview.className = "price-check-preview";
-      preview.textContent =
-        "Enter a product name, category and price to see the demo price comparison.";
-      return;
-    }
-
-    const comparison = priceComparison({
-      name,
-      category,
-      price,
-      unit,
-      variety: ""
-    });
-
-    const statusText = {
-      high: "⚠️ This asking price is 30% or more above the demo reference.",
-      low: "ℹ️ This asking price is below the demo reference.",
-      near: "✓ This asking price is near the demo reference.",
-      unavailable: "A comparable demo reference is not available."
-    };
-
-    preview.className = `price-check-preview price-${comparison.status}`;
-    preview.textContent =
-      `${statusText[comparison.status]} Demo reference: ${money(comparison.reference)} per ${UNIT_NAMES[unit] || unit}. These sample values are not live market prices. You may still choose your own asking price.`;
-  }
-
-  [
-    "#productName",
-    "#productCategory",
-    "#productPrice",
-    "#productUnit"
-  ].forEach(selector => {
-    const element = $(selector);
-    if (element) {
-      element.addEventListener("input", renderListingPricePreview);
-      element.addEventListener("change", renderListingPricePreview);
-    }
-  });
-
-  /* --------------------------------------------------------
-     6. PRODUCT RENDERING
-     -------------------------------------------------------- */
-
-  function productImageMarkup(product) {
-    const url = safeImageURL(product.image);
-    const fallback = CATEGORY_EMOJIS[product.category] || "🌱";
-
-    if (!url) {
-      return `<div class="product-placeholder" aria-label="No product image">
-        <span>${fallback}</span>
-      </div>`;
-    }
-
-    return `<img class="product-photo"
-      src="${escapeHTML(url)}"
-      alt="${escapeHTML(product.name)}"
-      loading="lazy"
-      onerror="this.hidden=true;this.nextElementSibling.hidden=false">
-      <div class="product-placeholder" hidden>
-        <span>${fallback}</span>
-      </div>`;
-  }
-
-  function productCard(product) {
-    const comparison = priceComparison(product);
-    const isFavourite = favourites.includes(product.id);
-    const inCart = cart.find(item => item.productId === product.id);
-    const soldOut = product.quantity <= 0;
-    const condition = product.condition
-      .replace(/-/g, " ")
-      .replace(/\b\w/g, character => character.toUpperCase());
-
-    let priceStatus = "";
-    if (comparison.status === "high") {
-      priceStatus = `<span class="price-status price-status-high">⚠ Above demo reference</span>`;
-    } else if (comparison.status === "low") {
-      priceStatus = `<span class="price-status price-status-low">↓ Below demo reference</span>`;
-    } else if (comparison.status === "near") {
-      priceStatus = `<span class="price-status price-status-near">✓ Near demo reference</span>`;
-    }
-
-    const harvestBadge = product.harvestRescue
-      ? `<span class="product-badge harvest-badge">♻ Harvest Rescue</span>`
-      : "";
-
-    const demoBadge = product.demo
-      ? `<span class="product-badge demo-badge">Demo listing</span>`
-      : "";
-
-    const dateLine = product.harvestDate
-      ? `<p class="product-meta">📅 Harvested: ${escapeHTML(formatDate(product.harvestDate))}</p>`
-      : "";
+  $("listingGrid").innerHTML = visible.map(product => {
+    const fallback = categoryImages[product.category] || categoryImages.grains;
+    const imageUrl = safeImage(product.image, fallback);
+    const contact = String(product.phone || "").replace(/[^\d+]/g, "");
+    const contactButton = contact
+      ? `<a class="btn btn-green" href="tel:${escapeHTML(contact)}">Contact seller</a>`
+      : `<span class="product-location">Demo listing</span>`;
 
     return `
-      <article class="product-card" data-product-id="${escapeHTML(product.id)}">
-        <div class="product-card-media">
-          ${productImageMarkup(product)}
-          <div class="product-badges">
-            ${harvestBadge}
-            ${demoBadge}
+      <article class="product-card">
+        <img class="product-photo" src="${escapeHTML(imageUrl)}" alt="${escapeHTML(product.name)}" loading="lazy">
+        <div class="product-body">
+          <div class="product-topline">
+            <span class="product-category">${escapeHTML(categoryLabel(product.category))}</span>
+            <span class="sale-badge">${escapeHTML(saleLabel(product.saleType))}</span>
           </div>
-          <button
-            class="favourite-button ${isFavourite ? "is-favourite" : ""}"
-            type="button"
-            data-action="favourite"
-            data-id="${escapeHTML(product.id)}"
-            aria-label="${isFavourite ? "Remove from favourites" : "Add to favourites"}"
-            aria-pressed="${isFavourite}"
-            title="${isFavourite ? "Remove favourite" : "Save favourite"}">
-            ${isFavourite ? "♥" : "♡"}
-          </button>
+          <h3>${escapeHTML(product.name)}</h3>
+          <div class="product-location">📍 ${escapeHTML(product.location)}</div>
+          <div class="price-options">${priceMarkup(product)}</div>
+          <div class="product-meta">
+            <span>📦 ${money(product.quantity)} ${escapeHTML(product.stockUnit || "units")} available</span>
+          </div>
+          ${product.description ? `<p class="product-description">${escapeHTML(product.description)}</p>` : ""}
+          <div class="seller-line">Seller: ${escapeHTML(product.seller || "Local farmer")}</div>
+          <div class="product-actions">${contactButton}</div>
         </div>
+      </article>
+    `;
+  }).join("");
 
-        <div class="product-card-body">
-          <div class="product-title-row">
-            <span class="product-category-label">
-              ${escapeHTML(CATEGORY_NAMES[product.category] || "Farm products")}
-            </span>
-          </div>
+  document.querySelectorAll(".category-card").forEach(button => {
+    button.classList.toggle("active", button.dataset.category === selectedCategory);
+  });
 
-          <h3 class="product-title">${escapeHTML(product.name)}</h3>
+  document.querySelectorAll("[data-sale-filter]").forEach(button => {
+    button.classList.toggle("active", button.dataset.saleFilter === selectedSaleFilter);
+  });
+}
 
-          ${product.variety
-            ? `<p class="product-variety">${escapeHTML(product.variety)}</p>`
-            : ""}
+function comparablePrice(product) {
+  if (selectedSaleFilter === "bulk" || product.saleType === "bulk") {
+    return Number(product.bulkPrice || product.retailPrice || 0);
+  }
+  return Number(product.retailPrice || product.bulkPrice || 0);
+}
 
-          <div class="product-price">
-            ${money(product.price)}
-            <span>/ ${escapeHTML(UNIT_NAMES[product.unit] || product.unit)}</span>
-          </div>
+function setSaleFields() {
+  const type = $("saleType").value;
+  const showRetail = type === "retail" || type === "both";
+  const showBulk = type === "bulk" || type === "both";
 
-          ${priceStatus}
+  $("retailFields").hidden = !showRetail;
+  $("bulkFields").hidden = !showBulk;
 
-          <div class="product-meta-list">
-            <p class="product-meta">📍 ${escapeHTML(product.location)}</p>
-            <p class="product-meta">🍃 Condition: ${escapeHTML(condition)}</p>
-            <p class="product-meta">📦 Available: ${escapeHTML(product.quantity)} ${escapeHTML(UNIT_NAMES[product.unit] || product.unit)}</p>
-            ${dateLine}
-          </div>
+  $("retailPrice").required = showRetail;
+  $("bulkPrice").required = showBulk;
+}
 
-          <p class="product-description">${escapeHTML(product.description)}</p>
+function openDialog(id) {
+  const dialog = $(id);
+  if (!dialog) return;
+  if (typeof dialog.showModal === "function") dialog.showModal();
+  else dialog.setAttribute("open", "");
+}
 
-          <div class="freshness-mini">
-            <span>🧾 Freshness Passport</span>
-            <span>${product.harvestDate ? "Harvest date provided" : "Condition reported by seller"}</span>
-          </div>
+function closeDialog(dialog) {
+  if (typeof dialog.close === "function") dialog.close();
+  else dialog.removeAttribute("open");
+}
 
-          <p class="seller-label">Seller: ${escapeHTML(product.seller)}</p>
+function resetListingForm() {
+  $("listingForm").reset();
+  $("saleType").value = "retail";
+  setSaleFields();
+  $("listingMessage").textContent = "";
+}
 
-          <div class="product-card-footer">
-            <button
-              class="button button-primary product-add-cart"
-              type="button"
-              data-action="add-cart"
-              data-id="${escapeHTML(product.id)}"
-              ${soldOut ? "disabled" : ""}>
-              ${soldOut ? "Unavailable" : inCart ? `🛒 Add more (${inCart.quantity})` : "🛒 Add to cart"}
-            </button>
-            <button
-              class="button button-outline product-contact-btn"
-              type="button"
-              data-action="contact"
-              data-id="${escapeHTML(product.id)}">
-              Contact
-            </button>
-          </div>
-        </div>
-      </article>`;
+function handleListingSubmit(event) {
+  event.preventDefault();
+
+  const type = $("saleType").value;
+  const retailPrice = Number($("retailPrice").value);
+  const bulkPrice = Number($("bulkPrice").value);
+  const quantity = Number($("listingQuantity").value);
+  const name = $("listingName").value.trim();
+  const location = $("listingLocation").value.trim();
+
+  if (!name || !location || !(quantity > 0)) {
+    $("listingMessage").textContent = "Please fill in the required fields.";
+    return;
   }
 
-  function getFilteredProducts() {
-    let result = [...products];
-
-    if (activeCategory !== "all") {
-      result = result.filter(product => product.category === activeCategory);
-    }
-
-    if (favouritesOnly) {
-      result = result.filter(product => favourites.includes(product.id));
-    }
-
-    if (harvestOnly) {
-      result = result.filter(product => product.harvestRescue);
-    }
-
-    if (searchTerm) {
-      result = result.filter(product => {
-        const searchable = [
-          product.name,
-          product.variety,
-          product.description,
-          product.seller,
-          CATEGORY_NAMES[product.category]
-        ].join(" ").toLowerCase();
-
-        return searchable.includes(searchTerm);
-      });
-    }
-
-    if (locationTerm) {
-      result = result.filter(product =>
-        product.location.toLowerCase().includes(locationTerm)
-      );
-    }
-
-    const sort = $("#sortSelect")?.value || "recommended";
-
-    if (sort === "price-low") {
-      result.sort((a, b) => a.price - b.price);
-    } else if (sort === "price-high") {
-      result.sort((a, b) => b.price - a.price);
-    } else if (sort === "name") {
-      result.sort((a, b) => a.name.localeCompare(b.name));
-    } else if (sort === "newest") {
-      result.sort((a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      );
-    } else {
-      result.sort((a, b) =>
-        Number(b.harvestRescue) - Number(a.harvestRescue)
-      );
-    }
-
-    return result;
+  if ((type === "retail" || type === "both") && !(retailPrice > 0)) {
+    $("listingMessage").textContent = "Enter a valid retail price.";
+    return;
   }
 
-  function renderProducts() {
-    const grid = $("#productGrid");
-    if (!grid) return;
-
-    const filtered = getFilteredProducts();
-
-    if (filtered.length === 0) {
-      grid.innerHTML = `
-        <div class="empty-state">
-          <span class="empty-state-icon">🔎</span>
-          <h3>No matching products found</h3>
-          <p>Try another search, choose a different category or clear your filters.</p>
-          <button class="button button-primary" type="button" data-action="clear-filters">
-            Show all products
-          </button>
-        </div>`;
-    } else {
-      grid.innerHTML = filtered.map(productCard).join("");
-    }
-
-    const count = $("#resultsCount");
-    if (count) {
-      count.textContent = `${filtered.length} product${filtered.length === 1 ? "" : "s"} found`;
-    }
-
-    const heading = $("#listingHeading");
-    if (heading) {
-      if (harvestOnly) heading.textContent = "Harvest Rescue offers";
-      else if (favouritesOnly) heading.textContent = "Your favourite products";
-      else if (activeCategory !== "all") {
-        heading.textContent = CATEGORY_NAMES[activeCategory] || "Products";
-      } else {
-        heading.textContent = "Fresh finds for you";
-      }
-    }
-
-    const favouriteButton = $("#favoritesFilterBtn");
-    if (favouriteButton) {
-      favouriteButton.classList.toggle("is-active", favouritesOnly);
-      favouriteButton.setAttribute("aria-pressed", String(favouritesOnly));
-    }
-
-    const rescueButton = $("#harvestRescueBtn");
-    if (rescueButton) {
-      rescueButton.textContent = harvestOnly
-        ? "Show all products ↑"
-        : "Explore rescue offers →";
-    }
-
-    updateStats();
+  if ((type === "bulk" || type === "both") && !(bulkPrice > 0)) {
+    $("listingMessage").textContent = "Enter a valid bulk price.";
+    return;
   }
 
-  function updateStats() {
-    const listings = $("#statListings");
-    const categories = $("#statCategories");
-
-    if (listings) listings.textContent = String(products.length);
-    if (categories) {
-      categories.textContent = String(Object.keys(CATEGORY_NAMES).length);
-    }
-
-    const year = $("#currentYear");
-    if (year) year.textContent = String(new Date().getFullYear());
-  }
-
-  /* --------------------------------------------------------
-     7. SEARCH AND FILTERS
-     -------------------------------------------------------- */
-
-  const searchForm = $("#searchForm");
-
-  if (searchForm) {
-    searchForm.addEventListener("submit", event => {
-      event.preventDefault();
-      searchTerm = ($("#searchInput")?.value || "").trim().toLowerCase();
-      locationTerm = ($("#locationInput")?.value || "").trim().toLowerCase();
-      renderProducts();
-    });
-  }
-
-  $("#searchInput")?.addEventListener("input", event => {
-    searchTerm = event.target.value.trim().toLowerCase();
-    renderProducts();
-  });
-
-  $("#locationInput")?.addEventListener("input", event => {
-    locationTerm = event.target.value.trim().toLowerCase();
-    renderProducts();
-  });
-
-  $("#sortSelect")?.addEventListener("change", renderProducts);
-
-  $("#categoryGrid")?.addEventListener("click", event => {
-    const button = event.target.closest("[data-category]");
-    if (!button) return;
-
-    activeCategory = button.dataset.category || "all";
-    favouritesOnly = false;
-    harvestOnly = false;
-
-    $$("#categoryGrid [data-category]").forEach(item => {
-      item.classList.toggle("active", item === button);
-      item.setAttribute("aria-pressed", String(item === button));
-    });
-
-    renderProducts();
-  });
-
-  $("#clearFiltersBtn")?.addEventListener("click", () => {
-    searchTerm = "";
-    locationTerm = "";
-    activeCategory = "all";
-    favouritesOnly = false;
-    harvestOnly = false;
-
-    if ($("#searchInput")) $("#searchInput").value = "";
-    if ($("#locationInput")) $("#locationInput").value = "";
-    if ($("#sortSelect")) $("#sortSelect").value = "recommended";
-
-    $$("#categoryGrid [data-category]").forEach(button => {
-      const active = button.dataset.category === "all";
-      button.classList.toggle("active", active);
-      button.setAttribute("aria-pressed", String(active));
-    });
-
-    renderProducts();
-  });
-
-  $("#favoritesFilterBtn")?.addEventListener("click", () => {
-    favouritesOnly = !favouritesOnly;
-    harvestOnly = false;
-    renderProducts();
-  });
-
-  $("#featureFavoritesBtn")?.addEventListener("click", () => {
-    favouritesOnly = true;
-    harvestOnly = false;
-    $("#marketplace")?.scrollIntoView({ behavior: "smooth" });
-    renderProducts();
-  });
-
-  /* --------------------------------------------------------
-     8. PRODUCT ACTIONS AND FAVOURITES
-     -------------------------------------------------------- */
-
-  function saveProducts() {
-    writeStorage(KEYS.products, products);
-  }
-
-  function saveCart() {
-    writeStorage(KEYS.cart, cart);
-  }
-
-  function saveFavourites() {
-    writeStorage(KEYS.favourites, favourites);
-  }
-
-  function getProduct(id) {
-    return products.find(product => product.id === id);
-  }
-
-  function toggleFavourite(id) {
-    if (!getProduct(id)) return;
-
-    if (favourites.includes(id)) {
-      favourites = favourites.filter(item => item !== id);
-      toast("Removed from favourites.");
-    } else {
-      favourites.push(id);
-      toast("Added to favourites.");
-    }
-
-    saveFavourites();
-    renderProducts();
-  }
-
-  function addToCart(id) {
-    const product = getProduct(id);
-    if (!product) {
-      toast("That product could not be found.");
-      return;
-    }
-
-    if (product.quantity <= 0) {
-      toast("This listing is currently unavailable.");
-      return;
-    }
-
-    const existing = cart.find(item => item.productId === id);
-    const nextQuantity = (existing?.quantity || 0) + 1;
-
-    if (nextQuantity > product.quantity) {
-      toast(`Only ${product.quantity} ${UNIT_NAMES[product.unit] || product.unit} available in this listing.`);
-      return;
-    }
-
-    if (existing) existing.quantity = nextQuantity;
-    else cart.push({ productId: id, quantity: 1 });
-
-    saveCart();
-    renderCart();
-    renderProducts();
-    toast(`${product.name} added to your cart.`);
-  }
-
-  function contactSeller(id) {
-    const product = getProduct(id);
-    if (!product) return;
-
-    if (product.demo || product.contact.toLowerCase().includes("demo")) {
-      toast("This is a sample seller. Real contact details are not available in the demo.");
-      return;
-    }
-
-    const message =
-      `Seller contact supplied for ${product.name}: ${product.contact}. Confirm details and agree on arrangements before buying.`;
-
-    toast(message);
-    announce(message);
-  }
-
-  $("#productGrid")?.addEventListener("click", event => {
-    const button = event.target.closest("[data-action]");
-    if (!button) return;
-
-    const action = button.dataset.action;
-    const id = button.dataset.id;
-
-    if (action === "favourite") toggleFavourite(id);
-    if (action === "add-cart") addToCart(id);
-    if (action === "contact") contactSeller(id);
-
-    if (action === "clear-filters") {
-      $("#clearFiltersBtn")?.click();
-    }
-  });
-
-  /* --------------------------------------------------------
-     9. CART AND DEMO CHECKOUT
-     -------------------------------------------------------- */
-
-  function cartDetails() {
-    return cart.map(item => {
-      const product = getProduct(item.productId);
-      if (!product) return null;
-
-      return {
-        product,
-        quantity: item.quantity,
-        lineTotal: product.price * item.quantity
-      };
-    }).filter(Boolean);
-  }
-
-  function renderCart() {
-    const itemsContainer = $("#cartItems");
-    const count = $("#cartCount");
-    const subtotalElement = $("#cartSubtotal");
-
-    const details = cartDetails();
-    const totalItems = details.reduce((sum, item) => sum + item.quantity, 0);
-    const subtotal = details.reduce((sum, item) => sum + item.lineTotal, 0);
-
-    if (count) count.textContent = String(totalItems);
-    if (subtotalElement) subtotalElement.textContent = money(subtotal);
-
-    if (itemsContainer) {
-      if (details.length === 0) {
-        itemsContainer.innerHTML = `
-          <div class="empty-state">
-            <span class="empty-state-icon">🛒</span>
-            <h3>Your cart is empty</h3>
-            <p>Browse the marketplace and add a product to start your basket.</p>
-          </div>`;
-      } else {
-        itemsContainer.innerHTML = details.map(({ product, quantity, lineTotal }) => `
-          <article class="cart-item" data-cart-id="${escapeHTML(product.id)}">
-            <div class="cart-item-image">
-              ${product.image
-                ? `<img src="${escapeHTML(product.image)}" alt="" loading="lazy">`
-                : `<span>${CATEGORY_EMOJIS[product.category] || "🌱"}</span>`}
-            </div>
-            <div class="cart-item-details">
-              <h3>${escapeHTML(product.name)}</h3>
-              <p>${money(product.price)} / ${escapeHTML(UNIT_NAMES[product.unit] || product.unit)}</p>
-              <strong>${money(lineTotal)}</strong>
-              <div class="cart-quantity-controls">
-                <button type="button" data-cart-action="decrease"
-                  data-id="${escapeHTML(product.id)}" aria-label="Decrease quantity">−</button>
-                <span>${quantity}</span>
-                <button type="button" data-cart-action="increase"
-                  data-id="${escapeHTML(product.id)}" aria-label="Increase quantity">+</button>
-                <button type="button" data-cart-action="remove"
-                  data-id="${escapeHTML(product.id)}" class="cart-remove-button">Remove</button>
-              </div>
-            </div>
-          </article>
-        `).join("");
-      }
-    }
-
-    const checkout = $("#checkoutBtn");
-    if (checkout) checkout.disabled = details.length === 0;
-
-    const orderSummary = $("#orderSummary");
-    if (orderSummary) {
-      orderSummary.hidden = true;
-      orderSummary.innerHTML = "";
-    }
-  }
-
-  $("#openCartBtn")?.addEventListener("click", () => {
-    renderCart();
-    openModal("cartModal");
-  });
-
-  $("#basketCalculatorBtn")?.addEventListener("click", () => {
-    renderCart();
-    openModal("cartModal");
-  });
-
-  $("#cartItems")?.addEventListener("click", event => {
-    const button = event.target.closest("[data-cart-action]");
-    if (!button) return;
-
-    const id = button.dataset.id;
-    const action = button.dataset.cartAction;
-    const item = cart.find(entry => entry.productId === id);
-    const product = getProduct(id);
-
-    if (!item || !product) return;
-
-    if (action === "increase") {
-      if (item.quantity >= product.quantity) {
-        toast("You have reached the available quantity for this listing.");
-        return;
-      }
-      item.quantity += 1;
-    }
-
-    if (action === "decrease") {
-      item.quantity -= 1;
-      if (item.quantity <= 0) {
-        cart = cart.filter(entry => entry.productId !== id);
-      }
-    }
-
-    if (action === "remove") {
-      cart = cart.filter(entry => entry.productId !== id);
-      toast("Product removed from your cart.");
-    }
-
-    saveCart();
-    renderCart();
-    renderProducts();
-  });
-
-  $("#clearCartBtn")?.addEventListener("click", () => {
-    if (cart.length === 0) {
-      toast("Your cart is already empty.");
-      return;
-    }
-
-    cart = [];
-    saveCart();
-    renderCart();
-    renderProducts();
-
-    if ($("#cartFeedback")) {
-      $("#cartFeedback").textContent = "Your cart has been cleared.";
-    }
-  });
-
-  $("#checkoutBtn")?.addEventListener("click", () => {
-    const details = cartDetails();
-    if (!details.length) {
-      toast("Add a product before creating an order summary.");
-      return;
-    }
-
-    const total = details.reduce((sum, item) => sum + item.lineTotal, 0);
-    const order = {
-      id: makeId("demo-order"),
-      createdAt: new Date().toISOString(),
-      items: details.map(({ product, quantity }) => ({
-        productId: product.id,
-        name: product.name,
-        price: product.price,
-        unit: product.unit,
-        quantity
-      })),
-      total,
-      status: "Demo order summary only"
-    };
-
-    const orders = readStorage(KEYS.orders, []);
-    orders.push(order);
-
-    if (!writeStorage(KEYS.orders, orders)) return;
-
-    const summary = $("#orderSummary");
-    if (summary) {
-      summary.hidden = false;
-      summary.innerHTML = `
-        <h3>Demo order summary</h3>
-        <p><strong>Reference:</strong> ${escapeHTML(order.id)}</p>
-        <p><strong>Date:</strong> ${escapeHTML(formatDate(order.createdAt))}</p>
-        <ul>
-          ${details.map(({ product, quantity, lineTotal }) => `
-            <li>${escapeHTML(product.name)} × ${quantity} — ${money(lineTotal)}</li>
-          `).join("")}
-        </ul>
-        <p><strong>Estimated total: ${money(total)}</strong></p>
-        <p>This is not a real order. No payment was taken and no seller was contacted.</p>
-        <button class="button button-outline" type="button" data-action="close-order">
-          Close summary
-        </button>`;
-    }
-
-    $("#cartFeedback") && ($("#cartFeedback").textContent =
-      "Demo summary created and saved in this browser.");
-
-    announce("Demo order summary created.");
-    toast("Demo order summary created.");
-  });
-
-  $("#orderSummary")?.addEventListener("click", event => {
-    if (event.target.closest('[data-action="close-order"]')) {
-      $("#orderSummary").hidden = true;
-    }
-  });
-
-  /* --------------------------------------------------------
-     10. LISTING CREATION AND EDITING
-     -------------------------------------------------------- */
-
-  function resetListingForm() {
-    const form = $("#listingForm");
-    if (form) form.reset();
-
-    editingProductId = null;
-
-    const title = $("#listingModalTitle");
-    if (title) title.textContent = "Create a product listing";
-
-    const submit = $("#listingForm button[type='submit']");
-    if (submit) submit.textContent = "Publish demo listing";
-
-    const feedback = $("#listingFeedback");
-    if (feedback) feedback.textContent = "";
-
-    renderListingPricePreview();
-  }
-
-  function openListingForm(product = null) {
-    resetListingForm();
-
-    if (product) {
-      editingProductId = product.id;
-
-      const form = $("#listingForm");
-      if (!form) return;
-
-      const fields = {
-        name: product.name,
-        variety: product.variety,
-        category: product.category,
-        condition: product.condition,
-        price: product.price,
-        quantity: product.quantity,
-        unit: product.unit,
-        location: product.location,
-        contact: product.contact,
-        harvestDate: product.harvestDate,
-        image: product.image,
-        description: product.description,
-        negotiable: product.negotiable,
-        harvestRescue: product.harvestRescue
-      };
-
-      Object.entries(fields).forEach(([name, value]) => {
-        const input = form.elements.namedItem(name);
-        if (!input) return;
-
-        if (input.type === "checkbox") input.checked = Boolean(value);
-        else input.value = value ?? "";
-      });
-
-      if ($("#listingModalTitle")) {
-        $("#listingModalTitle").textContent = "Edit your product listing";
-      }
-
-      const submit = $("#listingForm button[type='submit']");
-      if (submit) submit.textContent = "Save listing changes";
-    }
-
-    renderListingPricePreview();
-    openModal("listingModal");
-  }
-
-  [
-    "#openListingBtn",
-    "#heroSellBtn",
-    "#sectionSellBtn",
-    "#ctaSellBtn",
-    "#footerSellBtn"
-  ].forEach(selector => {
-    $(selector)?.addEventListener("click", () => openListingForm());
-  });
-
-  $("#listingForm")?.addEventListener("submit", event => {
-    event.preventDefault();
-
-    const form = event.currentTarget;
-    const data = new FormData(form);
-
-    const name = String(data.get("name") || "").trim();
-    const category = String(data.get("category") || "");
-    const price = Number(data.get("price"));
-    const quantity = Number(data.get("quantity"));
-    const unit = String(data.get("unit") || "");
-    const location = String(data.get("location") || "").trim();
-    const contact = String(data.get("contact") || "").trim();
-    const description = String(data.get("description") || "").trim();
-
-    const feedback = $("#listingFeedback");
-
-    function listingError(message) {
-      if (feedback) feedback.textContent = message;
-      toast(message);
-    }
-
-    if (!name || !CATEGORY_NAMES[category]) {
-      listingError("Please enter a product name and choose a category.");
-      return;
-    }
-
-    if (!Number.isFinite(price) || price <= 0) {
-      listingError("Enter a valid asking price greater than zero.");
-      return;
-    }
-
-    if (!Number.isFinite(quantity) || quantity <= 0) {
-      listingError("Enter an available quantity greater than zero.");
-      return;
-    }
-
-    if (!UNIT_NAMES[unit]) {
-      listingError("Please choose a valid price unit.");
-      return;
-    }
-
-    if (!location || !contact || !description) {
-      listingError("Please complete the location, contact and description fields.");
-      return;
-    }
-
-    const rawImage = String(data.get("image") || "").trim();
-    if (rawImage && !safeImageURL(rawImage)) {
-      listingError("Use a valid HTTPS image URL, or leave the image field empty.");
-      return;
-    }
-
-    const product = normaliseProduct({
-      id: editingProductId || makeId("product"),
-      name,
-      variety: String(data.get("variety") || "").trim(),
-      category,
-      condition: String(data.get("condition") || "good"),
-      price,
-      quantity,
-      unit,
-      location,
-      contact,
-      harvestDate: String(data.get("harvestDate") || ""),
-      image: rawImage,
-      description,
-      negotiable: data.get("negotiable") === "on",
-      harvestRescue: data.get("harvestRescue") === "on",
-      seller: profile.name || "Demo seller",
-      createdAt: editingProductId
-        ? (getProduct(editingProductId)?.createdAt || new Date().toISOString())
-        : new Date().toISOString(),
-      demo: false
-    });
-
-    if (editingProductId) {
-      products = products.map(existing =>
-        existing.id === editingProductId ? product : existing
-      );
-    } else {
-      products.unshift(product);
-    }
-
-    if (!writeStorage(KEYS.products, products)) {
-      listingError("Could not save your listing. Please try again.");
-      return;
-    }
-
-    if (feedback) {
-      feedback.textContent = editingProductId
-        ? "Your listing changes have been saved in this browser."
-        : "Your product has been added to the demo marketplace.";
-    }
-
-    closeModal("listingModal");
-    resetListingForm();
-
-    activeCategory = "all";
-    favouritesOnly = false;
-    harvestOnly = false;
-    searchTerm = "";
-    locationTerm = "";
-
-    if ($("#searchInput")) $("#searchInput").value = "";
-    if ($("#locationInput")) $("#locationInput").value = "";
-
-    $$("#categoryGrid [data-category]").forEach(button => {
-      const active = button.dataset.category === "all";
-      button.classList.toggle("active", active);
-      button.setAttribute("aria-pressed", String(active));
-    });
-
-    renderProducts();
-    $("#marketplace")?.scrollIntoView({ behavior: "smooth" });
-
-    toast(editingProductId ? "Listing updated!" : "Product listed successfully!");
-    announce("Your listing has been saved.");
-  });
-
-  /* --------------------------------------------------------
-     11. HARVEST RESCUE
-     -------------------------------------------------------- */
-
-  function showHarvestRescue() {
-    harvestOnly = !harvestOnly;
-    favouritesOnly = false;
-    activeCategory = "all";
-
-    $$("#categoryGrid [data-category]").forEach(button => {
-      const active = button.dataset.category === "all";
-      button.classList.toggle("active", active);
-      button.setAttribute("aria-pressed", String(active));
-    });
-
-    $("#marketplace")?.scrollIntoView({ behavior: "smooth" });
-    renderProducts();
-
-    if (harvestOnly) {
-      toast("Showing seller-flagged Harvest Rescue offers.");
-    }
-  }
-
-  $("#harvestRescueBtn")?.addEventListener("click", showHarvestRescue);
-
-  /* --------------------------------------------------------
-     12. BUYER REQUESTS
-     -------------------------------------------------------- */
-
-  function openRequestForm() {
-    if ($("#requestForm")) $("#requestForm").reset();
-    if ($("#requestFeedback")) $("#requestFeedback").textContent = "";
-    openModal("requestModal");
-  }
-
-  $("#requestProductBtn")?.addEventListener("click", openRequestForm);
-  $("#featureRequestBtn")?.addEventListener("click", openRequestForm);
-
-  $("#requestForm")?.addEventListener("submit", event => {
-    event.preventDefault();
-
-    const data = new FormData(event.currentTarget);
-    const product = String(data.get("product") || "").trim();
-    const quantity = String(data.get("quantity") || "").trim();
-    const location = String(data.get("location") || "").trim();
-    const budgetText = String(data.get("budget") || "").trim();
-    const budget = budgetText ? Number(budgetText) : null;
-
-    if (!product || !quantity || !location) {
-      $("#requestFeedback").textContent = "Complete the product, quantity and location fields.";
-      return;
-    }
-
-    if (budgetText && (!Number.isFinite(budget) || budget < 0)) {
-      $("#requestFeedback").textContent = "Enter a valid budget or leave it empty.";
-      return;
-    }
-
-    const requests = readStorage(KEYS.requests, []);
-
-    requests.unshift({
-      id: makeId("request"),
-      product,
-      quantity,
-      location,
-      budget,
-      details: String(data.get("details") || "").trim(),
-      createdAt: new Date().toISOString()
-    });
-
-    if (!writeStorage(KEYS.requests, requests)) return;
-
-    $("#requestFeedback").textContent =
-      "Your demo request has been saved in this browser. It has not been sent to farmers.";
-
-    event.currentTarget.reset();
-    toast("Demo buyer request saved.");
-  });
-
-  /* --------------------------------------------------------
-     13. GROUP BUYING
-     -------------------------------------------------------- */
-
-  $("#groupBuyingBtn")?.addEventListener("click", () => {
-    if ($("#groupBuyingForm")) $("#groupBuyingForm").reset();
-    if ($("#groupBuyingFeedback")) $("#groupBuyingFeedback").textContent = "";
-    openModal("groupBuyingModal");
-  });
-
-  $("#groupBuyingForm")?.addEventListener("submit", event => {
-    event.preventDefault();
-
-    const data = new FormData(event.currentTarget);
-    const product = String(data.get("product") || "").trim();
-    const quantity = String(data.get("quantity") || "").trim();
-    const location = String(data.get("location") || "").trim();
-
-    if (!product || !quantity || !location) {
-      $("#groupBuyingFeedback").textContent =
-        "Please complete the product, quantity and location fields.";
-      return;
-    }
-
-    const groups = readStorage(KEYS.groups, []);
-
-    groups.unshift({
-      id: makeId("group"),
-      product,
-      quantity,
-      location,
-      contact: String(data.get("contact") || "").trim(),
-      createdAt: new Date().toISOString(),
-      status: "Demo interest only"
-    });
-
-    if (!writeStorage(KEYS.groups, groups)) return;
-
-    $("#groupBuyingFeedback").textContent =
-      "Your group-buying idea has been saved locally. No other buyers have been contacted.";
-
-    event.currentTarget.reset();
-    toast("Group-buying idea saved.");
-  });
-
-  /* --------------------------------------------------------
-     14. DEMO PROFILE
-     -------------------------------------------------------- */
-
-  function renderProfile() {
-    const nameInput = $("#demoUserName");
-    const roleInput = $("#demoUserRole");
-
-    if (nameInput) nameInput.value = profile.name || "";
-    if (roleInput) roleInput.value = profile.role || "buyer";
-  }
-
-  $("#loginBtn")?.addEventListener("click", () => {
-    renderProfile();
-    if ($("#profileFeedback")) $("#profileFeedback").textContent = "";
-    openModal("loginModal");
-  });
-
-  $("#loginForm")?.addEventListener("submit", event => {
-    event.preventDefault();
-
-    const name = $("#demoUserName")?.value.trim();
-    const role = $("#demoUserRole")?.value || "buyer";
-
-    if (!name) {
-      $("#profileFeedback").textContent = "Enter a display name.";
-      return;
-    }
-
-    profile = { name, role };
-
-    if (!writeStorage(KEYS.profile, profile)) return;
-
-    $("#profileFeedback").textContent = "Your local demo profile has been saved.";
-    toast(`Welcome, ${name}!`);
-    closeModal("loginModal");
-  });
-
-  /* --------------------------------------------------------
-     15. SETTINGS AND LANGUAGE
-     -------------------------------------------------------- */
-
-  const translations = {
-    sw: {
-      "Home": "Nyumbani",
-      "Marketplace": "Soko",
-      "Harvest Rescue": "Okoa Mazao",
-      "Explore the marketplace": "Tembelea soko",
-      "Fresh finds for you": "Mazao mapya kwako",
-      "Search": "Tafuta",
-      "Clear": "Futa",
-      "Fruits": "Matunda",
-      "Vegetables": "Mboga",
-      "Nuts": "Karanga",
-      "Grains": "Nafaka",
-      "Legumes": "Mikunde",
-      "Sell produce": "Uza mazao",
-      "List a product": "Weka bidhaa",
-      "Your cart": "Kikapu chako"
-    },
-    en: {},
-    sheng: {},
-    mix: {}
+  const product = {
+    id: makeId(),
+    name,
+    category: $("listingType").value,
+    saleType: type,
+    retailPrice: type === "bulk" ? 0 : retailPrice,
+    retailUnit: $("retailUnit").value,
+    bulkPrice: type === "retail" ? 0 : bulkPrice,
+    bulkUnit: $("bulkUnit").value,
+    bulkMinimum: Math.max(1, Number($("bulkMinimum").value || 1)),
+    quantity,
+    stockUnit: $("listingStockUnit").value,
+    location,
+    seller: $("listingSeller").value.trim() || "Local farmer",
+    phone: $("listingPhone").value.trim(),
+    image: safeImage($("listingImage").value, categoryImages[$("listingType").value]),
+    description: $("listingDescription").value.trim(),
+    createdAt: Date.now(),
+    sample: false
   };
 
-  function applyLanguage() {
-    const language = settings.language || "en";
-    const dictionary = translations[language] || {};
+  listings.unshift(product);
 
-    $$("[data-i18n]").forEach(element => {
-      const key = element.dataset.i18n;
-      if (dictionary[key]) element.textContent = dictionary[key];
-    });
-
-    const select = $("#languageSelect");
-    if (select) select.value = language;
+  if (!saveListings()) {
+    listings = listings.filter(item => item.id !== product.id);
+    return;
   }
 
-  $("#openSettingsBtn")?.addEventListener("click", () => {
-    applyLanguage();
-    if ($("#settingsFeedback")) $("#settingsFeedback").textContent = "";
-    openModal("settingsModal");
-  });
+  selectedCategory = "all";
+  selectedSaleFilter = "all";
+  $("searchInput").value = "";
+  $("searchCategory").value = "all";
+  $("locationFilter").value = "";
+  $("sortSelect").value = "newest";
 
-  $("#mobileSettingsBtn")?.addEventListener("click", () => {
-    applyLanguage();
-    openModal("settingsModal");
-  });
+  renderListings();
+  closeDialog($("listingModal"));
+  resetListingForm();
+  toast("Listing published in this browser!");
+  $("marketplace").scrollIntoView({ behavior: "smooth" });
+}
 
-  $("#settingsForm")?.addEventListener("submit", event => {
-    event.preventDefault();
-
-    settings.language = $("#languageSelect")?.value || "en";
-
-    if (!writeStorage(KEYS.settings, settings)) return;
-
-    applyLanguage();
-
-    $("#settingsFeedback").textContent =
-      settings.language === "en"
-        ? "Settings saved."
-        : "Settings saved. Full translations are being developed.";
-
-    toast("Settings saved.");
-  });
-
-  /* --------------------------------------------------------
-     16. SUPPORT AND FEEDBACK
-     -------------------------------------------------------- */
-
-  $("#supportForm")?.addEventListener("submit", event => {
-    event.preventDefault();
-
-    const topic = $("#supportTopic")?.value || "";
-    const message = $("#supportMessage")?.value.trim() || "";
-
-    if (!topic || !message) {
-      $("#supportFeedback").textContent = "Choose a topic and enter a message.";
-      return;
-    }
-
-    const feedbackList = readStorage(KEYS.feedback, []);
-
-    feedbackList.unshift({
-      id: makeId("feedback"),
-      topic,
-      message,
-      createdAt: new Date().toISOString()
-    });
-
-    if (!writeStorage(KEYS.feedback, feedbackList)) return;
-
-    $("#supportFeedback").textContent =
-      "Thank you. Your feedback has been saved locally for the demo.";
-
-    event.currentTarget.reset();
-    toast("Feedback saved in this browser.");
-  });
-
-  /* --------------------------------------------------------
-     17. INTRODUCTION / TUTORIAL
-     -------------------------------------------------------- */
-
-  function renderTutorialStep() {
-    const step = tutorialSteps[tutorialStep];
-    if (!step) return;
-
-    if ($("#tutorialIllustration")) {
-      $("#tutorialIllustration").textContent = step.icon;
-    }
-    if ($("#tutorialStepLabel")) {
-      $("#tutorialStepLabel").textContent =
-        `${step.label} · ${tutorialStep + 1} OF ${tutorialSteps.length}`;
-    }
-    if ($("#tutorialTitle")) $("#tutorialTitle").textContent = step.title;
-    if ($("#tutorialDescription")) {
-      $("#tutorialDescription").textContent = step.description;
-    }
-
-    const progress = $("#tutorialProgress");
-    if (progress) {
-      const percent = ((tutorialStep + 1) / tutorialSteps.length) * 100;
-      progress.innerHTML = `<span class="tutorial-progress-bar" style="width:${percent}%"></span>`;
-    }
-
-    const next = $("#nextTutorialBtn");
-    if (next) {
-      next.textContent = tutorialStep === tutorialSteps.length - 1
-        ? "Let's explore →"
-        : "Next →";
-    }
-  }
-
-  function startTutorial() {
-    tutorialStep = 0;
-    renderTutorialStep();
-    openModal("tutorialModal");
-  }
-
-  function finishTutorial() {
-    writeStorage(KEYS.tutorial, true);
-    closeModal("tutorialModal");
-  }
-
-  $("#replayTutorialBtn")?.addEventListener("click", startTutorial);
-  $("#settingsTutorialBtn")?.addEventListener("click", startTutorial);
-
-  $("#skipTutorialBtn")?.addEventListener("click", finishTutorial);
-
-  $("#nextTutorialBtn")?.addEventListener("click", () => {
-    if (tutorialStep < tutorialSteps.length - 1) {
-      tutorialStep += 1;
-      renderTutorialStep();
-    } else {
-      finishTutorial();
-    }
-  });
-
-  /* --------------------------------------------------------
-     18. MOBILE NAVIGATION
-     -------------------------------------------------------- */
-
-  const mobileMenuButton = $("#mobileMenuBtn");
-  const mainNav = $("#mainNav");
-
-  mobileMenuButton?.addEventListener("click", () => {
-    const isOpen = mainNav?.classList.toggle("is-open") || false;
-
-    mobileMenuButton.setAttribute("aria-expanded", String(isOpen));
-    mobileMenuButton.setAttribute(
-      "aria-label",
-      isOpen ? "Close navigation" : "Open navigation"
-    );
-  });
-
-  $$("#mainNav a").forEach(link => {
-    link.addEventListener("click", () => {
-      mainNav?.classList.remove("is-open");
-      mobileMenuButton?.setAttribute("aria-expanded", "false");
-    });
-  });
-
-  /* --------------------------------------------------------
-     19. GENERAL STARTUP
-     -------------------------------------------------------- */
-
-  function initialiseApp() {
-    // Normalise stored cart entries and discard deleted products.
-    cart = cart.filter(item => getProduct(item.productId));
-    saveCart();
-
-    favourites = favourites.filter(id => getProduct(id));
-    saveFavourites();
-
-    renderProducts();
-    renderCart();
-    renderProfile();
-    applyLanguage();
-    updateStats();
-
-    // Restore category button accessibility state.
-    $$("#categoryGrid [data-category]").forEach(button => {
-      const active = button.dataset.category === activeCategory;
-      button.classList.toggle("active", active);
-      button.setAttribute("aria-pressed", String(active));
-    });
-
-    // First-visit introduction.
-    const hasSeenTutorial = readStorage(KEYS.tutorial, false);
-
-    if (!hasSeenTutorial) {
-      window.setTimeout(() => {
-        if (!$(".modal.is-open")) startTutorial();
-      }, 700);
-    }
-
-    console.info("ShambaMarket demo initialised successfully.");
-  }
-
-  initialiseApp();
+/* Language selector */
+$("languageSelect").addEventListener("change", event => {
+  language = event.target.value;
+  try {
+    localStorage.setItem(LANGUAGE_KEY, language);
+  } catch (_) {}
+  applyLanguage();
 });
+
+/* Search */
+$("searchForm").addEventListener("submit", event => {
+  event.preventDefault();
+  renderListings();
+  $("marketplace").scrollIntoView({ behavior: "smooth" });
+});
+$("searchInput").addEventListener("input", renderListings);
+$("searchCategory").addEventListener("change", renderListings);
+$("locationFilter").addEventListener("change", renderListings);
+$("sortSelect").addEventListener("change", renderListings);
+
+/* Category and retail/bulk filters */
+document.querySelector(".category-grid").addEventListener("click", event => {
+  const button = event.target.closest("[data-category]");
+  if (!button) return;
+  selectedCategory = button.dataset.category;
+  renderListings();
+  $("listingGrid").scrollIntoView({ behavior: "smooth", block: "start" });
+});
+
+document.querySelector(".filter-pills").addEventListener("click", event => {
+  const button = event.target.closest("[data-sale-filter]");
+  if (!button) return;
+  selectedSaleFilter = button.dataset.saleFilter;
+  renderListings();
+});
+
+$("showAllButton").addEventListener("click", () => {
+  selectedCategory = "all";
+  selectedSaleFilter = "all";
+  $("searchInput").value = "";
+  $("searchCategory").value = "all";
+  $("locationFilter").value = "";
+  renderListings();
+  $("listingGrid").scrollIntoView({ behavior: "smooth" });
+});
+
+/* Listing modal */
+document.querySelectorAll("[data-open-listing]").forEach(button => {
+  button.addEventListener("click", () => {
+    resetListingForm();
+    openDialog("listingModal");
+  });
+});
+
+document.querySelectorAll("[data-close-modal]").forEach(button => {
+  button.addEventListener("click", () => {
+    const dialog = button.closest("dialog");
+    if (dialog) closeDialog(dialog);
+  });
+});
+
+$("listingModal").addEventListener("click", event => {
+  if (event.target === $("listingModal")) closeDialog($("listingModal"));
+});
+$("loginModal").addEventListener("click", event => {
+  if (event.target === $("loginModal")) closeDialog($("loginModal"));
+});
+
+$("listingForm").addEventListener("submit", handleListingSubmit);
+$("saleType").addEventListener("change", setSaleFields);
+
+$("loginButton").addEventListener("click", () => openDialog("loginModal"));
+
+/* Mobile navigation */
+$("menuToggle").addEventListener("click", () => {
+  const nav = $("mobileNav");
+  const opening = nav.hidden;
+  nav.hidden = !opening;
+  $("menuToggle").setAttribute("aria-expanded", String(opening));
+  $("menuToggle").setAttribute("aria-label", opening ? "Close menu" : "Open menu");
+});
+
+$("mobileNav").querySelectorAll("a").forEach(link => {
+  link.addEventListener("click", () => {
+    $("mobileNav").hidden = true;
+    $("menuToggle").setAttribute("aria-expanded", "false");
+  });
+});
+
+/* Demo farming insights — no live weather claims */
+$("countySelect").addEventListener("change", event => {
+  const county = event.target.value;
+  const tips = {
+    Nairobi: "Urban farming tip: check drainage, use clean containers and plan regular watering.",
+    Kiambu: "Planning tip: check local soil conditions and use crop varieties suited to your area.",
+    Nakuru: "Planning tip: monitor soil moisture and follow locally recommended planting guidance.",
+    Machakos: "Dry-area tip: conserve water, mulch where appropriate and check seasonal forecasts.",
+    Nyeri: "Planning tip: check crop disease guidance and local recommendations for your crop.",
+    Meru: "Planning tip: choose crop varieties suited to your altitude, rainfall and soil.",
+    "Uasin Gishu": "Planning tip: monitor field conditions and consult local guidance for planting times.",
+    Kisumu: "Planning tip: check drainage and local weather before planning field work.",
+    Kirinyaga: "Planning tip: manage irrigation carefully and check guidance for your selected crop.",
+    Other: "Check local agricultural extension guidance and your area's current weather information."
+  };
+  $("insightMessage").textContent = county
+    ? `${county}: ${tips[county] || tips.Other}`
+    : "Select a county to view demo farming tips.";
+});
+
+/* Start-up */
+$("currentYear").textContent = new Date().getFullYear();
+
+try {
+  const savedLanguage = localStorage.getItem(LANGUAGE_KEY);
+  if (savedLanguage && ["en", "sw", "sheng", "mix"].includes(savedLanguage)) {
+    language = savedLanguage;
+  }
+} catch (_) {}
+
+applyLanguage();
+setSaleFields();
+renderListings();
