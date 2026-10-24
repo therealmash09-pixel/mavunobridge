@@ -2397,3 +2397,112 @@ footer {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* SHAMBAMARKET — PHOTO CATEGORY TILES */
+.category-grid {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.category-card,
+.category-grid .category-card {
+  position: relative;
+  isolation: isolate;
+  min-height: 125px;
+  justify-content: flex-end;
+  overflow: hidden;
+  padding: 15px 10px;
+  border: 1px solid rgba(255,255,255,.35);
+  border-radius: 15px;
+  background-color: #315b3d;
+  background-position: center;
+  background-size: cover;
+  color: white;
+  text-shadow: 0 1px 4px rgba(0,0,0,.65);
+}
+
+.category-card::before {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(9, 28, 16, .05) 5%,
+    rgba(9, 28, 16, .82) 100%
+  );
+  content: "";
+}
+
+.category-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--orange, #f2a541);
+  color: white;
+}
+
+.category-card.selected,
+.category-card.active {
+  outline: 3px solid #f2a541;
+  outline-offset: 1px;
+  color: white;
+}
+
+.category-card .category-emoji {
+  position: relative;
+  margin-bottom: auto;
+  align-self: flex-start;
+  font-size: 1.25rem;
+  filter: drop-shadow(0 1px 3px rgba(0,0,0,.6));
+}
+
+/* Individual category photography */
+.category-card[data-category="all"] {
+  background-image: url("https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=600&q=80");
+}
+
+.category-card[data-category="fruits"] {
+  background-image: url("https://images.unsplash.com/photo-1619566636858-adf3ef46400b?auto=format&fit=crop&w=600&q=80");
+}
+
+.category-card[data-category="vegetables"] {
+  background-image: url("https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=600&q=80");
+}
+
+.category-card[data-category="nuts"] {
+  background-image: url("https://images.unsplash.com/photo-1508061253366-f7da158b6d46?auto=format&fit=crop&w=600&q=80");
+}
+
+.category-card[data-category="starchy"] {
+  background-image: url("https://images.unsplash.com/photo-1518977676601-b53f82aba655?auto=format&fit=crop&w=600&q=80");
+}
+
+.category-card[data-category="grains"] {
+  background-image: url("https://images.unsplash.com/photo-1551754655-cd27e38d2076?auto=format&fit=crop&w=600&q=80");
+}
+
+.category-card[data-category="legumes"] {
+  background-image: url("https://images.unsplash.com/photo-1515543904379-3d757afe72e4?auto=format&fit=crop&w=600&q=80");
+}
+
+.category-card[data-category="livestock"] {
+  background-image: url("https://images.unsplash.com/photo-1516467508483-a7212febe31a?auto=format&fit=crop&w=600&q=80");
+}
+
+.category-card[data-category="farm-inputs"] {
+  background-image: url("https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=600&q=80");
+}
+
+@media (max-width: 800px) {
+  .category-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .category-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .category-card {
+    min-height: 112px;
+  }
+}
