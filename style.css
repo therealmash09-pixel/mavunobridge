@@ -2506,3 +2506,167 @@ footer {
     min-height: 112px;
   }
 }
+
+/* COMPACT SHOPPING-STYLE HOMEPAGE */
+.hero {
+  position: relative;
+  min-height: 330px;
+  overflow: hidden;
+}
+
+.hero-slideshow {
+  position: absolute;
+  inset: 0;
+  min-height: 330px;
+}
+
+.hero-slide {
+  padding: 35px 0;
+}
+
+.hero-overlay {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(13, 42, 26, .86),
+    rgba(13, 42, 26, .46) 65%,
+    rgba(13, 42, 26, .16)
+  );
+}
+
+.hero-content {
+  z-index: 2;
+  max-width: 1240px;
+  padding-top: 28px;
+  padding-bottom: 48px;
+}
+
+.hero h1 {
+  max-width: 650px;
+  margin: 10px 0;
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  line-height: 1.08;
+}
+
+.hero-description,
+.hero-trust {
+  display: none;
+}
+
+.hero-actions {
+  margin-top: 17px;
+}
+
+.hero-caption {
+  display: none;
+}
+
+.hero-slide-controls {
+  bottom: 12px;
+}
+
+.stats-strip {
+  padding-block: 0;
+}
+
+.market-section {
+  padding-top: 30px;
+}
+
+.market-section .section-heading {
+  margin-bottom: 18px;
+}
+
+.market-section .section-heading h2 {
+  margin: 5px 0;
+  font-size: clamp(1.45rem, 2.5vw, 2rem);
+}
+
+.market-section .section-heading p {
+  font-size: .88rem;
+}
+
+.search-panel {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid #e2e9e1;
+  border-radius: 14px;
+  background: white;
+  box-shadow: 0 4px 18px rgba(16, 43, 32, .07);
+}
+
+.search-field {
+  display: flex;
+  min-width: 180px;
+  flex: 1 1 220px;
+  align-items: center;
+  gap: 9px;
+  padding: 0 10px;
+  border: 1px solid #e2e9e1;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.search-field input {
+  min-width: 0;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.search-button {
+  flex: 0 0 auto;
+}
+
+.listing-toolbar {
+  margin-top: 28px;
+}
+
+.product-card {
+  box-shadow: 0 2px 10px rgba(16, 43, 32, .055);
+}
+
+.product-card-media {
+  height: 205px;
+}
+
+@media (max-width: 560px) {
+  .hero,
+  .hero-slideshow {
+    min-height: 285px;
+  }
+
+  .hero-content {
+    padding-top: 24px;
+    padding-bottom: 45px;
+  }
+
+  .hero h1 {
+    font-size: 2.05rem;
+  }
+
+  .hero-actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .hero-actions .button {
+    width: auto;
+  }
+
+  .search-panel {
+    padding: 9px;
+  }
+
+  .search-field {
+    min-width: 100%;
+  }
+
+  .search-button {
+    width: 100%;
+  }
+}
