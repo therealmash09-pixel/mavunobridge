@@ -1,719 +1,2416 @@
+/* =========================================================
+   SHAMBAMARKET
+   MARKETPLACE ENGINE
+========================================================= */
 
 "use strict";
 
-/* SHAMBAMARKET — LOCAL DEMO VERSION
-   No Firebase or Supabase required.
-   Listings are stored in this browser only.
-*/
 
-const $ = id => document.getElementById(id);
-const STORAGE_KEY = "shambamarket-listings";
-const LANGUAGE_KEY = "shambamarket-language";
+/* =========================================================
+   STORAGE
+========================================================= */
 
-const categoryNames = {
-  all: "All products",
-  fruits: "Fruits",
-  vegetables: "Vegetables",
-  nuts: "Nuts",
-  starchy: "Starchy foods",
-  grains: "Grains",
-  legumes: "Legumes",
-  livestock: "Livestock",
-  inputs: "Farm inputs"
+const STORAGE_KEYS = {
+  listings: "shambamarket_listings_v4",
+  cart: "shambamarket_cart_v4",
+  language: "shambamarket_language_v2"
 };
 
-const categoryImages = {
-  fruits: "https://images.unsplash.com/photo-1619566636858-adf3ef46400b?auto=format&fit=crop&w=700&q=80",
-  vegetables: "https://images.unsplash.com/photo-1566385101042-1a0aa0c1268c?auto=format&fit=crop&w=700&q=80",
-  nuts: "https://images.unsplash.com/photo-1508061253366-f7da158b6d46?auto=format&fit=crop&w=700&q=80",
-  starchy: "https://images.unsplash.com/photo-1518977676601-b53f82aba655?auto=format&fit=crop&w=700&q=80",
-  grains: "https://images.unsplash.com/photo-1551754655-cd27e38d2076?auto=format&fit=crop&w=700&q=80",
-  legumes: "https://images.unsplash.com/photo-1515543904379-3d757afe72e4?auto=format&fit=crop&w=700&q=80",
-  livestock: "https://images.unsplash.com/photo-1500595046743-cd271d694d30?auto=format&fit=crop&w=700&q=80",
-  inputs: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=700&q=80"
+
+/* =========================================================
+   FAIR PRICE GUIDE
+   IMPORTANT:
+   These are indicative demo/reference ranges.
+   They are NOT official government prices.
+========================================================= */
+
+const FAIR_PRICE_GUIDE = {
+
+  "Tomatoes|kg": {
+    min: 60,
+    max: 110
+  },
+
+  "Hass Avocados|kg": {
+    min: 90,
+    max: 180
+  },
+
+  "Avocados|kg": {
+    min: 70,
+    max: 150
+  },
+
+  "Onions|kg": {
+    min: 70,
+    max: 130
+  },
+
+  "Potatoes|kg": {
+    min: 50,
+    max: 100
+  },
+
+  "Kale|kg": {
+    min: 50,
+    max: 100
+  },
+
+  "Sukuma Wiki|kg": {
+    min: 50,
+    max: 100
+  },
+
+  "Maize|kg": {
+    min: 45,
+    max: 80
+  },
+
+  "Beans|kg": {
+    min: 120,
+    max: 190
+  },
+
+  "Green Grams|kg": {
+    min: 140,
+    max: 220
+  },
+
+  "Groundnuts|kg": {
+    min: 150,
+    max: 250
+  },
+
+  "Bananas|kg": {
+    min: 60,
+    max: 120
+  },
+
+  "Oranges|kg": {
+    min: 60,
+    max: 120
+  },
+
+  "Sweet Potatoes|kg": {
+    min: 50,
+    max: 100
+  }
+
 };
 
-const translations = {
+
+/* =========================================================
+   DEMO PRODUCTS
+========================================================= */
+
+const DEMO_LISTINGS = [
+
+  {
+    id: "demo-1",
+    name: "Hass Avocados",
+    category: "fruits",
+    saleType: "both",
+    retailPrice: 140,
+    retailUnit: "kg",
+    bulkPrice: 110,
+    bulkUnit: "kg",
+    bulkMinimum: 10,
+    quantity: 250,
+    stockUnit: "kg",
+    location: "Kiambu",
+    seller: "Green Valley Farm",
+    phone: "0700000001",
+    image:
+      "https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?auto=format&fit=crop&w=900&q=80",
+    description:
+      "Fresh Hass avocados harvested from a local farm.",
+    createdAt: Date.now() - 100000
+  },
+
+
+  {
+    id: "demo-2",
+    name: "Tomatoes",
+    category: "vegetables",
+    saleType: "retail",
+    retailPrice: 80,
+    retailUnit: "kg",
+    quantity: 180,
+    stockUnit: "kg",
+    location: "Nakuru",
+    seller: "Nakuru Fresh Produce",
+    phone: "0700000002",
+    image:
+      "https://images.unsplash.com/photo-1546094096-0df4bcaaa337?auto=format&fit=crop&w=900&q=80",
+    description:
+      "Fresh red tomatoes suitable for homes, restaurants and retailers.",
+    createdAt: Date.now() - 200000
+  },
+
+
+  {
+    id: "demo-3",
+    name: "Beans",
+    category: "legumes",
+    saleType: "both",
+    retailPrice: 170,
+    retailUnit: "kg",
+    bulkPrice: 145,
+    bulkUnit: "kg",
+    bulkMinimum: 20,
+    quantity: 500,
+    stockUnit: "kg",
+    location: "Meru",
+    seller: "Meru Farmers Group",
+    phone: "0700000003",
+    image:
+      "https://images.unsplash.com/photo-1551462147-ff29053b8b7f?auto=format&fit=crop&w=900&q=80",
+    description:
+      "Clean, dry beans available for household and bulk buyers.",
+    createdAt: Date.now() - 300000
+  },
+
+
+  {
+    id: "demo-4",
+    name: "Maize",
+    category: "grains",
+    saleType: "bulk",
+    bulkPrice: 65,
+    bulkUnit: "kg",
+    bulkMinimum: 20,
+    quantity: 1000,
+    stockUnit: "kg",
+    location: "Uasin Gishu",
+    seller: "North Rift Grain Hub",
+    phone: "0700000004",
+    image:
+      "https://images.unsplash.com/photo-1601598851547-4302969d4a8e?auto=format&fit=crop&w=900&q=80",
+    description:
+      "Quality maize available for bulk agricultural buyers.",
+    createdAt: Date.now() - 400000
+  },
+
+
+  {
+    id: "demo-5",
+    name: "Potatoes",
+    category: "starchy",
+    saleType: "both",
+    retailPrice: 85,
+    retailUnit: "kg",
+    bulkPrice: 65,
+    bulkUnit: "kg",
+    bulkMinimum: 20,
+    quantity: 700,
+    stockUnit: "kg",
+    location: "Nyandarua",
+    seller: "Highland Potato Farmers",
+    phone: "0700000005",
+    image:
+      "https://images.unsplash.com/photo-1518977676601-b53f82aba655?auto=format&fit=crop&w=900&q=80",
+    description:
+      "Fresh highland potatoes available in retail and bulk quantities.",
+    createdAt: Date.now() - 500000
+  },
+
+
+  {
+    id: "demo-6",
+    name: "Green Grams",
+    category: "legumes",
+    saleType: "retail",
+    retailPrice: 190,
+    retailUnit: "kg",
+    quantity: 200,
+    stockUnit: "kg",
+    location: "Machakos",
+    seller: "Eastern Growers",
+    phone: "0700000006",
+    image:
+      "https://images.unsplash.com/photo-1515543904379-3d757afe72e4?auto=format&fit=crop&w=900&q=80",
+    description:
+      "Clean green grams from Eastern Kenya.",
+    createdAt: Date.now() - 600000
+  },
+
+
+  {
+    id: "demo-7",
+    name: "Bananas",
+    category: "fruits",
+    saleType: "retail",
+    retailPrice: 90,
+    retailUnit: "kg",
+    quantity: 300,
+    stockUnit: "kg",
+    location: "Kisumu",
+    seller: "Lake Region Farmers",
+    phone: "0700000007",
+    image:
+      "https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?auto=format&fit=crop&w=900&q=80",
+    description:
+      "Fresh bananas supplied directly from farmers.",
+    createdAt: Date.now() - 700000
+  },
+
+
+  {
+    id: "demo-8",
+    name: "Onions",
+    category: "vegetables",
+    saleType: "retail",
+    retailPrice: 105,
+    retailUnit: "kg",
+    quantity: 250,
+    stockUnit: "kg",
+    location: "Nakuru",
+    seller: "Rift Valley Produce",
+    phone: "0700000008",
+    image:
+      "https://images.unsplash.com/photo-1508747703725-719777637510?auto=format&fit=crop&w=900&q=80",
+    description:
+      "Dry onions suitable for home and commercial use.",
+    createdAt: Date.now() - 800000
+  }
+
+];
+
+
+/* =========================================================
+   STATE
+========================================================= */
+
+let listings = [];
+let cart = [];
+
+let activeCategory = "all";
+let activeSaleFilter = "all";
+let activeLocation = "all";
+let activeSearch = "";
+let activeSort = "newest";
+
+
+/* =========================================================
+   DOM HELPERS
+========================================================= */
+
+const $ = (selector) => document.querySelector(selector);
+
+const $$ = (selector) => document.querySelectorAll(selector);
+
+
+/* =========================================================
+   INIT
+========================================================= */
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  loadData();
+
+  setupNavigation();
+
+  setupSearch();
+
+  setupCategories();
+
+  setupFilters();
+
+  setupListingModal();
+
+  setupCart();
+
+  setupLogin();
+
+  setupSmartAssist();
+
+  setupLanguage();
+
+  updateYear();
+
+  renderMarketplace();
+
+  renderCart();
+
+});
+
+
+/* =========================================================
+   STORAGE
+========================================================= */
+
+function loadData() {
+
+  const savedListings =
+    localStorage.getItem(STORAGE_KEYS.listings);
+
+  const savedCart =
+    localStorage.getItem(STORAGE_KEYS.cart);
+
+  if (savedListings) {
+
+    try {
+      listings = JSON.parse(savedListings);
+    } catch {
+      listings = [...DEMO_LISTINGS];
+    }
+
+  } else {
+
+    listings = [...DEMO_LISTINGS];
+
+  }
+
+
+  if (savedCart) {
+
+    try {
+      cart = JSON.parse(savedCart);
+    } catch {
+      cart = [];
+    }
+
+  } else {
+
+    cart = [];
+
+  }
+
+}
+
+
+function saveListings() {
+
+  localStorage.setItem(
+    STORAGE_KEYS.listings,
+    JSON.stringify(listings)
+  );
+
+}
+
+
+function saveCart() {
+
+  localStorage.setItem(
+    STORAGE_KEYS.cart,
+    JSON.stringify(cart)
+  );
+
+}
+
+
+/* =========================================================
+   NAVIGATION
+========================================================= */
+
+function setupNavigation() {
+
+  const menuToggle = $("#menuToggle");
+  const mobileNav = $("#mobileNav");
+
+  if (menuToggle && mobileNav) {
+
+    menuToggle.addEventListener("click", () => {
+
+      mobileNav.classList.toggle("open");
+
+    });
+
+  }
+
+
+  $$(".mobile-nav a").forEach(link => {
+
+    link.addEventListener("click", () => {
+
+      mobileNav?.classList.remove("open");
+
+    });
+
+  });
+
+
+  $("#sellButton")?.addEventListener(
+    "click",
+    openListingModal
+  );
+
+
+  $("#heroSellButton")?.addEventListener(
+    "click",
+    openListingModal
+  );
+
+}
+
+
+/* =========================================================
+   SEARCH
+========================================================= */
+
+function setupSearch() {
+
+  const form = $("#searchForm");
+
+  if (!form) return;
+
+  form.addEventListener("submit", event => {
+
+    event.preventDefault();
+
+    activeSearch =
+      $("#searchInput")?.value
+        .trim()
+        .toLowerCase() || "";
+
+    const searchCategory =
+      $("#searchCategory")?.value || "all";
+
+
+    if (searchCategory === "produce") {
+
+      activeCategory = "all";
+
+    }
+
+    if (searchCategory === "inputs") {
+
+      activeCategory = "inputs";
+
+    }
+
+    if (searchCategory === "livestock") {
+
+      activeCategory = "livestock";
+
+    }
+
+
+    renderMarketplace();
+
+
+    document
+      .querySelector("#marketplace")
+      ?.scrollIntoView({
+        behavior: "smooth"
+      });
+
+  });
+
+}
+
+
+/* =========================================================
+   CATEGORIES
+========================================================= */
+
+function setupCategories() {
+
+  $$(".category-card").forEach(card => {
+
+    card.addEventListener("click", () => {
+
+      activeCategory =
+        card.dataset.category || "all";
+
+      activeSearch = "";
+
+      const input = $("#searchInput");
+
+      if (input) input.value = "";
+
+      renderMarketplace();
+
+      $("#marketplace")?.scrollIntoView({
+        behavior: "smooth"
+      });
+
+    });
+
+  });
+
+}
+
+
+/* =========================================================
+   FILTERS
+========================================================= */
+
+function setupFilters() {
+
+  $$("[data-sale-filter]").forEach(button => {
+
+    button.addEventListener("click", () => {
+
+      $$("[data-sale-filter]")
+        .forEach(btn =>
+          btn.classList.remove("active")
+        );
+
+      button.classList.add("active");
+
+      activeSaleFilter =
+        button.dataset.saleFilter || "all";
+
+      renderMarketplace();
+
+    });
+
+  });
+
+
+  $("#locationFilter")?.addEventListener(
+    "change",
+    event => {
+
+      activeLocation = event.target.value;
+
+      renderMarketplace();
+
+    }
+  );
+
+
+  $("#sortSelect")?.addEventListener(
+    "change",
+    event => {
+
+      activeSort = event.target.value;
+
+      renderMarketplace();
+
+    }
+  );
+
+
+  $("#showAllButton")?.addEventListener(
+    "click",
+    resetFilters
+  );
+
+
+  $("#showAllButtonFallback")?.addEventListener(
+    "click",
+    resetFilters
+  );
+
+}
+
+
+function resetFilters() {
+
+  activeCategory = "all";
+  activeSaleFilter = "all";
+  activeLocation = "all";
+  activeSearch = "";
+  activeSort = "newest";
+
+
+  const searchInput = $("#searchInput");
+
+  if (searchInput) {
+    searchInput.value = "";
+  }
+
+
+  const locationFilter =
+    $("#locationFilter");
+
+  if (locationFilter) {
+    locationFilter.value = "all";
+  }
+
+
+  const sortSelect =
+    $("#sortSelect");
+
+  if (sortSelect) {
+    sortSelect.value = "newest";
+  }
+
+
+  $$("[data-sale-filter]")
+    .forEach(button => {
+
+      button.classList.toggle(
+        "active",
+        button.dataset.saleFilter === "all"
+      );
+
+    });
+
+
+  renderMarketplace();
+
+}
+
+
+/* =========================================================
+   MARKETPLACE
+========================================================= */
+
+function renderMarketplace() {
+
+  const grid = $("#listingGrid");
+
+  if (!grid) return;
+
+  let filtered = [...listings];
+
+
+  /* CATEGORY */
+
+  if (activeCategory !== "all") {
+
+    filtered = filtered.filter(item =>
+      item.category === activeCategory
+    );
+
+  }
+
+
+  /* SALE TYPE */
+
+  if (activeSaleFilter !== "all") {
+
+    filtered = filtered.filter(item =>
+
+      item.saleType === activeSaleFilter ||
+      item.saleType === "both"
+
+    );
+
+  }
+
+
+  /* LOCATION */
+
+  if (activeLocation !== "all") {
+
+    filtered = filtered.filter(item =>
+      item.location === activeLocation
+    );
+
+  }
+
+
+  /* SEARCH */
+
+  if (activeSearch) {
+
+    filtered = filtered.filter(item => {
+
+      const searchable = [
+
+        item.name,
+        item.category,
+        item.location,
+        item.seller,
+        item.description
+
+      ]
+        .join(" ")
+        .toLowerCase();
+
+      return searchable.includes(activeSearch);
+
+    });
+
+  }
+
+
+  /* SORT */
+
+  if (activeSort === "newest") {
+
+    filtered.sort(
+      (a,b) => b.createdAt - a.createdAt
+    );
+
+  }
+
+
+  if (activeSort === "price-low") {
+
+    filtered.sort(
+      (a,b) =>
+        getDisplayPrice(a) -
+        getDisplayPrice(b)
+    );
+
+  }
+
+
+  if (activeSort === "price-high") {
+
+    filtered.sort(
+      (a,b) =>
+        getDisplayPrice(b) -
+        getDisplayPrice(a)
+    );
+
+  }
+
+
+  if (activeSort === "name") {
+
+    filtered.sort((a,b) =>
+      a.name.localeCompare(b.name)
+    );
+
+  }
+
+
+  if (activeSort === "fairness") {
+
+    filtered.sort((a,b) =>
+      getFairnessScore(a) -
+      getFairnessScore(b)
+    );
+
+  }
+
+
+  grid.innerHTML = "";
+
+
+  if (!filtered.length) {
+
+    $("#emptyState")?.classList.remove("hidden");
+
+  } else {
+
+    $("#emptyState")?.classList.add("hidden");
+
+    filtered.forEach(item => {
+
+      grid.appendChild(
+        createListingCard(item)
+      );
+
+    });
+
+  }
+
+
+  const count =
+    $("#resultsCount");
+
+  if (count) {
+
+    count.textContent =
+      `${filtered.length} product${filtered.length === 1 ? "" : "s"}`;
+
+  }
+
+}
+
+
+/* =========================================================
+   PRICE HELPERS
+========================================================= */
+
+function getDisplayPrice(item) {
+
+  if (
+    activeSaleFilter === "bulk" &&
+    item.bulkPrice
+  ) {
+
+    return Number(item.bulkPrice);
+
+  }
+
+  if (item.retailPrice) {
+
+    return Number(item.retailPrice);
+
+  }
+
+  if (item.bulkPrice) {
+
+    return Number(item.bulkPrice);
+
+  }
+
+  return 0;
+
+}
+
+
+function getPriceUnit(item) {
+
+  if (
+    activeSaleFilter === "bulk" &&
+    item.bulkPrice
+  ) {
+
+    return item.bulkUnit || "unit";
+
+  }
+
+  if (item.retailPrice) {
+
+    return item.retailUnit || "unit";
+
+  }
+
+  return item.bulkUnit || "unit";
+
+}
+
+
+function getFairGuide(item, priceType = "retail") {
+
+  const price =
+    priceType === "bulk"
+      ? item.bulkPrice
+      : item.retailPrice;
+
+
+  const unit =
+    priceType === "bulk"
+      ? item.bulkUnit
+      : item.retailUnit;
+
+
+  if (!price || !unit) return null;
+
+
+  const exactKey =
+    `${item.name}|${unit}`;
+
+
+  if (FAIR_PRICE_GUIDE[exactKey]) {
+
+    return FAIR_PRICE_GUIDE[exactKey];
+
+  }
+
+
+  /*
+    Fallback:
+    Use category-level demo ranges.
+    This makes the system useful even when
+    a farmer enters a new product.
+  */
+
+  const fallback = {
+
+    fruits: {
+      min: 60,
+      max: 180
+    },
+
+    vegetables: {
+      min: 50,
+      max: 140
+    },
+
+    nuts: {
+      min: 120,
+      max: 280
+    },
+
+    starchy: {
+      min: 45,
+      max: 110
+    },
+
+    grains: {
+      min: 45,
+      max: 120
+    },
+
+    legumes: {
+      min: 100,
+      max: 250
+    },
+
+    livestock: {
+      min: 500,
+      max: 50000
+    },
+
+    inputs: {
+      min: 50,
+      max: 5000
+    }
+
+  };
+
+
+  return fallback[item.category] || null;
+
+}
+
+
+/* =========================================================
+   FAIRNESS
+========================================================= */
+
+function getFairness(item, priceType = "retail") {
+
+  const price =
+    priceType === "bulk"
+      ? Number(item.bulkPrice)
+      : Number(item.retailPrice);
+
+
+  const guide =
+    getFairGuide(item, priceType);
+
+
+  if (!guide || !price) {
+
+    return {
+      status: "unknown",
+      label: "Guide unavailable",
+      difference: 0,
+      guide: null
+    };
+
+  }
+
+
+  const difference =
+    ((price - guide.max) / guide.max) * 100;
+
+
+  if (price < guide.min) {
+
+    return {
+      status: "good",
+      label: "Good value",
+      difference,
+      guide
+    };
+
+  }
+
+
+  if (price <= guide.max) {
+
+    return {
+      status: "good",
+      label: "Fair price",
+      difference,
+      guide
+    };
+
+  }
+
+
+  if (price <= guide.max * 1.20) {
+
+    return {
+      status: "watch",
+      label: "Above fair range",
+      difference,
+      guide
+    };
+
+  }
+
+
+  return {
+    status: "high",
+    label: "Potentially overpriced",
+    difference,
+    guide
+  };
+
+}
+
+
+function getFairnessScore(item) {
+
+  const retail =
+    getFairness(item, "retail");
+
+  const bulk =
+    getFairness(item, "bulk");
+
+
+  const values = [];
+
+  if (retail.guide) {
+    values.push(Math.max(0, retail.difference));
+  }
+
+  if (bulk.guide) {
+    values.push(Math.max(0, bulk.difference));
+  }
+
+  if (!values.length) return 999;
+
+  return Math.min(...values);
+
+}
+
+
+/* =========================================================
+   PRODUCT CARD
+========================================================= */
+
+function createListingCard(item) {
+
+  const card =
+    document.createElement("article");
+
+  card.className = "listing-card";
+
+
+  const image =
+    item.image ||
+    "https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=900&q=80";
+
+
+  const price =
+    getDisplayPrice(item);
+
+
+  const unit =
+    getPriceUnit(item);
+
+
+  let priceType = "retail";
+
+  if (
+    activeSaleFilter === "bulk" &&
+    item.bulkPrice
+  ) {
+
+    priceType = "bulk";
+
+  }
+
+
+  if (
+    !item.retailPrice &&
+    item.bulkPrice
+  ) {
+
+    priceType = "bulk";
+
+  }
+
+
+  const fairness =
+    getFairness(item, priceType);
+
+
+  let fairHTML = "";
+
+
+  if (fairness.guide) {
+
+    fairHTML = `
+
+      <div class="fair-badge ${fairness.status}">
+
+        ${
+          fairness.status === "good"
+            ? "🟢"
+            : fairness.status === "watch"
+            ? "🟠"
+            : "🔴"
+        }
+
+        ${fairness.label}
+
+      </div>
+
+      <div class="fair-guide">
+
+        Guide:
+        KSh ${formatMoney(fairness.guide.min)}
+        –
+        KSh ${formatMoney(fairness.guide.max)}
+        /${unit}
+
+      </div>
+
+    `;
+
+  }
+
+
+  let saleText = "";
+
+
+  if (
+    item.saleType === "both" &&
+    item.bulkPrice
+  ) {
+
+    saleText = `
+      <div class="listing-unit">
+        Bulk: KSh ${formatMoney(item.bulkPrice)}/${item.bulkUnit}
+      </div>
+    `;
+
+  }
+
+
+  card.innerHTML = `
+
+    <div
+      class="listing-image"
+      style="background-image:url('${escapeAttribute(image)}')"
+    >
+
+      <span class="listing-category">
+        ${formatCategory(item.category)}
+      </span>
+
+    </div>
+
+
+    <div class="listing-body">
+
+      <div class="listing-title-row">
+
+        <div>
+
+          <div class="listing-title">
+            ${escapeHTML(item.name)}
+          </div>
+
+          <div class="listing-location">
+            📍 ${escapeHTML(item.location)}
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <p class="listing-description">
+
+        ${escapeHTML(
+          item.description || "Fresh agricultural product."
+        )}
+
+      </p>
+
+
+      <div>
+
+        <span class="listing-price">
+          KSh ${formatMoney(price)}
+        </span>
+
+        <span class="listing-unit">
+          /${unit}
+        </span>
+
+      </div>
+
+
+      ${saleText}
+
+      ${fairHTML}
+
+
+      <div class="seller-row">
+
+        👤
+        ${escapeHTML(item.seller)}
+
+      </div>
+
+
+      <div class="listing-actions">
+
+        <button
+          class="btn btn-primary cart-add"
+          type="button"
+          data-add-cart="${item.id}"
+        >
+          🛒 Add to Cart
+        </button>
+
+
+        <button
+          class="btn btn-outline"
+          type="button"
+          data-buy-now="${item.id}"
+        >
+          Buy
+        </button>
+
+      </div>
+
+    </div>
+
+  `;
+
+
+  card
+    .querySelector("[data-add-cart]")
+    ?.addEventListener(
+      "click",
+      () => addToCart(item.id, priceType)
+    );
+
+
+  card
+    .querySelector("[data-buy-now]")
+    ?.addEventListener(
+      "click",
+      () => {
+
+        addToCart(item.id, priceType);
+
+        openCart();
+
+      }
+    );
+
+
+  return card;
+
+}
+
+
+/* =========================================================
+   CART
+========================================================= */
+
+function setupCart() {
+
+  $("#cartButton")?.addEventListener(
+    "click",
+    openCart
+  );
+
+
+  $("#continueShopping")?.addEventListener(
+    "click",
+    () => {
+
+      $("#cartModal")?.close();
+
+      $("#marketplace")?.scrollIntoView({
+        behavior: "smooth"
+      });
+
+    }
+  );
+
+
+  $("#checkoutButton")?.addEventListener(
+    "click",
+    checkout
+  );
+
+}
+
+
+function addToCart(productId, priceType = "retail") {
+
+  const product =
+    listings.find(item =>
+      item.id === productId
+    );
+
+
+  if (!product) return;
+
+
+  let existing =
+    cart.find(item =>
+      item.productId === productId &&
+      item.priceType === priceType
+    );
+
+
+  if (!existing) {
+
+    existing = {
+
+      productId,
+
+      priceType,
+
+      quantity:
+        priceType === "bulk"
+          ? Number(product.bulkMinimum || 1)
+          : 1
+
+    };
+
+    cart.push(existing);
+
+  } else {
+
+    existing.quantity +=
+      priceType === "bulk"
+        ? Number(product.bulkMinimum || 1)
+        : 1;
+
+  }
+
+
+  saveCart();
+
+  renderCart();
+
+  showToast(
+    `${product.name} added to your cart 🛒`
+  );
+
+}
+
+
+function removeFromCart(productId, priceType) {
+
+  cart = cart.filter(item =>
+    !(
+      item.productId === productId &&
+      item.priceType === priceType
+    )
+  );
+
+
+  saveCart();
+
+  renderCart();
+
+}
+
+
+function changeCartQuantity(
+  productId,
+  priceType,
+  direction
+) {
+
+  const cartItem =
+    cart.find(item =>
+      item.productId === productId &&
+      item.priceType === priceType
+    );
+
+
+  if (!cartItem) return;
+
+
+  const product =
+    listings.find(item =>
+      item.id === productId
+    );
+
+
+  if (!product) return;
+
+
+  const step =
+    priceType === "bulk"
+      ? Number(product.bulkMinimum || 1)
+      : 1;
+
+
+  cartItem.quantity +=
+    direction * step;
+
+
+  const minimum =
+    priceType === "bulk"
+      ? step
+      : 1;
+
+
+  if (cartItem.quantity < minimum) {
+
+    removeFromCart(
+      productId,
+      priceType
+    );
+
+    return;
+
+  }
+
+
+  if (
+    product.quantity &&
+    cartItem.quantity > product.quantity
+  ) {
+
+    cartItem.quantity =
+      product.quantity;
+
+    showToast(
+      "You reached the available stock."
+    );
+
+  }
+
+
+  saveCart();
+
+  renderCart();
+
+}
+
+
+function renderCart() {
+
+  const container =
+    $("#cartItems");
+
+  if (!container) return;
+
+
+  container.innerHTML = "";
+
+
+  if (!cart.length) {
+
+    $("#cartEmpty")
+      ?.classList.remove("hidden");
+
+    $("#cartSummary")
+      ?.classList.add("hidden");
+
+    updateCartCount();
+
+    return;
+
+  }
+
+
+  $("#cartEmpty")
+    ?.classList.add("hidden");
+
+  $("#cartSummary")
+    ?.classList.remove("hidden");
+
+
+  let subtotal = 0;
+
+  let itemCount = 0;
+
+  let hasHighPrice = false;
+
+
+  cart.forEach(cartItem => {
+
+    const product =
+      listings.find(item =>
+        item.id === cartItem.productId
+      );
+
+
+    if (!product) return;
+
+
+    const price =
+      cartItem.priceType === "bulk"
+        ? Number(product.bulkPrice)
+        : Number(product.retailPrice);
+
+
+    const unit =
+      cartItem.priceType === "bulk"
+        ? product.bulkUnit
+        : product.retailUnit;
+
+
+    const total =
+      price * cartItem.quantity;
+
+
+    subtotal += total;
+
+    itemCount += cartItem.quantity;
+
+
+    const fairness =
+      getFairness(
+        product,
+        cartItem.priceType
+      );
+
+
+    if (fairness.status === "high") {
+
+      hasHighPrice = true;
+
+    }
+
+
+    const image =
+      product.image ||
+      "https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=500&q=80";
+
+
+    const item =
+      document.createElement("div");
+
+    item.className = "cart-item";
+
+
+    item.innerHTML = `
+
+      <div
+        class="cart-item-image"
+        style="background-image:url('${escapeAttribute(image)}')"
+      ></div>
+
+
+      <div>
+
+        <h4>
+          ${escapeHTML(product.name)}
+        </h4>
+
+        <small>
+          ${escapeHTML(product.seller)}
+        </small>
+
+        <small>
+          KSh ${formatMoney(price)}/${unit}
+        </small>
+
+
+        <div class="quantity-controls">
+
+          <button
+            type="button"
+            data-minus
+          >
+            −
+          </button>
+
+          <strong>
+            ${cartItem.quantity}
+          </strong>
+
+          <button
+            type="button"
+            data-plus
+          >
+            +
+          </button>
+
+        </div>
+
+
+        <button
+          class="remove-cart-item"
+          type="button"
+          data-remove
+        >
+          Remove
+        </button>
+
+      </div>
+
+
+      <div class="cart-item-price">
+
+        KSh ${formatMoney(total)}
+
+      </div>
+
+    `;
+
+
+    item
+      .querySelector("[data-minus]")
+      ?.addEventListener(
+        "click",
+        () =>
+          changeCartQuantity(
+            product.id,
+            cartItem.priceType,
+            -1
+          )
+      );
+
+
+    item
+      .querySelector("[data-plus]")
+      ?.addEventListener(
+        "click",
+        () =>
+          changeCartQuantity(
+            product.id,
+            cartItem.priceType,
+            1
+          )
+      );
+
+
+    item
+      .querySelector("[data-remove]")
+      ?.addEventListener(
+        "click",
+        () =>
+          removeFromCart(
+            product.id,
+            cartItem.priceType
+          )
+      );
+
+
+    container.appendChild(item);
+
+  });
+
+
+  $("#cartItemTotal").textContent =
+    itemCount;
+
+
+  $("#cartSubtotal").textContent =
+    `KSh ${formatMoney(subtotal)}`;
+
+
+  $("#cartFairWarning")
+    ?.classList.toggle(
+      "hidden",
+      !hasHighPrice
+    );
+
+
+  updateCartCount();
+
+}
+
+
+function updateCartCount() {
+
+  const count =
+    cart.reduce(
+      (total, item) =>
+        total + Number(item.quantity || 0),
+      0
+    );
+
+
+  const element =
+    $("#cartCount");
+
+  if (element) {
+
+    element.textContent =
+      count > 99 ? "99+" : count;
+
+  }
+
+}
+
+
+/* =========================================================
+   OPEN CART
+========================================================= */
+
+function openCart() {
+
+  renderCart();
+
+  const modal =
+    $("#cartModal");
+
+  if (
+    modal &&
+    typeof modal.showModal === "function"
+  ) {
+
+    modal.showModal();
+
+  }
+
+}
+
+
+/* =========================================================
+   CHECKOUT
+========================================================= */
+
+function checkout() {
+
+  if (!cart.length) {
+
+    showToast(
+      "Your cart is empty."
+    );
+
+    return;
+
+  }
+
+
+  /*
+    Demo checkout.
+    No real payment is processed.
+  */
+
+  showToast(
+    "Checkout demo ready — payment integration can be added later."
+  );
+
+}
+
+
+/* =========================================================
+   LISTING MODAL
+========================================================= */
+
+function setupListingModal() {
+
+  const modal =
+    $("#listingModal");
+
+  const form =
+    $("#listingForm");
+
+
+  $("#saleType")?.addEventListener(
+    "change",
+    updatePricingFields
+  );
+
+
+  updatePricingFields();
+
+
+  form?.addEventListener(
+    "submit",
+    handleListingSubmit
+  );
+
+
+  $$("[data-close-modal]")
+    .forEach(button => {
+
+      button.addEventListener(
+        "click",
+        () => {
+
+          const modal =
+            button.closest("dialog");
+
+          modal?.close();
+
+        }
+      );
+
+    });
+
+
+  /*
+    Close dialogs when clicking backdrop.
+  */
+
+  [$("#listingModal"), $("#cartModal"), $("#loginModal")]
+    .forEach(dialog => {
+
+      if (!dialog) return;
+
+      dialog.addEventListener(
+        "click",
+        event => {
+
+          if (event.target === dialog) {
+            dialog.close();
+          }
+
+        }
+      );
+
+    });
+
+}
+
+
+function openListingModal() {
+
+  const modal =
+    $("#listingModal");
+
+  if (
+    modal &&
+    typeof modal.showModal === "function"
+  ) {
+
+    modal.showModal();
+
+  }
+
+}
+
+
+function updatePricingFields() {
+
+  const type =
+    $("#saleType")?.value || "retail";
+
+
+  const retailFields =
+    $("#retailFields");
+
+  const bulkFields =
+    $("#bulkFields");
+
+
+  if (retailFields) {
+
+    retailFields.classList.toggle(
+      "hidden",
+      type === "bulk"
+    );
+
+  }
+
+
+  if (bulkFields) {
+
+    bulkFields.classList.toggle(
+      "hidden",
+      type === "retail"
+    );
+
+  }
+
+
+  const retailPrice =
+    $("#retailPrice");
+
+  const bulkPrice =
+    $("#bulkPrice");
+
+  const bulkMinimum =
+    $("#bulkMinimum");
+
+
+  if (retailPrice) {
+
+    retailPrice.required =
+      type === "retail" ||
+      type === "both";
+
+  }
+
+
+  if (bulkPrice) {
+
+    bulkPrice.required =
+      type === "bulk" ||
+      type === "both";
+
+  }
+
+
+  if (bulkMinimum) {
+
+    bulkMinimum.required =
+      type === "bulk" ||
+      type === "both";
+
+  }
+
+}
+
+
+/* =========================================================
+   CREATE LISTING
+========================================================= */
+
+function handleListingSubmit(event) {
+
+  event.preventDefault();
+
+
+  const form =
+    event.target;
+
+
+  const type =
+    $("#saleType").value;
+
+
+  const newListing = {
+
+    id:
+      `user-${Date.now()}`,
+
+    name:
+      $("#listingName").value.trim(),
+
+    category:
+      $("#listingType").value,
+
+    saleType:
+      type,
+
+    retailPrice:
+      type === "bulk"
+        ? null
+        : Number($("#retailPrice").value),
+
+    retailUnit:
+      $("#retailUnit").value,
+
+    bulkPrice:
+      type === "retail"
+        ? null
+        : Number($("#bulkPrice").value),
+
+    bulkUnit:
+      $("#bulkUnit").value,
+
+    bulkMinimum:
+      type === "retail"
+        ? null
+        : Number($("#bulkMinimum").value),
+
+    quantity:
+      Number($("#listingQuantity").value),
+
+    stockUnit:
+      $("#listingStockUnit").value,
+
+    location:
+      $("#listingLocation").value.trim(),
+
+    seller:
+      $("#listingSeller").value.trim(),
+
+    phone:
+      $("#listingPhone").value.trim(),
+
+    image:
+      $("#listingImage").value.trim(),
+
+    description:
+      $("#listingDescription").value.trim(),
+
+    createdAt:
+      Date.now()
+
+  };
+
+
+  if (
+    !newListing.name ||
+    !newListing.category ||
+    !newListing.location ||
+    !newListing.seller ||
+    !newListing.phone
+  ) {
+
+    showListingMessage(
+      "Please complete all required fields.",
+      true
+    );
+
+    return;
+
+  }
+
+
+  if (
+    (type === "retail" || type === "both") &&
+    (!newListing.retailPrice ||
+      newListing.retailPrice <= 0)
+  ) {
+
+    showListingMessage(
+      "Enter a valid retail price.",
+      true
+    );
+
+    return;
+
+  }
+
+
+  if (
+    (type === "bulk" || type === "both") &&
+    (!newListing.bulkPrice ||
+      newListing.bulkPrice <= 0)
+  ) {
+
+    showListingMessage(
+      "Enter a valid bulk price.",
+      true
+    );
+
+    return;
+
+  }
+
+
+  listings.unshift(newListing);
+
+  saveListings();
+
+  renderMarketplace();
+
+  form.reset();
+
+  updatePricingFields();
+
+
+  $("#listingModal")?.close();
+
+
+  showToast(
+    "Your product has been listed successfully! 🌱"
+  );
+
+}
+
+
+function showListingMessage(
+  message,
+  error = false
+) {
+
+  const element =
+    $("#listingMessage");
+
+  if (!element) return;
+
+  element.textContent = message;
+
+  element.style.color =
+    error
+      ? "#c83d3d"
+      : "#356b43";
+
+}
+
+
+/* =========================================================
+   LOGIN
+========================================================= */
+
+function setupLogin() {
+
+  $("#loginButton")?.addEventListener(
+    "click",
+    () => {
+
+      $("#loginModal")?.showModal();
+
+    }
+  );
+
+
+  $("#loginForm")?.addEventListener(
+    "submit",
+    event => {
+
+      event.preventDefault();
+
+      $("#loginModal")?.close();
+
+      showToast(
+        "Demo login successful 👋"
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   SMART ASSIST
+========================================================= */
+
+function setupSmartAssist() {
+
+  const county =
+    $("#countySelect");
+
+  const output =
+    $("#insightMessage");
+
+
+  if (!county || !output) return;
+
+
+  const insights = {
+
+    nairobi:
+      "Urban farming, poultry, vegetables and short-cycle crops can be practical market opportunities.",
+
+    kiambu:
+      "Kiambu has strong opportunities in horticulture, dairy and high-value crops.",
+
+    nakuru:
+      "Nakuru offers opportunities across vegetables, grains, dairy and horticulture.",
+
+    muranga:
+      "Murang'a is well suited to horticulture, fruits, tea and smallholder farming.",
+
+    machakos:
+      "Water-efficient crops, legumes and drought-resilient farming can be important choices.",
+
+    kisumu:
+      "Vegetables, grains, fish-related value chains and livestock can create market opportunities.",
+
+    meru:
+      "Meru has strong potential in fruits, horticulture, dairy and other high-value crops."
+
+  };
+
+
+  county.addEventListener(
+    "change",
+    () => {
+
+      const value =
+        county.value;
+
+
+      output.textContent =
+        insights[value] ||
+        "Select your county to see an insight.";
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   LANGUAGE
+========================================================= */
+
+const TRANSLATIONS = {
+
   en: {
-    tagline: "Your farm, your market.",
-    home: "Home",
-    marketplace: "Marketplace",
-    assistant: "Shamba Assistant",
-    community: "Community",
+
+    navHome: "Home",
+    navMarketplace: "Marketplace",
+    navSmart: "Smart Assist",
+    navCommunity: "Community",
     login: "Login",
-    searchPlaceholder: "Search maize, mangoes, fertilizer...",
-    allCategories: "All categories",
-    produce: "Farm produce",
-    inputs: "Farm inputs",
-    livestock: "Livestock",
-    search: "Search",
-    searchHint: "Find farm products from sellers across Kenya.",
-    heroEyebrow: "BUILT FOR KENYAN FARMERS",
-    heroTitle: "Your farm. Your market. Your opportunity.",
-    heroText: "Buy, sell and grow together. Find produce, farm inputs and livestock in one place.",
-    explore: "Explore marketplace ↗",
-    listProduct: "+ List your product",
-    oneMarket: "ONE BIG AGRI-MARKET",
-    marketTitle: "The marketplace is open 🌱",
-    marketSubtitle: "Choose a category to see what's available.",
-    viewAll: "View all listings ↗",
-    allProducts: "All products",
-    allProductsDesc: "Explore the whole market",
+    cart: "Cart",
+    searchPlaceholder:
+      "Search products e.g. Hass avocados..."
+
+  },
+
+
+  sw: {
+
+    navHome: "Nyumbani",
+    navMarketplace: "Soko",
+    navSmart: "Msaidizi wa Kilimo",
+    navCommunity: "Jamii",
+    login: "Ingia",
+    cart: "Kikapu",
+    searchPlaceholder:
+      "Tafuta bidhaa mfano parachichi ya Hass..."
+
+  },
+
+
+  sheng: {
+
+    navHome: "Home",
+    navMarketplace: "Soko",
+    navSmart: "Smart Assist",
+    navCommunity: "Community",
+    login: "Ingia",
+    cart: "Cart",
+    searchPlaceholder:
+      "Search stuff kama Hass avocado..."
+
+  }
+
+};
+
+
+function setupLanguage() {
+
+  const select =
+    $("#languageSelect");
+
+  if (!select) return;
+
+
+  const saved =
+    localStorage.getItem(
+      STORAGE_KEYS.language
+    );
+
+
+  if (saved && TRANSLATIONS[saved]) {
+
+    select.value = saved;
+
+    applyLanguage(saved);
+
+  }
+
+
+  select.addEventListener(
+    "change",
+    event => {
+
+      const language =
+        event.target.value;
+
+      localStorage.setItem(
+        STORAGE_KEYS.language,
+        language
+      );
+
+      applyLanguage(language);
+
+    }
+  );
+
+}
+
+
+function applyLanguage(language) {
+
+  const dictionary =
+    TRANSLATIONS[language] ||
+    TRANSLATIONS.en;
+
+
+  $$("[data-i18n]").forEach(element => {
+
+    const key =
+      element.dataset.i18n;
+
+    if (dictionary[key]) {
+
+      element.textContent =
+        dictionary[key];
+
+    }
+
+  });
+
+
+  $$("[data-i18n-placeholder]")
+    .forEach(element => {
+
+      const key =
+        element.dataset.i18nPlaceholder;
+
+      if (dictionary[key]) {
+
+        element.placeholder =
+          dictionary[key];
+
+      }
+
+    });
+
+}
+
+
+/* =========================================================
+   UTILITIES
+========================================================= */
+
+function formatMoney(number) {
+
+  return Number(number || 0)
+    .toLocaleString("en-KE", {
+      maximumFractionDigits: 2
+    });
+
+}
+
+
+function formatCategory(category) {
+
+  const names = {
+
     fruits: "Fruits",
     vegetables: "Vegetables",
     nuts: "Nuts",
-    starchy: "Starchy foods",
+    starchy: "Starchy Foods",
     grains: "Grains",
     legumes: "Legumes",
-    allItems: "All items",
-    retail: "Retail",
-    bulk: "Bulk",
-    both: "Retail + bulk",
-    noResults: "No listings found",
-    demoNote: "Demo listings and prices are examples, not live offers.",
-    assistantTitle: "Shamba Assistant 🌦️",
-    assistantText: "Explore crop guidance and useful farming checklists for your area.",
-    openAssistant: "Open Shamba Assistant ↗",
-    selectCounty: "Choose your county",
-    communityTitle: "Farmer connections 🤝",
-    createListing: "Create a listing",
-    publishListing: "Publish listing",
-    startListing: "Start listing ↗",
-    loginTitle: "Welcome to ShambaMarket",
-    loginNote: "Account sign-in is a demo placeholder. No password is collected."
-  },
-  sw: {
-    tagline: "Shamba lako, soko lako.",
-    home: "Nyumbani",
-    marketplace: "Soko",
-    assistant: "Msaidizi wa Shamba",
-    community: "Jumuiya",
-    login: "Ingia",
-    searchPlaceholder: "Tafuta mahindi, maembe, mbolea...",
-    allCategories: "Makundi yote",
-    produce: "Mazao ya shamba",
-    inputs: "Vifaa vya kilimo",
-    livestock: "Mifugo",
-    search: "Tafuta",
-    searchHint: "Pata bidhaa za kilimo kutoka kwa wauzaji kote Kenya.",
-    heroEyebrow: "IMEUNDWA KWA WAKULIMA WA KENYA",
-    heroTitle: "Shamba lako. Soko lako. Fursa yako.",
-    heroText: "Nunua, uza na uendelee kukua pamoja. Pata mazao, vifaa vya kilimo na mifugo sehemu moja.",
-    explore: "Angalia soko ↗",
-    listProduct: "+ Orodhesha bidhaa",
-    oneMarket: "SOKO KUBWA LA KILIMO",
-    marketTitle: "Soko liko wazi 🌱",
-    marketSubtitle: "Chagua kundi uone bidhaa zilizopo.",
-    viewAll: "Ona bidhaa zote ↗",
-    allProducts: "Bidhaa zote",
-    allProductsDesc: "Angalia bidhaa zote sokoni",
-    fruits: "Matunda",
-    vegetables: "Mboga",
-    nuts: "Karanga na njugu",
-    starchy: "Vyakula vya wanga",
-    grains: "Nafaka",
-    legumes: "Mikunde",
-    allItems: "Bidhaa zote",
-    retail: "Rejareja",
-    bulk: "Kwa wingi",
-    both: "Rejareja na wingi",
-    noResults: "Hakuna bidhaa zilizopatikana",
-    demoNote: "Bidhaa na bei ni mifano ya majaribio, si ofa halisi.",
-    assistantTitle: "Msaidizi wa Shamba 🌦️",
-    assistantText: "Pata mwongozo wa mazao na orodha za kukusaidia kupanga kazi za shamba.",
-    openAssistant: "Fungua Msaidizi wa Shamba ↗",
-    selectCounty: "Chagua kaunti yako",
-    communityTitle: "Mahusiano ya wakulima 🤝",
-    createListing: "Orodhesha bidhaa",
-    publishListing: "Chapisha bidhaa",
-    startListing: "Anza kuorodhesha ↗",
-    loginTitle: "Karibu ShambaMarket",
-    loginNote: "Kuingia kwenye akaunti ni mfano tu. Hakuna nenosiri linalokusanywa."
-  },
-  sheng: {
-    tagline: "Shamba yako, soko yako.",
-    home: "Home",
-    marketplace: "Soko",
-    assistant: "Shamba Assistant",
-    community: "Wasee wa shamba",
-    login: "Ingia",
-    searchPlaceholder: "Tafuta mahindi, maembe, mbolea...",
-    allCategories: "Categories zote",
-    produce: "Mazao",
-    inputs: "Farm inputs",
-    livestock: "Mifugo",
-    search: "Tafuta soko",
-    searchHint: "Pata products za shamba kutoka kwa sellers wa Kenya.",
-    heroEyebrow: "MADE FOR FARMERS WA KENYA",
-    heroTitle: "Shamba yako. Soko yako. Chance yako.",
-    heroText: "Buy, sell na grow pamoja. Mazao, farm inputs na mifugo—zote place moja.",
-    explore: "Check soko ↗",
-    listProduct: "+ List product yako",
-    oneMarket: "SOKO MOJA KUBWA",
-    marketTitle: "Soko iko open 🌱",
-    marketSubtitle: "Chagua category uone vitu ziko.",
-    viewAll: "Check listings zote ↗",
-    allProducts: "Products zote",
-    allProductsDesc: "Explore soko yote",
-    fruits: "Matunda",
-    vegetables: "Mboga",
-    nuts: "Njugu na karanga",
-    starchy: "Vyakula za wanga",
-    grains: "Nafaka",
-    legumes: "Mikunde",
-    allItems: "Vitu zote",
-    retail: "Retail",
-    bulk: "Bulk",
-    both: "Retail + bulk",
-    noResults: "Hakuna product imepatikana",
-    demoNote: "Hizi listings na bei ni demo, si offers za live.",
-    assistantTitle: "Shamba Assistant 🌦️",
-    assistantText: "Pata crop tips na checklists za kupanga kazi za shamba yako.",
-    openAssistant: "Fungua Shamba Assistant ↗",
-    selectCounty: "Chagua county yako",
-    communityTitle: "Connections za wakulima 🤝",
-    createListing: "List product yako",
-    publishListing: "Publish listing",
-    startListing: "Anza ku-list ↗",
-    loginTitle: "Karibu ShambaMarket",
-    loginNote: "Login ni demo tu kwa sasa. Hatukusanyi password."
-  }
-};
+    livestock: "Livestock",
+    inputs: "Farm Inputs"
+
+  };
+
+
+  return names[category] ||
+    "Agriculture";
+
+}
+
 
 function escapeHTML(value) {
-  return String(value ?? "").replace(/[&<>"']/g, char => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#39;"
-  })[char]);
+
+  return String(value || "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+
 }
 
-function money(value) {
-  return Number(value || 0).toLocaleString("en-KE", {
-    maximumFractionDigits: 2
-  });
+
+function escapeAttribute(value) {
+
+  return String(value || "")
+    .replaceAll("\\", "")
+    .replaceAll("'", "%27")
+    .replaceAll('"', "%22");
+
 }
 
-function safeImage(url, fallback) {
-  try {
-    const parsed = new URL(url);
-    if (parsed.protocol === "https:" || parsed.protocol === "http:") {
-      return parsed.href;
-    }
-  } catch (_) {}
-  return fallback || "";
-}
 
-function makeId() {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
-}
+function updateYear() {
 
-function toast(message) {
-  const element = $("toast");
-  element.textContent = message;
-  element.classList.add("visible");
-  clearTimeout(toast.timer);
-  toast.timer = setTimeout(() => element.classList.remove("visible"), 2800);
-}
+  const year =
+    $("#currentYear");
 
-function readListings() {
-  try {
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
-    if (Array.isArray(saved)) return saved;
-  } catch (error) {
-    console.warn("Could not read saved demo listings.", error);
+  if (year) {
+
+    year.textContent =
+      new Date().getFullYear();
+
   }
 
-  // These sample listings are illustrative demo data.
-  const samples = [
-    {
-      id: "sample-maize",
-      name: "Dry maize",
-      category: "grains",
-      saleType: "both",
-      retailPrice: 80,
-      retailUnit: "kg",
-      bulkPrice: 3500,
-      bulkUnit: "50 kg bag",
-      bulkMinimum: 5,
-      quantity: 500,
-      stockUnit: "kg",
-      location: "Nakuru",
-      seller: "Green Valley Farm",
-      phone: "",
-      image: "https://images.unsplash.com/photo-1551754655-cd27e38d2076?auto=format&fit=crop&w=700&q=80",
-      description: "Clean, dry maize. Example listing for demonstration.",
-      createdAt: Date.now() - 30000,
-      sample: true
-    },
-    {
-      id: "sample-mango",
-      name: "Fresh mangoes",
-      category: "fruits",
-      saleType: "both",
-      retailPrice: 30,
-      retailUnit: "piece",
-      bulkPrice: 1200,
-      bulkUnit: "crate",
-      bulkMinimum: 3,
-      quantity: 200,
-      stockUnit: "pieces",
-      location: "Machakos",
-      seller: "Sunrise Orchard",
-      phone: "",
-      image: "https://images.unsplash.com/photo-1619566636858-adf3ef46400b?auto=format&fit=crop&w=700&q=80",
-      description: "Fresh seasonal mangoes. Sample prices only.",
-      createdAt: Date.now() - 20000,
-      sample: true
-    },
-    {
-      id: "sample-potatoes",
-      name: "Irish potatoes",
-      category: "starchy",
-      saleType: "bulk",
-      retailPrice: 60,
-      retailUnit: "kg",
-      bulkPrice: 2800,
-      bulkUnit: "50 kg bag",
-      bulkMinimum: 4,
-      quantity: 300,
-      stockUnit: "kg",
-      location: "Nyeri",
-      seller: "Highland Produce",
-      phone: "",
-      image: "https://images.unsplash.com/photo-1518977676601-b53f82aba655?auto=format&fit=crop&w=700&q=80",
-      description: "Good for household or business orders.",
-      createdAt: Date.now() - 10000,
-      sample: true
-    },
-    {
-      id: "sample-beans",
-      name: "Dry beans",
-      category: "legumes",
-      saleType: "retail",
-      retailPrice: 160,
-      retailUnit: "kg",
-      bulkPrice: 0,
-      bulkUnit: "bag",
-      bulkMinimum: 1,
-      quantity: 120,
-      stockUnit: "kg",
-      location: "Kiambu",
-      seller: "Kamau Family Farm",
-      phone: "",
-      image: "https://images.unsplash.com/photo-1515543904379-3d757afe72e4?auto=format&fit=crop&w=700&q=80",
-      description: "Dry beans for everyday cooking.",
-      createdAt: Date.now() - 5000,
-      sample: true
-    },
-    {
-      id: "sample-vegetables",
-      name: "Fresh vegetables",
-      category: "vegetables",
-      saleType: "both",
-      retailPrice: 50,
-      retailUnit: "bunch",
-      bulkPrice: 700,
-      bulkUnit: "crate",
-      bulkMinimum: 2,
-      quantity: 80,
-      stockUnit: "bunches",
-      location: "Nairobi",
-      seller: "City Edge Growers",
-      phone: "",
-      image: "https://images.unsplash.com/photo-1566385101042-1a0aa0c1268c?auto=format&fit=crop&w=700&q=80",
-      description: "Mixed fresh vegetables. Example demo offer.",
-      createdAt: Date.now(),
-      sample: true
-    }
-  ];
-
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(samples));
-  } catch (error) {
-    console.warn("Browser storage is unavailable.", error);
-  }
-  return samples;
 }
 
-let listings = readListings();
-let selectedCategory = "all";
-let selectedSaleFilter = "all";
-let language = localStorage.getItem(LANGUAGE_KEY) || "mix";
 
-function t(key) {
-  const dict = translations[language] || {};
-  return dict[key] || translations.en[key] || key;
+let toastTimer;
+
+function showToast(message) {
+
+  const toast =
+    $("#toast");
+
+  if (!toast) return;
+
+
+  clearTimeout(toastTimer);
+
+
+  toast.textContent =
+    message;
+
+  toast.classList.add("show");
+
+
+  toastTimer =
+    setTimeout(() => {
+
+      toast.classList.remove("show");
+
+    }, 2800);
+
 }
-
-function applyLanguage() {
-  document.documentElement.lang = language === "sw" ? "sw" : "en";
-
-  document.querySelectorAll("[data-i18n]").forEach(element => {
-    const key = element.dataset.i18n;
-    const value = t(key);
-    if (value) element.textContent = value;
-  });
-
-  document.querySelectorAll("[data-i18n-placeholder]").forEach(element => {
-    const key = element.dataset.i18nPlaceholder;
-    const value = t(key);
-    if (value) element.placeholder = value;
-  });
-
-  $("languageSelect").value = language;
-  renderListings();
-}
-
-function saveListings() {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(listings));
-    return true;
-  } catch (error) {
-    console.error("Could not save listings.", error);
-    toast("Browser storage is full or unavailable. Try a smaller photo URL.");
-    return false;
-  }
-}
-
-function categoryLabel(category) {
-  return t(category) || categoryNames[category] || category;
-}
-
-function saleLabel(type) {
-  if (type === "retail") return t("retail");
-  if (type === "bulk") return t("bulk");
-  return t("both");
-}
-
-function priceMarkup(product) {
-  let html = "";
-
-  if (product.saleType === "retail" || product.saleType === "both") {
-    html += `<div class="price-line"><span>${escapeHTML(t("retail"))} · ${escapeHTML(product.retailUnit || "unit")}</span><strong>KSh ${money(product.retailPrice)}</strong></div>`;
-  }
-
-  if (product.saleType === "bulk" || product.saleType === "both") {
-    html += `<div class="price-line"><span>${escapeHTML(t("bulk"))} · ${escapeHTML(product.bulkUnit || "unit")}<small> · Min. ${money(product.bulkMinimum || 1)}</small></span><strong>KSh ${money(product.bulkPrice)}</strong></div>`;
-  }
-
-  return html;
-}
-
-function renderListings() {
-  if (!$("listingGrid")) return;
-
-  const query = $("searchInput").value.trim().toLowerCase();
-  const location = $("locationFilter").value;
-  const searchCategory = $("searchCategory").value;
-  const sort = $("sortSelect").value;
-
-  let visible = listings.filter(product => {
-    const searchable = [
-      product.name, product.category, product.location,
-      product.seller, product.description
-    ].join(" ").toLowerCase();
-
-    const categoryMatch =
-      selectedCategory === "all" || product.category === selectedCategory;
-
-    const saleMatch =
-      selectedSaleFilter === "all" ||
-      product.saleType === selectedSaleFilter ||
-      (selectedSaleFilter === "retail" && product.saleType === "both") ||
-      (selectedSaleFilter === "bulk" && product.saleType === "both");
-
-    const searchCategoryMatch =
-      searchCategory === "all" ||
-      (searchCategory === "produce" && !["inputs", "livestock"].includes(product.category)) ||
-      (searchCategory === "inputs" && product.category === "inputs") ||
-      (searchCategory === "livestock" && product.category === "livestock");
-
-    return categoryMatch && saleMatch && searchCategoryMatch &&
-      (!location || product.location.toLowerCase() === location.toLowerCase()) &&
-      (!query || searchable.includes(query));
-  });
-
-  if (sort === "price-low") {
-    visible.sort((a, b) => comparablePrice(a) - comparablePrice(b));
-  } else if (sort === "price-high") {
-    visible.sort((a, b) => comparablePrice(b) - comparablePrice(a));
-  } else if (sort === "name") {
-    visible.sort((a, b) => a.name.localeCompare(b.name));
-  } else {
-    visible.sort((a, b) => b.createdAt - a.createdAt);
-  }
-
-  $("resultsCount").textContent =
-    `${visible.length} listing${visible.length === 1 ? "" : "s"}`;
-
-  $("emptyState").hidden = visible.length > 0;
-
-  $("listingGrid").innerHTML = visible.map(product => {
-    const fallback = categoryImages[product.category] || categoryImages.grains;
-    const imageUrl = safeImage(product.image, fallback);
-    const contact = String(product.phone || "").replace(/[^\d+]/g, "");
-    const contactButton = contact
-      ? `<a class="btn btn-green" href="tel:${escapeHTML(contact)}">Contact seller</a>`
-      : `<span class="product-location">Demo listing</span>`;
-
-    return `
-      <article class="product-card">
-        <img class="product-photo" src="${escapeHTML(imageUrl)}" alt="${escapeHTML(product.name)}" loading="lazy">
-        <div class="product-body">
-          <div class="product-topline">
-            <span class="product-category">${escapeHTML(categoryLabel(product.category))}</span>
-            <span class="sale-badge">${escapeHTML(saleLabel(product.saleType))}</span>
-          </div>
-          <h3>${escapeHTML(product.name)}</h3>
-          <div class="product-location">📍 ${escapeHTML(product.location)}</div>
-          <div class="price-options">${priceMarkup(product)}</div>
-          <div class="product-meta">
-            <span>📦 ${money(product.quantity)} ${escapeHTML(product.stockUnit || "units")} available</span>
-          </div>
-          ${product.description ? `<p class="product-description">${escapeHTML(product.description)}</p>` : ""}
-          <div class="seller-line">Seller: ${escapeHTML(product.seller || "Local farmer")}</div>
-          <div class="product-actions">${contactButton}</div>
-        </div>
-      </article>
-    `;
-  }).join("");
-
-  document.querySelectorAll(".category-card").forEach(button => {
-    button.classList.toggle("active", button.dataset.category === selectedCategory);
-  });
-
-  document.querySelectorAll("[data-sale-filter]").forEach(button => {
-    button.classList.toggle("active", button.dataset.saleFilter === selectedSaleFilter);
-  });
-}
-
-function comparablePrice(product) {
-  if (selectedSaleFilter === "bulk" || product.saleType === "bulk") {
-    return Number(product.bulkPrice || product.retailPrice || 0);
-  }
-  return Number(product.retailPrice || product.bulkPrice || 0);
-}
-
-function setSaleFields() {
-  const type = $("saleType").value;
-  const showRetail = type === "retail" || type === "both";
-  const showBulk = type === "bulk" || type === "both";
-
-  $("retailFields").hidden = !showRetail;
-  $("bulkFields").hidden = !showBulk;
-
-  $("retailPrice").required = showRetail;
-  $("bulkPrice").required = showBulk;
-}
-
-function openDialog(id) {
-  const dialog = $(id);
-  if (!dialog) return;
-  if (typeof dialog.showModal === "function") dialog.showModal();
-  else dialog.setAttribute("open", "");
-}
-
-function closeDialog(dialog) {
-  if (typeof dialog.close === "function") dialog.close();
-  else dialog.removeAttribute("open");
-}
-
-function resetListingForm() {
-  $("listingForm").reset();
-  $("saleType").value = "retail";
-  setSaleFields();
-  $("listingMessage").textContent = "";
-}
-
-function handleListingSubmit(event) {
-  event.preventDefault();
-
-  const type = $("saleType").value;
-  const retailPrice = Number($("retailPrice").value);
-  const bulkPrice = Number($("bulkPrice").value);
-  const quantity = Number($("listingQuantity").value);
-  const name = $("listingName").value.trim();
-  const location = $("listingLocation").value.trim();
-
-  if (!name || !location || !(quantity > 0)) {
-    $("listingMessage").textContent = "Please fill in the required fields.";
-    return;
-  }
-
-  if ((type === "retail" || type === "both") && !(retailPrice > 0)) {
-    $("listingMessage").textContent = "Enter a valid retail price.";
-    return;
-  }
-
-  if ((type === "bulk" || type === "both") && !(bulkPrice > 0)) {
-    $("listingMessage").textContent = "Enter a valid bulk price.";
-    return;
-  }
-
-  const product = {
-    id: makeId(),
-    name,
-    category: $("listingType").value,
-    saleType: type,
-    retailPrice: type === "bulk" ? 0 : retailPrice,
-    retailUnit: $("retailUnit").value,
-    bulkPrice: type === "retail" ? 0 : bulkPrice,
-    bulkUnit: $("bulkUnit").value,
-    bulkMinimum: Math.max(1, Number($("bulkMinimum").value || 1)),
-    quantity,
-    stockUnit: $("listingStockUnit").value,
-    location,
-    seller: $("listingSeller").value.trim() || "Local farmer",
-    phone: $("listingPhone").value.trim(),
-    image: safeImage($("listingImage").value, categoryImages[$("listingType").value]),
-    description: $("listingDescription").value.trim(),
-    createdAt: Date.now(),
-    sample: false
-  };
-
-  listings.unshift(product);
-
-  if (!saveListings()) {
-    listings = listings.filter(item => item.id !== product.id);
-    return;
-  }
-
-  selectedCategory = "all";
-  selectedSaleFilter = "all";
-  $("searchInput").value = "";
-  $("searchCategory").value = "all";
-  $("locationFilter").value = "";
-  $("sortSelect").value = "newest";
-
-  renderListings();
-  closeDialog($("listingModal"));
-  resetListingForm();
-  toast("Listing published in this browser!");
-  $("marketplace").scrollIntoView({ behavior: "smooth" });
-}
-
-/* Language selector */
-$("languageSelect").addEventListener("change", event => {
-  language = event.target.value;
-  try {
-    localStorage.setItem(LANGUAGE_KEY, language);
-  } catch (_) {}
-  applyLanguage();
-});
-
-/* Search */
-$("searchForm").addEventListener("submit", event => {
-  event.preventDefault();
-  renderListings();
-  $("marketplace").scrollIntoView({ behavior: "smooth" });
-});
-$("searchInput").addEventListener("input", renderListings);
-$("searchCategory").addEventListener("change", renderListings);
-$("locationFilter").addEventListener("change", renderListings);
-$("sortSelect").addEventListener("change", renderListings);
-
-/* Category and retail/bulk filters */
-document.querySelector(".category-grid").addEventListener("click", event => {
-  const button = event.target.closest("[data-category]");
-  if (!button) return;
-  selectedCategory = button.dataset.category;
-  renderListings();
-  $("listingGrid").scrollIntoView({ behavior: "smooth", block: "start" });
-});
-
-document.querySelector(".filter-pills").addEventListener("click", event => {
-  const button = event.target.closest("[data-sale-filter]");
-  if (!button) return;
-  selectedSaleFilter = button.dataset.saleFilter;
-  renderListings();
-});
-
-$("showAllButton").addEventListener("click", () => {
-  selectedCategory = "all";
-  selectedSaleFilter = "all";
-  $("searchInput").value = "";
-  $("searchCategory").value = "all";
-  $("locationFilter").value = "";
-  renderListings();
-  $("listingGrid").scrollIntoView({ behavior: "smooth" });
-});
-
-/* Listing modal */
-document.querySelectorAll("[data-open-listing]").forEach(button => {
-  button.addEventListener("click", () => {
-    resetListingForm();
-    openDialog("listingModal");
-  });
-});
-
-document.querySelectorAll("[data-close-modal]").forEach(button => {
-  button.addEventListener("click", () => {
-    const dialog = button.closest("dialog");
-    if (dialog) closeDialog(dialog);
-  });
-});
-
-$("listingModal").addEventListener("click", event => {
-  if (event.target === $("listingModal")) closeDialog($("listingModal"));
-});
-$("loginModal").addEventListener("click", event => {
-  if (event.target === $("loginModal")) closeDialog($("loginModal"));
-});
-
-$("listingForm").addEventListener("submit", handleListingSubmit);
-$("saleType").addEventListener("change", setSaleFields);
-
-$("loginButton").addEventListener("click", () => openDialog("loginModal"));
-
-/* Mobile navigation */
-$("menuToggle").addEventListener("click", () => {
-  const nav = $("mobileNav");
-  const opening = nav.hidden;
-  nav.hidden = !opening;
-  $("menuToggle").setAttribute("aria-expanded", String(opening));
-  $("menuToggle").setAttribute("aria-label", opening ? "Close menu" : "Open menu");
-});
-
-$("mobileNav").querySelectorAll("a").forEach(link => {
-  link.addEventListener("click", () => {
-    $("mobileNav").hidden = true;
-    $("menuToggle").setAttribute("aria-expanded", "false");
-  });
-});
-
-/* Demo farming insights — no live weather claims */
-$("countySelect").addEventListener("change", event => {
-  const county = event.target.value;
-  const tips = {
-    Nairobi: "Urban farming tip: check drainage, use clean containers and plan regular watering.",
-    Kiambu: "Planning tip: check local soil conditions and use crop varieties suited to your area.",
-    Nakuru: "Planning tip: monitor soil moisture and follow locally recommended planting guidance.",
-    Machakos: "Dry-area tip: conserve water, mulch where appropriate and check seasonal forecasts.",
-    Nyeri: "Planning tip: check crop disease guidance and local recommendations for your crop.",
-    Meru: "Planning tip: choose crop varieties suited to your altitude, rainfall and soil.",
-    "Uasin Gishu": "Planning tip: monitor field conditions and consult local guidance for planting times.",
-    Kisumu: "Planning tip: check drainage and local weather before planning field work.",
-    Kirinyaga: "Planning tip: manage irrigation carefully and check guidance for your selected crop.",
-    Other: "Check local agricultural extension guidance and your area's current weather information."
-  };
-  $("insightMessage").textContent = county
-    ? `${county}: ${tips[county] || tips.Other}`
-    : "Select a county to view demo farming tips.";
-});
-
-/* Start-up */
-$("currentYear").textContent = new Date().getFullYear();
-
-try {
-  const savedLanguage = localStorage.getItem(LANGUAGE_KEY);
-  if (savedLanguage && ["en", "sw", "sheng", "mix"].includes(savedLanguage)) {
-    language = savedLanguage;
-  }
-} catch (_) {}
-
-applyLanguage();
-setSaleFields();
-renderListings();
