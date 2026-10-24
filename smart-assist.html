@@ -1,0 +1,108 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shamba Assistant | ShambaMarket</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .tool-page{width:min(1000px,90%);margin:45px auto 70px}
+    .tool-hero{padding:35px;border-radius:22px;background:#174c32;color:white}
+    .tool-hero h1{font-size:clamp(32px,5vw,48px);line-height:1.1}
+    .tool-hero p{max-width:650px;color:#d9e9dc}
+    .tool-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:25px}
+    .tool-card{padding:23px;border:1px solid #e1e8df;border-radius:17px}
+    .tool-card h2{margin-top:0}
+    .tool-card label{display:block;margin:13px 0 6px;font-size:13px;font-weight:700}
+    .tool-card select,.tool-card input{width:100%;padding:11px;border:1px solid #dbe3d9;border-radius:10px}
+    .tool-result{margin-top:15px;padding:14px;border-radius:12px;background:#eaf4eb;color:#174c32;font-size:13px}
+    .check-row{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid #e1e8df;font-size:13px}
+    .check-row input{width:auto;margin-top:5px}
+    @media(max-width:650px){.tool-grid{grid-template-columns:1fr}.tool-hero{padding:24px}}
+  </style>
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="index.html"><span class="brand-icon">🌱</span><span>Shamba<span class="brand-accent">Market</span><small>Shamba yako, soko yako.</small></span></a>
+  <a class="btn btn-green" href="index.html#marketplace">Back to marketplace ↗</a>
+</header>
+
+<main class="tool-page">
+  <section class="tool-hero">
+    <span class="eyebrow light-eyebrow">SMART FARMING TOOLS</span>
+    <h1>Shamba Assistant 🌦️</h1>
+    <p>Plan your next farming steps, organise your checklist and explore crop-planning tips. This is a demonstration tool, not a live weather forecast.</p>
+  </section>
+
+  <div class="tool-grid">
+    <section class="tool-card">
+      <h2>🌱 Crop planning helper</h2>
+      <label for="cropCounty">Your county</label>
+      <select id="cropCounty">
+        <option value="">Choose county</option>
+        <option>Nairobi</option><option>Kiambu</option><option>Nakuru</option>
+        <option>Machakos</option><option>Nyeri</option><option>Meru</option>
+        <option>Kisumu</option><option>Uasin Gishu</option><option>Other</option>
+      </select>
+      <label for="cropType">Crop you are considering</label>
+      <select id="cropType">
+        <option value="">Choose crop</option>
+        <option>Maize</option><option>Beans</option><option>Tomatoes</option>
+        <option>Potatoes</option><option>Vegetables</option><option>Fruit trees</option>
+      </select>
+      <button class="btn btn-green" id="cropAdviceButton" type="button" style="margin-top:15px">Show planning tips</button>
+      <div class="tool-result" id="cropAdvice" aria-live="polite">Choose a county and crop to see general planning reminders.</div>
+    </section>
+
+    <section class="tool-card">
+      <h2>✅ Farm task checklist</h2>
+      <p class="product-location">Tick the tasks as you complete them.</p>
+      <label class="check-row"><input type="checkbox"> Check soil condition and drainage.</label>
+      <label class="check-row"><input type="checkbox"> Check seed quality and planting needs.</label>
+      <label class="check-row"><input type="checkbox"> Plan water use and irrigation.</label>
+      <label class="check-row"><input type="checkbox"> Inspect crops for pests or disease.</label>
+      <label class="check-row"><input type="checkbox"> Record costs and expected harvest.</label>
+      <button class="btn btn-outline" id="resetChecklist" type="button" style="margin-top:15px">Reset checklist</button>
+    </section>
+
+    <section class="tool-card">
+      <h2>🌦️ Weather planning</h2>
+      <p>Before planting or applying farm inputs, check an up-to-date forecast for your location and follow local agricultural advice.</p>
+      <div class="tool-result">Demo note: live weather data is not connected to this version.</div>
+    </section>
+
+    <section class="tool-card">
+      <h2>🐛 Crop health reminders</h2>
+      <ul>
+        <li>Inspect leaves and stems regularly.</li>
+        <li>Record unusual crop changes.</li>
+        <li>Ask a local agricultural extension officer when unsure.</li>
+        <li>Use farm chemicals only as directed on their labels.</li>
+      </ul>
+    </section>
+  </div>
+</main>
+
+<script>
+  const county = document.getElementById("cropCounty");
+  const crop = document.getElementById("cropType");
+  const advice = document.getElementById("cropAdvice");
+
+  document.getElementById("cropAdviceButton").addEventListener("click", () => {
+    if (!county.value || !crop.value) {
+      advice.textContent = "Please choose both a county and a crop.";
+      return;
+    }
+    advice.textContent =
+      `${crop.value} planning in ${county.value}: check local soil and rainfall conditions, choose a suitable variety, confirm planting times with local agricultural guidance, and plan water, pest monitoring and costs. These are general reminders, not a county-specific crop recommendation.`;
+  });
+
+  document.getElementById("resetChecklist").addEventListener("click", () => {
+    document.querySelectorAll('.check-row input[type="checkbox"]').forEach(box => {
+      box.checked = false;
+    });
+  });
+</script>
+</body>
+</html>
