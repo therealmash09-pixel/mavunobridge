@@ -4,359 +4,458 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#153322">
-  <meta name="description" content="ShambaMarket connects Kenyan farmers and buyers through a modern agricultural marketplace.">
+  <meta name="theme-color" content="#153d2b">
+  <meta name="description" content="ShambaMarket connects Kenyan farmers and buyers through a simple agricultural marketplace.">
   <title>ShambaMarket | Grow Together</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <script src="app.js" defer></script>
 </head>
-
 <body>
+  <div class="announcement">
+    <span>🌱</span> Growing Kenya together — one farm at a time.
+    <span class="demo-badge">DEMO</span>
+  </div>
+
   <header class="site-header">
-    <a class="brand" href="index.html" aria-label="ShambaMarket home">
-      <span class="brand-icon">🌱</span>
-      <span>Shamba<span class="brand-accent">Market</span></span>
+    <a class="brand" href="#home" aria-label="ShambaMarket home">
+      <span class="brand-icon">🌿</span>
+      <span>Shamba<span class="brand-accent">Market</span>
+        <small>FROM FARM TO MARKET</small>
+      </span>
     </a>
 
-    <nav class="main-nav" aria-label="Main navigation">
-      <a class="active" href="index.html">Marketplace</a>
-      <a href="smart-assist.html">Smart Assist</a>
-      <a href="sacco.html">SACCO Hub</a>
-      <a href="#opportunities">Opportunities</a>
+    <button class="icon-button mobile-menu-btn" id="mobileMenuBtn"
+      aria-label="Open navigation" aria-expanded="false">☰</button>
+
+    <nav class="main-nav" id="mainNav">
+      <a class="nav-link active" href="#marketplace">Marketplace</a>
+      <a class="nav-link" href="smart-assist.html">Smart Assist</a>
+      <a class="nav-link" href="sacco.html">SACCO Hub</a>
+      <a class="nav-link" href="#how-it-works">How it works</a>
     </nav>
 
     <div class="header-actions">
-      <label class="language-label" for="languageSelect">Language</label>
-      <select id="languageSelect" aria-label="Choose language">
-        <option value="en">English</option>
-        <option value="sw">Kiswahili</option>
-        <option value="sheng">Sheng</option>
-        <option value="mix">Mixed</option>
-      </select>
-      <button id="loginBtn" class="btn btn-outline" type="button">Sign in</button>
-      <button id="openListingBtn" class="btn btn-primary" type="button">+ Sell produce</button>
+      <button class="icon-button" id="openSettingsBtn" aria-label="Settings" title="Settings">⚙</button>
+      <button class="button button-outline" id="loginBtn">My profile</button>
+      <button class="button button-primary" id="openListingBtn">＋ List a product</button>
     </div>
-
-    <button id="mobileMenuBtn" class="mobile-menu-btn" type="button"
-      aria-label="Toggle navigation" aria-expanded="false">☰</button>
   </header>
 
   <main>
     <section class="hero" id="home">
       <div class="hero-content">
-        <span class="eyebrow">KENYAN AGRICULTURE, CONNECTED</span>
-        <h1>From your <span>shamba</span><br>to the right buyer.</h1>
-        <p>Discover fresh farm produce, connect directly with farmers, and find tools and opportunities to grow your agricultural business.</p>
+        <span class="eyebrow">🇰🇪 MADE FOR KENYAN AGRICULTURE</span>
+        <h1>Good food.<br><span>Fair markets.</span><br>Stronger farmers.</h1>
+        <p class="hero-description">
+          Discover fresh produce, connect directly with farmers, and bring
+          the people who grow our food closer to the people who need it.
+        </p>
         <div class="hero-actions">
-          <a class="btn btn-primary btn-large" href="#marketplace">Explore marketplace →</a>
-          <button class="btn btn-light btn-large" id="heroSellBtn" type="button">List your products</button>
+          <a class="button button-light" href="#marketplace">Explore marketplace <span>→</span></a>
+          <button class="button button-glass" id="heroSellBtn">I'm a farmer ↗</button>
         </div>
         <div class="hero-trust">
-          <span>🌾 Farmer focused</span>
-          <span>🤝 Direct connections</span>
-          <span>🇰🇪 Built for Kenya</span>
+          <span>✓ Simple to use</span>
+          <span>✓ Local produce</span>
+          <span>✓ Farmer-focused</span>
         </div>
       </div>
 
-      <div class="hero-visual" aria-label="Fresh farm produce">
-        <div class="hero-image-card">
-          <div class="hero-image-emoji">🥑 🌽 🍅</div>
-          <span class="image-caption">Fresh from the farm</span>
+      <div class="hero-visual" aria-label="Fresh agricultural produce">
+        <div class="hero-orbit orbit-one"></div>
+        <div class="hero-orbit orbit-two"></div>
+        <div class="hero-produce">🥑</div>
+        <div class="floating-card floating-top">
+          <span class="floating-icon">🌽</span>
+          <span><strong>Fresh from farms</strong><small>Discover local produce</small></span>
         </div>
-        <div class="floating-card floating-card-top">
-          <span class="floating-icon">🌱</span>
-          <div><strong>Grow together</strong><small>One marketplace</small></div>
+        <div class="floating-card floating-bottom">
+          <span class="floating-icon">🤝</span>
+          <span><strong>Farmer to buyer</strong><small>Connect directly</small></span>
         </div>
-        <div class="floating-card floating-card-bottom">
-          <span class="floating-icon">🛒</span>
-          <div><strong>Find your market</strong><small>Discover farm products</small></div>
-        </div>
+        <span class="hero-decoration decor-one">✳</span>
+        <span class="hero-decoration decor-two">✦</span>
       </div>
+      <div class="hero-bottom-note">BETTER CONNECTIONS. BETTER HARVESTS.</div>
     </section>
 
     <section class="stats-strip" aria-label="Marketplace highlights">
-      <div><strong id="statListings">0</strong><span>Products listed</span></div>
-      <div><strong id="statCategories">8</strong><span>Product categories</span></div>
-      <div><strong id="statCounties">47</strong><span>Kenyan counties</span></div>
-      <div><strong>24/7</strong><span>Explore anytime</span></div>
+      <div class="stat-item">
+        <span class="stat-icon">🧺</span>
+        <span><strong id="statListings">0</strong><small>Products listed</small></span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-icon">🌾</span>
+        <span><strong id="statCategories">8</strong><small>Product categories</small></span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-icon">📍</span>
+        <span><strong>Across Kenya</strong><small>Built for local trade</small></span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-icon">💚</span>
+        <span><strong>Grow together</strong><small>Support local farmers</small></span>
+      </div>
     </section>
 
-    <section class="section" id="marketplace">
+    <section class="market-section section" id="marketplace">
       <div class="section-heading">
         <div>
-          <span class="eyebrow">THE FARMERS' MARKET</span>
-          <h2>Find what you need.</h2>
-          <p>Browse products or search for a specific crop variety.</p>
+          <span class="eyebrow">THE MARKETPLACE</span>
+          <h2>What are you looking for?</h2>
+          <p>Find produce by name, variety, or category.</p>
         </div>
-        <button class="btn btn-primary" id="sectionSellBtn" type="button">+ Create listing</button>
+        <button class="button button-outline" id="sectionSellBtn">＋ Sell your produce</button>
       </div>
 
-      <form id="searchForm" class="search-panel">
+      <form class="search-panel" id="searchForm">
         <label class="search-field">
-          <span>Search products</span>
+          <span>⌕</span>
           <input id="searchInput" type="search"
-            placeholder="Try Hass avocado, red beans, maize..."
-            autocomplete="off">
+            placeholder="Try Hass avocado, Shangi potatoes..."
+            aria-label="Search products">
         </label>
-        <label class="search-field">
-          <span>County or location</span>
-          <input id="locationInput" type="text" placeholder="e.g. Nakuru, Kiambu">
+        <label class="search-field location-field">
+          <span>📍</span>
+          <input id="locationInput" type="text"
+            placeholder="County or town" aria-label="Filter by location">
         </label>
-        <label class="search-field">
-          <span>Category</span>
-          <select id="categoryFilter">
-            <option value="all">All categories</option>
-            <option value="fruits">Fruits</option>
-            <option value="vegetables">Vegetables</option>
-            <option value="nuts">Nuts</option>
-            <option value="starchy-foods">Starchy foods</option>
-            <option value="grains">Grains</option>
-            <option value="legumes">Legumes</option>
-            <option value="livestock">Livestock</option>
-            <option value="farm-inputs">Farm inputs</option>
-          </select>
-        </label>
-        <button class="btn btn-primary search-btn" type="submit">Search</button>
+        <button class="button button-primary search-button" type="submit">Search products</button>
       </form>
 
+      <div class="category-heading">
+        <h3>Browse categories</h3>
+        <button class="text-button" id="clearFiltersBtn">Clear filters ↗</button>
+      </div>
+
       <div class="category-grid" id="categoryGrid">
-        <button class="category-card" type="button" data-category="fruits">
-          <span class="category-icon">🍎</span><strong>Fruits</strong><small>Avocados, mangoes...</small>
+        <button class="category-card selected" data-category="all">
+          <span class="category-emoji">🧺</span><span>All products</span>
         </button>
-        <button class="category-card" type="button" data-category="vegetables">
-          <span class="category-icon">🥬</span><strong>Vegetables</strong><small>Tomatoes, kale...</small>
+        <button class="category-card" data-category="fruits">
+          <span class="category-emoji">🥑</span><span>Fruits</span>
         </button>
-        <button class="category-card" type="button" data-category="nuts">
-          <span class="category-icon">🥜</span><strong>Nuts</strong><small>Groundnuts, macadamia...</small>
+        <button class="category-card" data-category="vegetables">
+          <span class="category-emoji">🥬</span><span>Vegetables</span>
         </button>
-        <button class="category-card" type="button" data-category="starchy-foods">
-          <span class="category-icon">🥔</span><strong>Starchy foods</strong><small>Potatoes, cassava...</small>
+        <button class="category-card" data-category="nuts">
+          <span class="category-emoji">🥜</span><span>Nuts</span>
         </button>
-        <button class="category-card" type="button" data-category="grains">
-          <span class="category-icon">🌽</span><strong>Grains</strong><small>Maize, rice, wheat...</small>
+        <button class="category-card" data-category="starchy">
+          <span class="category-emoji">🥔</span><span>Starchy foods</span>
         </button>
-        <button class="category-card" type="button" data-category="legumes">
-          <span class="category-icon">🫘</span><strong>Legumes</strong><small>Beans, peas, lentils...</small>
+        <button class="category-card" data-category="grains">
+          <span class="category-emoji">🌾</span><span>Grains</span>
         </button>
-        <button class="category-card" type="button" data-category="livestock">
-          <span class="category-icon">🐄</span><strong>Livestock</strong><small>Cattle, goats, poultry...</small>
+        <button class="category-card" data-category="legumes">
+          <span class="category-emoji">🫘</span><span>Legumes</span>
         </button>
-        <button class="category-card" type="button" data-category="farm-inputs">
-          <span class="category-icon">🧑🏽‍🌾</span><strong>Farm inputs</strong><small>Seeds, tools, fertiliser...</small>
+        <button class="category-card" data-category="livestock">
+          <span class="category-emoji">🐄</span><span>Livestock</span>
+        </button>
+        <button class="category-card" data-category="farm-inputs">
+          <span class="category-emoji">🧑‍🌾</span><span>Farm inputs</span>
         </button>
       </div>
 
       <div class="listing-toolbar">
         <div>
-          <h3 id="listingHeading">Available farm products</h3>
-          <p id="resultsCount" aria-live="polite">Discover products from farmers.</p>
+          <span class="eyebrow">FRESH FINDS</span>
+          <h2 id="listingHeading">Explore products</h2>
+          <p id="resultsCount" aria-live="polite">Loading marketplace...</p>
         </div>
-        <div class="listing-controls">
-          <label class="visually-hidden" for="sortSelect">Sort products</label>
-          <select id="sortSelect">
-            <option value="newest">Newest first</option>
-            <option value="price-low">Price: low to high</option>
-            <option value="price-high">Price: high to low</option>
-            <option value="name">Product name</option>
-          </select>
-          <button class="btn btn-outline" id="favoritesFilterBtn" type="button">♡ Favourites</button>
+        <div class="toolbar-actions">
+          <button class="button button-outline" id="favoritesFilterBtn">♡ Saved items</button>
+          <label class="sort-label">Sort:
+            <select id="sortSelect" aria-label="Sort products">
+              <option value="newest">Newest first</option>
+              <option value="price-low">Price: low to high</option>
+              <option value="price-high">Price: high to low</option>
+              <option value="name">Product name</option>
+            </select>
+          </label>
         </div>
       </div>
 
       <div class="product-grid" id="productGrid" aria-live="polite">
-        <div class="empty-state">
-          <span>🌱</span>
-          <h3>Preparing your marketplace</h3>
-          <p>Products will appear here when the marketplace script loads.</p>
-        </div>
+        <div class="loading-card">🌱 Preparing your marketplace...</div>
       </div>
 
-      <div class="center-action">
-        <button class="btn btn-outline" id="clearFiltersBtn" type="button">Clear filters</button>
+      <div class="marketplace-footer">
+        <p>Can't find what you need?</p>
+        <button class="button button-outline" id="requestProductBtn">Request a product</button>
       </div>
     </section>
 
-    <section class="smart-banner section" id="smartAssistPreview">
-      <div class="smart-banner-icon">🧠</div>
-      <div class="smart-banner-copy">
-        <span class="eyebrow">YOUR DIGITAL FARMING COMPANION</span>
-        <h2>Make smarter farming decisions.</h2>
-        <p>Explore crop guidance, common pest information and county-based farming suggestions in Smart Assist.</p>
-        <small>Demo guidance only — check local conditions before making farming decisions.</small>
+    <section class="feature-section section" id="how-it-works">
+      <div class="section-heading centered-heading">
+        <span class="eyebrow">MORE THAN A MARKET</span>
+        <h2>Tools that help you grow</h2>
+        <p>Explore features designed to make agricultural trading easier.</p>
       </div>
-      <a class="btn btn-light" href="smart-assist.html">Explore Smart Assist →</a>
-    </section>
 
-    <section class="section community-section" id="community">
-      <div class="section-heading">
-        <div>
-          <span class="eyebrow">GROWING STRONGER TOGETHER</span>
-          <h2>More than a marketplace.</h2>
-          <p>Discover support and opportunities for your agricultural journey.</p>
-        </div>
-      </div>
       <div class="feature-grid">
         <article class="feature-card">
-          <span class="feature-icon">🤝</span>
-          <h3>SACCO Hub</h3>
-          <p>Explore example cooperative profiles, membership information and agricultural financial services.</p>
-          <a href="sacco.html">Explore SACCO Hub →</a>
-        </article>
-        <article class="feature-card" id="opportunities">
-          <span class="feature-icon">🚜</span>
-          <h3>Farm opportunities</h3>
-          <p>Discover sample farming programmes, training opportunities and agricultural resources.</p>
-          <a href="sacco.html#opportunities">Explore opportunities →</a>
+          <div class="feature-icon feature-green">🌦️</div>
+          <span class="feature-number">01 / LEARN</span>
+          <h3>Smart Assist</h3>
+          <p>Explore sample crop-care guidance, farming tips, and weather-planning information.</p>
+          <a href="smart-assist.html" class="feature-link">Explore Smart Assist →</a>
         </article>
         <article class="feature-card">
-          <span class="feature-icon">💬</span>
-          <h3>Farmer connections</h3>
-          <p>Find products by location and use the demo contact options to explore farmer-buyer connections.</p>
-          <a href="#marketplace">Find farm products →</a>
+          <div class="feature-icon feature-yellow">🤝</div>
+          <span class="feature-number">02 / CONNECT</span>
+          <h3>SACCO Hub</h3>
+          <p>Explore an illustrative directory of agricultural savings and cooperative resources.</p>
+          <a href="sacco.html" class="feature-link">Explore SACCO Hub →</a>
+        </article>
+        <article class="feature-card">
+          <div class="feature-icon feature-purple">⭐</div>
+          <span class="feature-number">03 / SAVE</span>
+          <h3>Your favourites</h3>
+          <p>Keep interesting listings close and compare products before contacting a seller.</p>
+          <button class="feature-link" id="featureFavoritesBtn">View saved products →</button>
         </article>
       </div>
     </section>
 
-    <section class="section demo-notice">
-      <span>ℹ️</span>
-      <p><strong>Science fair demo:</strong> Listings and favourites are stored in this browser. Other visitors won't automatically see your local listings. Sample SACCO profiles, opportunities and farming guidance are demonstrations, not verified offers or live data.</p>
+    <section class="cta-section">
+      <div class="cta-symbol">🌱</div>
+      <div>
+        <span class="eyebrow">YOUR HARVEST HAS A MARKET</span>
+        <h2>Ready to list your first product?</h2>
+        <p>Show buyers what you grow and help them discover your produce.</p>
+      </div>
+      <button class="button button-light" id="ctaSellBtn">Create a listing ↗</button>
+    </section>
+
+    <section class="support-section section" id="support">
+      <div class="support-copy">
+        <span class="eyebrow">WE'RE HERE TO HELP</span>
+        <h2>Need a hand?</h2>
+        <p>Get help with listings, search, language settings, and using the demo.</p>
+        <button class="button button-outline" id="replayTutorialBtn">▶ Replay the tutorial</button>
+      </div>
+      <form class="support-form" id="supportForm">
+        <h3>Send a support message</h3>
+        <p class="muted-text">This demo stores your message in this browser only. It does not send an email.</p>
+        <label for="supportTopic">What do you need help with?</label>
+        <select id="supportTopic" name="topic" required>
+          <option value="">Choose a topic</option>
+          <option>Creating a listing</option>
+          <option>Finding a product</option>
+          <option>Language and settings</option>
+          <option>Account and profile</option>
+          <option>Other</option>
+        </select>
+        <label for="supportMessage">Your message</label>
+        <textarea id="supportMessage" name="message" rows="3"
+          placeholder="Tell us how we can help..." required></textarea>
+        <button class="button button-primary" type="submit">Save support message</button>
+        <div id="supportFeedback" class="form-feedback" aria-live="polite"></div>
+      </form>
     </section>
   </main>
 
   <footer class="site-footer">
-    <a class="brand footer-brand" href="index.html">
-      <span class="brand-icon">🌱</span>
-      <span>Shamba<span class="brand-accent">Market</span></span>
+    <a class="brand footer-brand" href="#home">
+      <span class="brand-icon">🌿</span>
+      <span>Shamba<span class="brand-accent">Market</span><small>FROM FARM TO MARKET</small></span>
     </a>
-    <p>Connecting farms, people and possibilities across Kenya.</p>
+    <p>Built with purpose for Kenya's farming community.</p>
     <div class="footer-links">
-      <a href="index.html">Marketplace</a>
-      <a href="smart-assist.html">Smart Assist</a>
-      <a href="sacco.html">SACCO Hub</a>
+      <a href="#marketplace">Marketplace</a>
+      <a href="#support">Help & support</a>
+      <button id="footerSettingsBtn">Settings</button>
     </div>
-    <small>© <span id="currentYear">2026</span> ShambaMarket · Agricultural technology demo</small>
+    <small>Science-fair demonstration · <span id="currentYear"></span></small>
   </footer>
 
-  <!-- Product listing dialog -->
-  <dialog id="listingModal" class="modal">
-    <div class="modal-header">
-      <div>
-        <span class="eyebrow">SELL YOUR PRODUCE</span>
-        <h2>Create a listing</h2>
-        <p>Tell buyers what you have available.</p>
-      </div>
-      <button class="icon-btn" type="button" data-close-modal aria-label="Close">✕</button>
-    </div>
+  <!-- Create listing modal -->
+  <div class="modal" id="listingModal" aria-hidden="true">
+    <div class="modal-backdrop" data-close-modal></div>
+    <section class="modal-panel modal-wide" role="dialog" aria-modal="true" aria-labelledby="listingModalTitle">
+      <button class="modal-close" type="button" data-close-modal aria-label="Close">×</button>
+      <span class="eyebrow">SELL ON SHAMBAMARKET</span>
+      <h2 id="listingModalTitle">List your product</h2>
+      <p class="muted-text">Share a few details so buyers can discover your produce.</p>
 
-    <form id="listingForm" class="modal-form">
-      <label>Product category
-        <select id="listingCategory" name="category" required>
-          <option value="">Choose a category</option>
-          <option value="fruits">Fruits</option>
-          <option value="vegetables">Vegetables</option>
-          <option value="nuts">Nuts</option>
-          <option value="starchy-foods">Starchy foods</option>
-          <option value="grains">Grains</option>
-          <option value="legumes">Legumes</option>
-          <option value="livestock">Livestock</option>
-          <option value="farm-inputs">Farm inputs</option>
-        </select>
-      </label>
+      <form id="listingForm">
+        <div class="form-grid">
+          <label>Product name *
+            <input name="name" type="text" placeholder="e.g. Avocado" required maxlength="70">
+          </label>
+          <label>Variety *
+            <input name="variety" type="text" placeholder="e.g. Hass" required maxlength="70">
+          </label>
 
-      <label>Product name
-        <input name="name" id="listingName" type="text"
-          placeholder="e.g. Avocado" required maxlength="80">
-      </label>
+          <label>Product category *
+            <select name="category" required>
+              <option value="">Choose category</option>
+              <option value="fruits">Fruits</option>
+              <option value="vegetables">Vegetables</option>
+              <option value="nuts">Nuts</option>
+              <option value="starchy">Starchy foods</option>
+              <option value="grains">Grains</option>
+              <option value="legumes">Legumes</option>
+              <option value="livestock">Livestock</option>
+              <option value="farm-inputs">Farm inputs</option>
+            </select>
+          </label>
 
-      <label>Variety or type
-        <input name="variety" id="listingVariety" type="text"
-          placeholder="e.g. Hass, Fuerte, local variety" maxlength="80">
-      </label>
+          <label>Price (KSh) *
+            <input name="price" type="number" min="0" step="0.01" placeholder="e.g. 50" required>
+          </label>
 
-      <div class="form-row">
-        <label>Price (KSh)
-          <input name="price" id="listingPrice" type="number"
-            min="0" step="0.01" placeholder="e.g. 80" required>
+          <label>Quantity available *
+            <input name="quantity" type="number" min="0.01" step="any" placeholder="e.g. 100" required>
+          </label>
+
+          <label>Unit *
+            <select name="unit" required>
+              <option value="kg">Kilograms (kg)</option>
+              <option value="bag">Bag</option>
+              <option value="piece">Piece</option>
+              <option value="crate">Crate</option>
+              <option value="bunch">Bunch</option>
+              <option value="litre">Litre</option>
+              <option value="animal">Animal</option>
+              <option value="packet">Packet</option>
+              <option value="tonne">Tonne</option>
+            </select>
+          </label>
+
+          <label>County or town *
+            <input name="location" type="text" placeholder="e.g. Nakuru" required maxlength="80">
+          </label>
+
+          <label>Contact (phone or other contact) *
+            <input name="contact" type="text" placeholder="How can buyers reach you?" required maxlength="100">
+          </label>
+        </div>
+
+        <label class="full-field">Product photo (optional)
+          <input name="image" type="url" placeholder="Paste an image URL (optional)">
+          <small>For this demo, use a direct image URL. Do not enter private information.</small>
         </label>
-        <label>Unit
-          <select name="unit" id="listingUnit" required>
-            <option value="kg">Per kg</option>
-            <option value="bag">Per bag</option>
-            <option value="piece">Per piece</option>
-            <option value="crate">Per crate</option>
-            <option value="bunch">Per bunch</option>
-            <option value="litre">Per litre</option>
-            <option value="animal">Per animal</option>
-            <option value="tray">Per tray</option>
-            <option value="other">Other</option>
+
+        <label class="full-field">Description
+          <textarea name="description" rows="3" maxlength="500"
+            placeholder="Describe the product, quality, or how it is packaged."></textarea>
+        </label>
+
+        <p class="form-note">Demo notice: your listing is saved in this browser and is not published to a shared online marketplace.</p>
+        <div class="modal-actions">
+          <button class="button button-outline" type="button" data-close-modal>Cancel</button>
+          <button class="button button-primary" type="submit">✓ Publish demo listing</button>
+        </div>
+        <div id="listingFeedback" class="form-feedback" aria-live="polite"></div>
+      </form>
+    </section>
+  </div>
+
+  <!-- Demo profile modal -->
+  <div class="modal" id="loginModal" aria-hidden="true">
+    <div class="modal-backdrop" data-close-modal></div>
+    <section class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="profileTitle">
+      <button class="modal-close" type="button" data-close-modal aria-label="Close">×</button>
+      <span class="eyebrow">YOUR SPACE</span>
+      <h2 id="profileTitle">Set up your demo profile</h2>
+      <p class="muted-text">No password or real account is required for this demonstration.</p>
+      <form id="loginForm">
+        <label>Your display name
+          <input id="demoUserName" name="name" type="text" maxlength="60" placeholder="What should we call you?" required>
+        </label>
+        <label>I am a...
+          <select id="demoUserRole" name="role" required>
+            <option value="buyer">Buyer</option>
+            <option value="farmer">Farmer / seller</option>
+            <option value="both">Farmer and buyer</option>
+            <option value="visitor">Just exploring</option>
           </select>
         </label>
+        <button class="button button-primary button-full" type="submit">Save demo profile</button>
+        <p class="form-note">Your demo profile is stored only in this browser.</p>
+      </form>
+    </section>
+  </div>
+
+  <!-- Settings modal -->
+  <div class="modal" id="settingsModal" aria-hidden="true">
+    <div class="modal-backdrop" data-close-modal></div>
+    <section class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+      <button class="modal-close" type="button" data-close-modal aria-label="Close">×</button>
+      <span class="eyebrow">MAKE IT YOURS</span>
+      <h2 id="settingsTitle">Settings</h2>
+      <p class="muted-text">Choose how you want to use ShambaMarket.</p>
+      <form id="settingsForm">
+        <label>Preferred language
+          <select id="languageSelect" name="language">
+            <option value="en">English</option>
+            <option value="sw">Kiswahili</option>
+            <option value="sheng">Sheng</option>
+            <option value="mix">English + Kiswahili</option>
+          </select>
+        </label>
+        <p class="settings-hint">Language support may vary while the demo is being developed.</p>
+        <div class="settings-divider"></div>
+        <h3>Getting started</h3>
+        <p class="muted-text">Want a quick guide to the main features?</p>
+        <button class="button button-outline button-full" type="button" id="settingsTutorialBtn">▶ Start the tutorial</button>
+        <div class="settings-divider"></div>
+        <h3>Help & support</h3>
+        <p class="muted-text">Find help using the support section or send a demo support message.</p>
+        <a class="button button-outline button-full" href="#support" id="settingsSupportLink">Open help & support ↗</a>
+        <div class="modal-actions">
+          <button class="button button-primary" type="submit">Save settings</button>
+        </div>
+        <div id="settingsFeedback" class="form-feedback" aria-live="polite"></div>
+      </form>
+    </section>
+  </div>
+
+  <!-- Optional onboarding tutorial -->
+  <div class="modal" id="tutorialModal" aria-hidden="true">
+    <div class="modal-backdrop" data-close-modal></div>
+    <section class="modal-panel tutorial-panel" role="dialog" aria-modal="true" aria-labelledby="tutorialTitle">
+      <button class="modal-close" type="button" data-close-modal aria-label="Close tutorial">×</button>
+      <div class="tutorial-illustration" id="tutorialIllustration">🌱</div>
+      <span class="eyebrow" id="tutorialStepLabel">WELCOME / 01</span>
+      <h2 id="tutorialTitle">Welcome to ShambaMarket</h2>
+      <p id="tutorialDescription">Discover how to find produce, list products, and make the marketplace work for you.</p>
+      <div class="tutorial-progress" id="tutorialProgress" aria-label="Tutorial progress">
+        <span class="active"></span><span></span><span></span><span></span>
       </div>
-
-      <label>Quantity available
-        <input name="quantity" id="listingQuantity" type="number"
-          min="0" step="any" placeholder="e.g. 50" required>
-      </label>
-
-      <label>County or location
-        <input name="location" id="listingLocation" type="text"
-          placeholder="e.g. Nakuru County" required maxlength="100">
-      </label>
-
-      <label>Product photo URL (optional)
-        <input name="image" id="listingImage" type="url"
-          placeholder="https://example.com/photo.jpg">
-      </label>
-
-      <label>Description
-        <textarea name="description" id="listingDescription" rows="3"
-          placeholder="Describe the quality, freshness or other details..." maxlength="500"></textarea>
-      </label>
-
-      <label>Contact information (optional)
-        <input name="contact" id="listingContact" type="text"
-          placeholder="Phone number or preferred contact" maxlength="100">
-      </label>
-
-      <p class="form-note">Demo only: avoid entering sensitive personal information. Your listing is saved in this browser, not published to a shared marketplace.</p>
-
-      <div class="modal-actions">
-        <button class="btn btn-outline" type="button" data-close-modal>Cancel</button>
-        <button class="btn btn-primary" type="submit">Save demo listing</button>
+      <div class="tutorial-actions">
+        <button class="button button-outline" type="button" id="skipTutorialBtn">Skip tutorial</button>
+        <button class="button button-primary" type="button" id="nextTutorialBtn">Next →</button>
       </div>
-    </form>
-  </dialog>
+    </section>
+  </div>
 
-  <!-- Demo sign-in dialog -->
-  <dialog id="loginModal" class="modal">
-    <div class="modal-header">
-      <div>
-        <span class="eyebrow">WELCOME TO SHAMBAMARKET</span>
-        <h2>Demo profile</h2>
-        <p>Try the marketplace without creating a real account.</p>
-      </div>
-      <button class="icon-btn" type="button" data-close-modal aria-label="Close">✕</button>
-    </div>
-    <form id="loginForm" class="modal-form">
-      <label>Your display name
-        <input id="demoUserName" name="displayName" type="text"
-          placeholder="e.g. Green Valley Farm" maxlength="60" required>
-      </label>
-      <label>I am a...
-        <select id="demoUserRole" name="role">
-          <option value="farmer">Farmer / seller</option>
-          <option value="buyer">Buyer</option>
-          <option value="both">Farmer and buyer</option>
-          <option value="student">Student / visitor</option>
-        </select>
-      </label>
-      <p class="form-note">This is a local demo profile, not secure authentication. Do not enter a password.</p>
-      <div class="modal-actions">
-        <button class="btn btn-outline" type="button" data-close-modal>Cancel</button>
-        <button class="btn btn-primary" type="submit">Continue</button>
-      </div>
-    </form>
-  </dialog>
+  <!-- Product request modal -->
+  <div class="modal" id="requestModal" aria-hidden="true">
+    <div class="modal-backdrop" data-close-modal></div>
+    <section class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="requestTitle">
+      <button class="modal-close" type="button" data-close-modal aria-label="Close">×</button>
+      <span class="eyebrow">HELP US IMPROVE</span>
+      <h2 id="requestTitle">Request a product</h2>
+      <p class="muted-text">Tell us what you hoped to find. This is a demo request, not a confirmed order.</p>
+      <form id="requestForm">
+        <label>Product or variety
+          <input name="product" type="text" placeholder="e.g. Pishori rice" required maxlength="100">
+        </label>
+        <label>Preferred location (optional)
+          <input name="location" type="text" placeholder="County or town">
+        </label>
+        <button class="button button-primary button-full" type="submit">Save demo request</button>
+        <div id="requestFeedback" class="form-feedback" aria-live="polite"></div>
+      </form>
+    </section>
+  </div>
 
   <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="true"></div>
 </body>
