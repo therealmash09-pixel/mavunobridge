@@ -1,1648 +1,2460 @@
-"use strict";
+(() => {
 
-/* =========================================================
-   MAVUNOBRIDGE MARKETPLACE — REVISED DEMO
-   Listings • Fair-price guide • Cart • Category filters
-   Local browser storage • Lazy images • Back to top
-   ========================================================= */
+  "use strict";
 
-const LISTINGS_KEY = "mavunobridge_listings_v1";
-const CART_KEY = "mavunobridge_cart_v1";
-const USER_KEY = "mavunobridge_demo_user_v1";
-const PENDING_CHAT_KEY = "mavunobridge_pending_chat_v1";
 
-const $ = (selector, root = document) => root.querySelector(selector);
-const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
+  /* =========================================================
+     MAVUNOBRIDGE — MAIN MARKETPLACE ENGINE
+     Browser-only demo
+     No Supabase required
+  ========================================================= */
 
-const COUNTIES = [
-  "Baringo", "Bomet", "Bungoma", "Busia", "Elgeyo-Marakwet",
-  "Embu", "Garissa", "Homa Bay", "Isiolo", "Kajiado",
-  "Kakamega", "Kericho", "Kiambu", "Kilifi", "Kirinyaga",
-  "Kisii", "Kisumu", "Kitui", "Kwale", "Laikipia", "Lamu",
-  "Machakos", "Makueni", "Mandera", "Marsabit", "Meru",
-  "Migori", "Mombasa", "Murang'a", "Nairobi City", "Nakuru",
-  "Nandi", "Narok", "Nyamira", "Nyandarua", "Nyeri", "Samburu",
-  "Siaya", "Taita-Taveta", "Tana River", "Tharaka-Nithi",
-  "Trans Nzoia", "Turkana", "Uasin Gishu", "Vihiga", "Wajir",
-  "West Pokot"
-];
 
-/*
-  DEMO REFERENCE ONLY — NOT LIVE MARKET DATA.
-  The unit is important: these ranges apply only to KSh per kg.
-*/
-const FAIR_PRICE_GUIDE = [
-  {
-    id: "tomatoes",
-    label: "Tomatoes",
-    min: 60,
-    max: 110,
-    unit: "kg",
-    matches: (name) => /\btomato(?:es)?\b/i.test(name)
-  },
-  {
-    id: "avocados",
-    label: "Hass avocados",
-    min: 90,
-    max: 180,
-    unit: "kg",
-    matches: (name) => /\bavocado(?:s)?\b/i.test(name)
-  },
-  {
-    id: "maize",
-    label: "Maize",
-    min: 45,
-    max: 80,
-    unit: "kg",
-    matches: (name) => /\bmaize\b/i.test(name)
-  }
-];
+  const STORAGE = {
 
-/* Demo names, prices, contacts and quantities are illustrative. */
-const demoListings = [
-  {
-    id: "demo-avocados",
-    name: "Fresh Hass Avocados",
-    category: "Fruits",
-    county: "Kiambu",
-    town: "Limuru",
-    price: 120,
-    priceUnit: "kg",
-    quantity: "150 kg",
-    saleType: "Both",
-    condition: "Fresh / good condition",
-    seller: "Green Valley Farm",
-    phone: "0712345678",
-    description: "Freshly harvested Hass avocados. Retail and bulk enquiries welcome.",
-    image: "https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?auto=format&fit=crop&w=620&q=70",
-    createdAt: 1761000000000,
-    demo: true
-  },
-  {
-    id: "demo-tomatoes",
-    name: "Fresh Red Tomatoes",
-    category: "Vegetables",
-    county: "Nakuru",
-    town: "Molo",
-    price: 75,
-    priceUnit: "kg",
-    quantity: "100 kg",
-    saleType: "Both",
-    condition: "Fresh / good condition",
-    seller: "Nakuru Fresh Produce",
-    phone: "0723456789",
-    description: "Fresh tomatoes for households, shops, hotels and food businesses.",
-    image: "https://images.unsplash.com/photo-1546094096-0df4bcaaa337?auto=format&fit=crop&w=620&q=70",
-    createdAt: 1761000001000,
-    demo: true
-  },
-  {
-    id: "demo-maize",
-    name: "Dry Yellow Maize",
-    category: "Grains",
-    county: "Uasin Gishu",
-    town: "Eldoret",
-    price: 58,
-    priceUnit: "kg",
-    quantity: "500 kg",
-    saleType: "Bulk",
-    condition: "Dry",
-    seller: "Uasin Gishu Grain Farm",
-    phone: "0734567890",
-    description: "Dry maize for retailers, wholesalers and millers.",
-    image: "https://images.unsplash.com/photo-1551754655-cd27e38d2076?auto=format&fit=crop&w=620&q=70",
-    createdAt: 1761000002000,
-    demo: true
-  },
-  {
-    id: "demo-beans",
-    name: "Rosecoco Beans",
-    category: "Legumes",
-    county: "Meru",
-    town: "Meru Town",
-    price: 145,
-    priceUnit: "kg",
-    quantity: "80 kg",
-    saleType: "Both",
-    condition: "Dry",
-    seller: "Meru Harvest",
-    phone: "0745678901",
-    description: "Clean, dry beans for cooking, resale and bulk purchase.",
- image: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/Rosecoco_beans.jpg/960px-Rosecoco_beans.jpg",
-    createdAt: 1761000003000,
-    demo: true
-  },
-  {
-    id: "demo-potatoes",
-    name: "Irish Potatoes",
-    category: "Starchy Foods",
-    county: "Nyandarua",
-    town: "Ol Kalou",
-    price: 48,
-    priceUnit: "kg",
-    quantity: "300 kg",
-    saleType: "Bulk",
-    condition: "Fresh / good condition",
-    seller: "Nyandarua Potato Growers",
-    phone: "0756789012",
-    description: "Fresh potatoes for traders, hotels and households.",
-    image: "https://images.unsplash.com/photo-1518977676601-b53f82aba655?auto=format&fit=crop&w=620&q=70",
-    createdAt: 1761000004000,
-    demo: true
-  },
-  {
-    id: "demo-ndengu",
-    name: "Green Grams (Ndengu)",
-    category: "Legumes",
-    county: "Machakos",
-    town: "Kangundo",
-    price: 135,
-    priceUnit: "kg",
-    quantity: "120 kg",
-    saleType: "Both",
-    condition: "Dry",
-    seller: "Eastern Harvest Farm",
-    phone: "0767890123",
-    description: "Clean green grams for retailers, wholesalers and households.",
-    image: "https://images.unsplash.com/photo-1515543904379-3d757afe72e4?auto=format&fit=crop&w=620&q=70",
-    createdAt: 1761000005000,
-    demo: true
-  },
-  {
-    id: "demo-bananas",
-    name: "Sweet Bananas",
-    category: "Fruits",
-    county: "Kisumu",
-    town: "Kisumu",
-    price: 65,
-    priceUnit: "bunch",
-    quantity: "60 bunches",
-    saleType: "Retail",
-    condition: "Fresh / good condition",
-    seller: "Lake Region Produce",
-    phone: "0778901234",
-    description: "Ripe and semi-ripe bananas. Contact the seller about quantities.",
-    image: "https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?auto=format&fit=crop&w=620&q=70",
-    createdAt: 1761000006000,
-    demo: true
-  },
-  {
-    id: "demo-onions",
-    name: "Red Onions",
-    category: "Vegetables",
-    county: "Nakuru",
-    town: "Naivasha",
-    price: 90,
-    priceUnit: "kg",
-    quantity: "200 kg",
-    saleType: "Both",
-    condition: "Dry",
-    seller: "Rift Valley Farm",
-    phone: "0789012345",
-    description: "Onions for groceries, hotels, home use and produce traders.",
-    image: "https://images.unsplash.com/photo-1508747703725-719777637510?auto=format&fit=crop&w=620&q=70",
-    createdAt: 1761000007000,
-    demo: true
-  },
-  {
-    id: "demo-eggs",
-    name: "Fresh Farm Eggs",
-    category: "Livestock Products",
-    county: "Kiambu",
-    town: "Thika",
-    price: 450,
-    priceUnit: "tray",
-    quantity: "10 trays",
-    saleType: "Both",
-    condition: "Fresh",
-    seller: "Sunrise Poultry Farm",
-    phone: "0711122233",
-    description: "Fresh table eggs. Price shown per tray. Retail and bulk orders accepted.",
-    image: "https://images.unsplash.com/photo-1506976785307-8732e854ad03?auto=format&fit=crop&w=620&q=70",
-    createdAt: 1761000008000,
-    demo: true
-  },
-  {
-    id: "demo-milk",
-    name: "Fresh Cow Milk",
-    category: "Livestock Products",
-    county: "Nyeri",
-    town: "Karatina",
-    price: 70,
-    priceUnit: "litre",
-    quantity: "50 litres",
-    saleType: "Both",
-    condition: "Fresh",
-    seller: "Highland Dairy Farm",
-    phone: "0722233344",
-    description: "Fresh cow milk. Price shown per litre. Agree safe handling and collection with the seller.",
-    image: "https://images.unsplash.com/photo-1550583724-b2692b85b150?auto=format&fit=crop&w=620&q=70",
-    createdAt: 1761000009000,
-    demo: true
-  },
-  {
-    id: "demo-honey",
-    name: "Pure Harvest Honey",
-    category: "Livestock Products",
-    county: "Baringo",
-    town: "Marigat",
-    price: 600,
-    priceUnit: "jar",
-    quantity: "10 jars",
-    saleType: "Both",
-    condition: "Processed",
-    seller: "Baringo Beekeepers",
-    phone: "0733344455",
-    description: "Honey from local beekeepers. Ask about jar sizes before ordering.",
-    image: "https://images.unsplash.com/photo-1587049352851-8d4e89133924?auto=format&fit=crop&w=620&q=70",
-    createdAt: 1761000010000,
-    demo: true
-  },
-  {
-    id: "demo-chicken",
-    name: "Dressed Chicken",
-    category: "Livestock Products",
-    county: "Machakos",
-    town: "Machakos Town",
-    price: 850,
-    priceUnit: "piece",
-    quantity: "12 birds",
-    saleType: "Retail",
-    condition: "Chilled / frozen",
-    seller: "Eastern Poultry Supplies",
-    phone: "0744455566",
-    description: "Sample dressed chicken listing. Confirm weight, storage and collection before purchase.",
-    image: "https://images.unsplash.com/photo-1587593810167-a84920ea0781?auto=format&fit=crop&w=620&q=70",
-    createdAt: 1761000011000,
-    demo: true
-  },
-  {
-    id: "demo-groundnuts",
-    name: "Fresh Groundnuts",
-    category: "Nuts",
-    county: "Kilifi",
-    town: "Malindi",
-    price: 220,
-    priceUnit: "kg",
-    quantity: "35 kg",
-    saleType: "Both",
-    condition: "Dry / good condition",
-    seller: "Coastal Harvest Farm",
-    phone: "0712345601",
-    description: "Groundnuts for households, shops and bulk buyers. Confirm packaging and collection.",
-    image: "https://images.unsplash.com/photo-1508061253366-f7da158b6d46?auto=format&fit=crop&w=620&q=70",
-    createdAt: 1761000012000,
-    demo: true
-  },
-  {
-    id: "demo-millet",
-    name: "Finger Millet (Wimbi)",
-    category: "Cereals",
-    county: "Bungoma",
-    town: "Bungoma Town",
-    price: 95,
-    priceUnit: "kg",
-    quantity: "100 kg",
-    saleType: "Both",
-    condition: "Dry",
-    seller: "Western Grains Farm",
-    phone: "0722345602",
-    description: "Dry finger millet for milling, household cooking and cereal traders.",
-    image: "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&w=620&q=70",
-    createdAt: 1761000013000,
-    demo: true
-  },
-  {
-    id: "demo-turmeric",
-    name: "Fresh Turmeric",
-    category: "Spices",
-    county: "Kirinyaga",
-    town: "Kerugoya",
-    price: 180,
-    priceUnit: "kg",
-    quantity: "40 kg",
-    saleType: "Both",
-    condition: "Fresh",
-    seller: "Kirinyaga Spice Growers",
-    phone: "0733345603",
-    description: "Fresh turmeric roots for cooking, spice preparation and local traders.",
-    image: "https://images.unsplash.com/photo-1532336414038-cf19250c5757?auto=format&fit=crop&w=620&q=70",
-    createdAt: 1761000014000,
-    demo: true
-  },
-  {
-    id: "demo-moringa",
-    name: "Dried Moringa Leaves",
-    category: "Herbal Products",
-    county: "Kitui",
-    town: "Kitui Town",
-    price: 250,
-    priceUnit: "pack",
-    quantity: "20 packs",
-    saleType: "Both",
-    condition: "Dried / packaged",
-    seller: "Kitui Natural Harvest",
-    phone: "0744345604",
-    description: "Sample dried moringa product. Confirm pack size, preparation and storage.",
-    image: "https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?auto=format&fit=crop&w=620&q=70",
-    createdAt: 1761000015000,
-    demo: true
-  },
-  {
-    id: "demo-goats",
-    name: "Indigenous Goats",
-    category: "Livestock",
-    county: "Kajiado",
-    town: "Ngong",
-    price: 8500,
-    priceUnit: "animal",
-    quantity: "8 goats",
-    saleType: "Both",
-    condition: "Live animals",
-    seller: "Kajiado Livestock Farm",
-    phone: "0755345605",
-    description: "Sample live-goat listing. Confirm age, health records, weight and transport before purchase.",
-    image: "https://images.unsplash.com/photo-1516467508483-a7212febe31a?auto=format&fit=crop&w=620&q=70",
-    createdAt: 1761000016000,
-    demo: true
-  },
-  {
-    id: "demo-seedlings",
-    name: "Vegetable Seedlings",
-    category: "Farm Inputs",
-    county: "Nakuru",
-    town: "Naivasha",
-    price: 25,
-    priceUnit: "piece",
-    quantity: "500 seedlings",
-    saleType: "Both",
-    condition: "Nursery-grown",
-    seller: "Green Start Nursery",
-    phone: "0766345606",
-    description: "Sample vegetable seedlings. Confirm variety, quantity and collection date.",
-    image: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=620&q=70",
-    createdAt: 1761000017000,
-    demo: true
-  },
-  {
-    id: "demo-sprayer",
-    name: "16L Knapsack Sprayer",
-    category: "Tools & Equipment",
-    county: "Kiambu",
-    town: "Thika",
-    price: 3500,
-    priceUnit: "unit",
-    quantity: "5 units",
-    saleType: "Both",
-    condition: "New",
-    seller: "Farm Tools Centre",
-    phone: "0700345607",
-    description: "Sample farm equipment. Confirm model, accessories, warranty and availability.",
-    image: "https://images.unsplash.com/photo-1592982537447-6f2a6a0a3a5b?auto=format&fit=crop&w=620&q=70",
-    createdAt: 1761000018000,
-    demo: true
-  },
-  {
-    id: "demo-ploughing",
-    name: "Tractor Ploughing Service",
-    category: "Farmer Services",
-    county: "Uasin Gishu",
-    town: "Eldoret",
-    price: 3000,
-    priceUnit: "acre",
-    quantity: "10 acres available",
-    saleType: "Retail",
-    condition: "Service",
-    seller: "Eldoret Farm Services",
-    phone: "0710345608",
-    description: "Sample ploughing service. Agree on acreage, field conditions, travel charges and timing.",
-    image: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=620&q=70",
-    createdAt: 1761000019000,
-    demo: true
-  }
-];
+    listings: "mavunobridge_listings_v6",
 
-const CATEGORY_PHOTOS = {
-  fruits: "https://images.unsplash.com/photo-1619566636858-adf3ef46400b?auto=format&fit=crop&w=420&q=65",
-  vegetables: "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=420&q=65",
-  nuts: "https://images.unsplash.com/photo-1508061253366-f7da158b6d46?auto=format&fit=crop&w=420&q=65",
-  starchy: "https://images.unsplash.com/photo-1518977676601-b53f82aba655?auto=format&fit=crop&w=420&q=65",
-  grains: "https://images.unsplash.com/photo-1551754655-cd27e38d2076?auto=format&fit=crop&w=420&q=65",
-  cereals: "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&w=420&q=65",
-  legumes: "https://images.unsplash.com/photo-1515543904379-3d757afe72e4?auto=format&fit=crop&w=420&q=65",
-  spices: "https://images.unsplash.com/photo-1532336414038-cf19250c5757?auto=format&fit=crop&w=420&q=65",
-  herbs: "https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?auto=format&fit=crop&w=420&q=65",
-  livestock: "https://images.unsplash.com/photo-1516467508483-a7212febe31a?auto=format&fit=crop&w=420&q=65",
-  livestockProducts: "https://images.unsplash.com/photo-1506976785307-8732e854ad03?auto=format&fit=crop&w=420&q=65",
-  inputs: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=420&q=65",
-  tools: "https://images.unsplash.com/photo-1592982537447-6f2a6a0a3a5b?auto=format&fit=crop&w=420&q=65",
-  services: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=420&q=65"
-};
+    cart: "mavunobridge_cart_v6"
 
-const PRICE_UNIT_LABELS = {
-  kg: "kg",
-  piece: "piece",
-  tray: "tray",
-  litre: "litre",
-  bunch: "bunch",
-  bag: "bag",
-  pack: "pack",
-  jar: "jar",
-  animal: "animal",
-  acre: "acre",
-  service: "service",
-  unit: "unit"
-};
-
-/* -----------------------------------------------
-   STORAGE, NORMALISATION AND PRICE COMPARISON
-   ----------------------------------------------- */
-
-function readJSON(key, fallback) {
-  try {
-    const value = localStorage.getItem(key);
-    return value ? JSON.parse(value) : fallback;
-  } catch (error) {
-    console.warn(`Could not read ${key}:`, error);
-    return fallback;
-  }
-}
-
-function escapeHTML(value) {
-  return String(value ?? "").replace(/[&<>"']/g, (character) => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#39;"
-  })[character]);
-}
-
-function money(value) {
-  return "KSh " + Number(value || 0).toLocaleString("en-KE", {
-    maximumFractionDigits: 2
-  });
-}
-
-function normalisePriceUnit(value) {
-  const unit = String(value || "").trim().toLowerCase();
-
-  if (["kg", "kilogram", "kilograms", "per kg", "per kilogram"].includes(unit)) return "kg";
-  if (["piece", "pieces", "pc", "pcs"].includes(unit)) return "piece";
-  if (["litre", "litres", "liter", "liters", "l"].includes(unit)) return "litre";
-  if (["tray", "trays"].includes(unit)) return "tray";
-  if (["bunch", "bunches"].includes(unit)) return "bunch";
-  if (["bag", "bags"].includes(unit)) return "bag";
-  if (["pack", "packs"].includes(unit)) return "pack";
-  if (["jar", "jars"].includes(unit)) return "jar";
-  if (["animal", "animals"].includes(unit)) return "animal";
-  if (["acre", "acres"].includes(unit)) return "acre";
-  if (["service", "services"].includes(unit)) return "service";
-  return "unit";
-}
-
-function normaliseSaleType(value) {
-  const type = String(value || "").trim().toLowerCase();
-
-  if (type === "both" || type === "retail and bulk" || type === "retail & bulk") {
-    return "Both";
-  }
-
-  if (type === "bulk") return "Bulk";
-  return "Retail";
-}
-
-function normaliseListing(item) {
-  const source = item && typeof item === "object" ? item : {};
-  const fallback = demoListings.find((demo) => demo.id === source.id) || {};
-
-  const getText = (value, defaultValue = "") =>
-    value !== undefined &&
-    value !== null &&
-    String(value).trim() !== ""
-      ? value
-      : defaultValue;
-
-  const rawName = source.name || source.product || source.title;
-  const rawCategory = getText(source.category, fallback.category || "Vegetables");
-
-  const aliases = {
-    "Starchy": "Starchy Foods",
-    "Herbal": "Herbal Products",
-    "Tools": "Tools & Equipment",
-    "Animal Products": "Livestock Products",
-    "Animal Products / Livestock Products": "Livestock Products"
   };
 
-  const rawCounty = getText(source.county, fallback.county || "Nairobi City");
-  const county = COUNTIES.includes(rawCounty)
-    ? rawCounty
-    : (fallback.county || "Nairobi City");
 
-  const candidatePrice = source.price;
-  const validPrice =
-    candidatePrice !== "" &&
-    candidatePrice !== null &&
-    candidatePrice !== undefined &&
-    Number.isFinite(Number(candidatePrice));
+  /* =========================================================
+     EXACT ROSECOCO IMAGE
+  ========================================================= */
 
-  return {
-    ...fallback,
-    ...source,
-    id: getText(source.id, fallback.id || `saved-${Date.now()}`),
-    name: getText(rawName, fallback.name || "Farm product"),
-    category: aliases[rawCategory] || rawCategory,
-    county,
-    town: getText(source.town, fallback.town || ""),
-    price: validPrice ? Number(candidatePrice) : Number(fallback.price || 0),
-    priceUnit: normalisePriceUnit(
-      source.priceUnit || source.price_unit || fallback.priceUnit || "unit"
-    ),
-    quantity: getText(source.quantity, fallback.quantity || "Ask seller"),
-    saleType: normaliseSaleType(source.saleType || fallback.saleType),
-    condition: getText(source.condition, fallback.condition || "Good condition"),
-    seller: getText(source.seller || source.farmerName, fallback.seller || "Local seller"),
-    phone: getText(source.phone, fallback.phone || ""),
-    description: getText(
-      source.description,
-      fallback.description || "Contact the seller for more information."
-    ),
-    image: getText(source.image || source.photo_url, fallback.image || ""),
-    createdAt: Number(source.createdAt || source.created_at) ||
-      fallback.createdAt || Date.now(),
-    ownerEmail: source.ownerEmail || source.owner_email || "",
-    demo: source.demo ?? fallback.demo ?? false
-  };
-}
+  const ROSECOCO_IMAGE =
+    "https://static.wixstatic.com/media/b9a05c_e6df03951eb44ecfba0e0fdbc2229634~mv2.jpg/v1/fill/w_474,h_477,al_c,q_80,usm_0.66_1.00_0.01,enc_auto/b9a05c_e6df03951eb44ecfba0e0fdbc2229634~mv2.jpg";
 
-function getFairPrice(item) {
-  const name = String(item.name || "");
-  const unit = normalisePriceUnit(item.priceUnit);
-  const rule = FAIR_PRICE_GUIDE.find((guide) => guide.matches(name));
 
-  if (!rule || unit !== rule.unit) {
-    return {
-      status: "no-guide",
-      label: "No guide yet",
-      detail: "No matching demo range is available for this product and unit.",
-      rule: null
-    };
-  }
+  /* =========================================================
+     CATEGORIES
+  ========================================================= */
 
-  if (Number(item.price) < rule.min) {
-    return {
-      status: "below",
-      label: "Below guide",
-      detail: `${rule.label} demo guide: ${money(rule.min)}–${money(rule.max)} / kg. This is below the indicative range.`,
-      rule
-    };
-  }
+  const CATEGORIES = [
 
-  if (Number(item.price) > rule.max) {
-    return {
-      status: "above",
-      label: "Above guide",
-      detail: `${rule.label} demo guide: ${money(rule.min)}–${money(rule.max)} / kg. Check quality, unit, season and quantity.`,
-      rule
-    };
-  }
+    [
+      "Fruits",
+      "https://images.unsplash.com/photo-1619566636858-adf3ef46400b?auto=format&fit=crop&w=600&q=75"
+    ],
 
-  return {
-    status: "within",
-    label: "Within guide",
-    detail: `${rule.label} demo guide: ${money(rule.min)}–${money(rule.max)} / kg.`,
-    rule
-  };
-}
+    [
+      "Vegetables",
+      "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=600&q=75"
+    ],
 
-/* -----------------------------------------------
-   LOAD AND SAVE LISTINGS
-   ----------------------------------------------- */
+    [
+      "Nuts",
+      "https://images.unsplash.com/photo-1508061253366-f7da158b6d46?auto=format&fit=crop&w=600&q=75"
+    ],
 
-function loadListings() {
-  const saved = readJSON(LISTINGS_KEY, []);
-  const demoIds = new Set(demoListings.map((item) => item.id));
-  const demoNames = new Set(demoListings.map((item) => item.name.trim().toLowerCase()));
+    [
+      "Starchy Foods",
+      "https://images.unsplash.com/photo-1518977676601-b53f82aba655?auto=format&fit=crop&w=600&q=75"
+    ],
 
-  const userItems = (Array.isArray(saved) ? saved : [])
-    .filter((item) => {
-      if (!item || typeof item !== "object") return false;
+    [
+      "Grains",
+      "https://images.unsplash.com/photo-1551754655-cd27e38d2076?auto=format&fit=crop&w=600&q=75"
+    ],
 
-      const id = String(item.id || "");
-      const name = String(item.name || item.product || item.title || "")
-        .trim()
-        .toLowerCase();
+    [
+      "Cereals",
+      "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&w=600&q=75"
+    ],
 
-      return item.demo !== true &&
-        !id.startsWith("demo-") &&
-        !demoIds.has(id) &&
-        !demoNames.has(name);
-    })
-    .map(normaliseListing);
+    [
+      "Legumes",
+      ROSECOCO_IMAGE
+    ],
 
-  const unique = new Map();
+    [
+      "Spices",
+      "https://images.unsplash.com/photo-1532336414038-cf19250c5757?auto=format&fit=crop&w=600&q=75"
+    ],
 
-  userItems.forEach((item) => unique.set(item.id, item));
-  demoListings.forEach((item) => unique.set(item.id, { ...item }));
+    [
+      "Herbal Products",
+      "https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?auto=format&fit=crop&w=600&q=75"
+    ],
 
-  return Array.from(unique.values());
-}
+    [
+      "Livestock",
+      "https://images.unsplash.com/photo-1516467508483-a7212febe31a?auto=format&fit=crop&w=600&q=75"
+    ],
 
-let listings = loadListings();
+    [
+      "Livestock Products",
+      "https://images.unsplash.com/photo-1506976785307-8732e854ad03?auto=format&fit=crop&w=600&q=75"
+    ],
 
-let cart = readJSON(CART_KEY, []);
-if (!Array.isArray(cart)) cart = [];
+    [
+      "Farm Inputs",
+      "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=600&q=75"
+    ],
 
-let activeSearch = "";
-let toastTimer = null;
-let scrollTicking = false;
-let listingSaveDroppedPhotos = false;
+    [
+      "Tools & Equipment",
+      "https://images.unsplash.com/photo-1592982537447-6f2a6a0a3a5b?auto=format&fit=crop&w=600&q=75"
+    ],
 
-function saveListings() {
-  listingSaveDroppedPhotos = false;
+    [
+      "Farmer Services",
+      "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=600&q=75"
+    ]
 
-  try {
-    localStorage.setItem(LISTINGS_KEY, JSON.stringify(listings));
-    return true;
-  } catch (firstError) {
-    console.warn("Listing save failed; retrying without embedded photos.", firstError);
-  }
+  ];
 
-  try {
-    const compactListings = listings.map((item) => {
-      if (typeof item.image === "string" && item.image.startsWith("data:image/")) {
-        listingSaveDroppedPhotos = true;
-        return { ...item, image: "" };
+
+  /* =========================================================
+     COUNTIES
+  ========================================================= */
+
+  const COUNTIES = [
+
+    "Baringo",
+    "Bomet",
+    "Bungoma",
+    "Busia",
+    "Elgeyo-Marakwet",
+    "Embu",
+    "Garissa",
+    "Homa Bay",
+    "Isiolo",
+    "Kajiado",
+    "Kakamega",
+    "Kericho",
+    "Kiambu",
+    "Kilifi",
+    "Kirinyaga",
+    "Kisii",
+    "Kisumu",
+    "Kitui",
+    "Kwale",
+    "Laikipia",
+    "Lamu",
+    "Machakos",
+    "Makueni",
+    "Mandera",
+    "Marsabit",
+    "Meru",
+    "Migori",
+    "Mombasa",
+    "Murang'a",
+    "Nairobi City",
+    "Nakuru",
+    "Nandi",
+    "Narok",
+    "Nyamira",
+    "Nyandarua",
+    "Nyeri",
+    "Samburu",
+    "Siaya",
+    "Taita-Taveta",
+    "Tana River",
+    "Tharaka-Nithi",
+    "Trans Nzoia",
+    "Turkana",
+    "Uasin Gishu",
+    "Vihiga",
+    "Wajir",
+    "West Pokot"
+
+  ];
+
+
+  /* =========================================================
+     FAIR PRICE GUIDE
+  ========================================================= */
+
+  const FAIR_GUIDE = [
+
+    {
+      name: "Tomatoes",
+      min: 60,
+      max: 110,
+      unit: "kg",
+      match: name => name.includes("tomato")
+    },
+
+    {
+      name: "Hass Avocados",
+      min: 90,
+      max: 180,
+      unit: "kg",
+      match: name => name.includes("hass avocado")
+    },
+
+    {
+      name: "Maize",
+      min: 45,
+      max: 80,
+      unit: "kg",
+      match: name => name.includes("maize")
+    }
+
+  ];
+
+
+  /* =========================================================
+     DEMO LISTINGS
+  ========================================================= */
+
+  const DEMO_LISTINGS = [
+
+    {
+      id: "demo-avocado",
+      demo: true,
+      name: "Hass Avocados",
+      category: "Fruits",
+      county: "Kiambu",
+      town: "Limuru",
+      price: 120,
+      unit: "kg",
+      qty: "80 kg",
+      sale: "Both",
+      seller: "Limuru Fresh Farm",
+      phone: "0711223344",
+      image:
+        "https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?auto=format&fit=crop&w=700&q=75",
+      createdAt: 1
+    },
+
+
+    {
+      id: "demo-tomatoes",
+      demo: true,
+      name: "Fresh Tomatoes",
+      category: "Vegetables",
+      county: "Nakuru",
+      town: "Naivasha",
+      price: 75,
+      unit: "kg",
+      qty: "120 kg",
+      sale: "Both",
+      seller: "Naivasha Growers",
+      phone: "0722334455",
+      image:
+        "https://images.unsplash.com/photo-1546094096-0df4bcaaa337?auto=format&fit=crop&w=700&q=75",
+      createdAt: 2
+    },
+
+
+    {
+      id: "demo-maize",
+      demo: true,
+      name: "Dry Maize",
+      category: "Grains",
+      county: "Uasin Gishu",
+      town: "Eldoret",
+      price: 58,
+      unit: "kg",
+      qty: "300 kg",
+      sale: "Bulk",
+      seller: "Rift Valley Grain Hub",
+      phone: "0733445566",
+      image:
+        "https://images.unsplash.com/photo-1601593768799-76f6c1d4b2f1?auto=format&fit=crop&w=700&q=75",
+      createdAt: 3
+    },
+
+
+    {
+      id: "demo-beans",
+      demo: true,
+      name: "Rosecoco Beans",
+      category: "Legumes",
+      county: "Meru",
+      town: "Meru",
+      price: 150,
+      unit: "kg",
+      qty: "60 kg",
+      sale: "Both",
+      seller: "Meru Bean Farmers",
+      phone: "0744556677",
+      image: ROSECOCO_IMAGE,
+      createdAt: 4
+    },
+
+
+    {
+      id: "demo-potatoes",
+      demo: true,
+      name: "Irish Potatoes",
+      category: "Starchy Foods",
+      county: "Nyandarua",
+      town: "Ol Kalou",
+      price: 65,
+      unit: "kg",
+      qty: "200 kg",
+      sale: "Bulk",
+      seller: "Nyandarua Potato Farm",
+      phone: "0755667788",
+      image:
+        "https://images.unsplash.com/photo-1518977676601-b53f82aba655?auto=format&fit=crop&w=700&q=75",
+      createdAt: 5
+    },
+
+
+    {
+      id: "demo-green-grams",
+      demo: true,
+      name: "Green Grams",
+      category: "Legumes",
+      county: "Machakos",
+      town: "Mwala",
+      price: 180,
+      unit: "kg",
+      qty: "45 kg",
+      sale: "Both",
+      seller: "Machakos Dry Foods",
+      phone: "0766778899",
+      image:
+        "https://images.unsplash.com/photo-1515543904379-3d757afe72e4?auto=format&fit=crop&w=700&q=75",
+      createdAt: 6
+    },
+
+
+    {
+      id: "demo-bananas",
+      demo: true,
+      name: "Bananas",
+      category: "Fruits",
+      county: "Kisumu",
+      town: "Kisumu",
+      price: 120,
+      unit: "bunch",
+      qty: "30 bunches",
+      sale: "Retail",
+      seller: "Lake Region Farm",
+      phone: "0777889900",
+      image:
+        "https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?auto=format&fit=crop&w=700&q=75",
+      createdAt: 7
+    },
+
+
+    {
+      id: "demo-onions",
+      demo: true,
+      name: "Red Onions",
+      category: "Vegetables",
+      county: "Nakuru",
+      town: "Gilgil",
+      price: 95,
+      unit: "kg",
+      qty: "90 kg",
+      sale: "Both",
+      seller: "Gilgil Onion Growers",
+      phone: "0788990011",
+      image:
+        "https://images.unsplash.com/photo-1618512496248-a07fe83aa8cb?auto=format&fit=crop&w=700&q=75",
+      createdAt: 8
+    },
+
+
+    {
+      id: "demo-millet",
+      demo: true,
+      name: "Finger Millet",
+      category: "Cereals",
+      county: "Kakamega",
+      town: "Kakamega",
+      price: 140,
+      unit: "kg",
+      qty: "70 kg",
+      sale: "Bulk",
+      seller: "Kakamega Wimbi Group",
+      phone: "0799001122",
+      image:
+        "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&w=700&q=75",
+      createdAt: 9
+    },
+
+
+    {
+      id: "demo-groundnuts",
+      demo: true,
+      name: "Groundnuts",
+      category: "Nuts",
+      county: "Kilifi",
+      town: "Malindi",
+      price: 220,
+      unit: "kg",
+      qty: "35 kg",
+      sale: "Both",
+      seller: "Coastal Harvest",
+      phone: "0712345601",
+      image:
+        "https://images.unsplash.com/photo-1508061253366-f7da158b6d46?auto=format&fit=crop&w=700&q=75",
+      createdAt: 10
+    },
+
+
+    {
+      id: "demo-spice",
+      demo: true,
+      name: "Cinnamon",
+      category: "Spices",
+      county: "Kwale",
+      town: "Ukunda",
+      price: 450,
+      unit: "kg",
+      qty: "15 kg",
+      sale: "Retail",
+      seller: "Coast Spice Farm",
+      phone: "0723456712",
+      image:
+        "https://images.unsplash.com/photo-1532336414038-cf19250c5757?auto=format&fit=crop&w=700&q=75",
+      createdAt: 11
+    },
+
+
+    {
+      id: "demo-herbal",
+      demo: true,
+      name: "Aloe Products",
+      category: "Herbal Products",
+      county: "Kajiado",
+      town: "Kajiado",
+      price: 300,
+      unit: "unit",
+      qty: "25 packs",
+      sale: "Retail",
+      seller: "Kajiado Herbal Group",
+      phone: "0734567823",
+      image:
+        "https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?auto=format&fit=crop&w=700&q=75",
+      createdAt: 12
+    },
+
+
+    {
+      id: "demo-goats",
+      demo: true,
+      name: "Dairy Goats",
+      category: "Livestock",
+      county: "Nyeri",
+      town: "Karatina",
+      price: 12000,
+      unit: "animal",
+      qty: "8 goats",
+      sale: "Retail",
+      seller: "Highland Livestock",
+      phone: "0745678934",
+      image:
+        "https://images.unsplash.com/photo-1524024973431-2ad916746881?auto=format&fit=crop&w=700&q=75",
+      createdAt: 13
+    },
+
+
+    {
+      id: "demo-eggs",
+      demo: true,
+      name: "Fresh Eggs",
+      category: "Livestock Products",
+      county: "Kiambu",
+      town: "Thika",
+      price: 450,
+      unit: "tray",
+      qty: "20 trays",
+      sale: "Both",
+      seller: "Sunrise Poultry",
+      phone: "0756789045",
+      image:
+        "https://images.unsplash.com/photo-1506976785307-8732e854ad03?auto=format&fit=crop&w=700&q=75",
+      createdAt: 14
+    },
+
+
+    {
+      id: "demo-seed",
+      demo: true,
+      name: "Certified Maize Seed",
+      category: "Farm Inputs",
+      county: "Trans Nzoia",
+      town: "Kitale",
+      price: 450,
+      unit: "bag",
+      qty: "40 bags",
+      sale: "Bulk",
+      seller: "Kitale Seed Centre",
+      phone: "0767890156",
+      image:
+        "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=700&q=75",
+      createdAt: 15
+    },
+
+
+    {
+      id: "demo-tools",
+      demo: true,
+      name: "Farm Tools Set",
+      category: "Tools & Equipment",
+      county: "Nairobi City",
+      town: "Nairobi",
+      price: 2800,
+      unit: "unit",
+      qty: "12 sets",
+      sale: "Retail",
+      seller: "Mavuno Tools",
+      phone: "0778901267",
+      image:
+        "https://images.unsplash.com/photo-1592982537447-6f2a6a0a3a5b?auto=format&fit=crop&w=700&q=75",
+      createdAt: 16
+    },
+
+
+    {
+      id: "demo-service",
+      demo: true,
+      name: "Tractor Plough Service",
+      category: "Farmer Services",
+      county: "Nakuru",
+      town: "Nakuru",
+      price: 3500,
+      unit: "service",
+      qty: "By booking",
+      sale: "Both",
+      seller: "Nakuru Farm Services",
+      phone: "0789012378",
+      image:
+        "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=700&q=75",
+      createdAt: 17
+    },
+
+
+    {
+      id: "demo-wheat",
+      demo: true,
+      name: "Wheat Grain",
+      category: "Grains",
+      county: "Narok",
+      town: "Narok",
+      price: 72,
+      unit: "kg",
+      qty: "250 kg",
+      sale: "Bulk",
+      seller: "Narok Grain Growers",
+      phone: "0790123489",
+      image:
+        "https://images.unsplash.com/photo-1551754655-cd27e38d2076?auto=format&fit=crop&w=700&q=75",
+      createdAt: 18
+    },
+
+
+    {
+      id: "demo-mango",
+      demo: true,
+      name: "Apple Mangoes",
+      category: "Fruits",
+      county: "Makueni",
+      town: "Wote",
+      price: 100,
+      unit: "kg",
+      qty: "100 kg",
+      sale: "Both",
+      seller: "Wote Fruit Farm",
+      phone: "0701234590",
+      image:
+        "https://images.unsplash.com/photo-1553279768-865429fa0078?auto=format&fit=crop&w=700&q=75",
+      createdAt: 19
+    }
+
+  ];
+
+
+  /* =========================================================
+     STATE
+  ========================================================= */
+
+  let listings = [];
+
+  let cart = [];
+
+  let activeCategory = "All";
+
+
+  /* =========================================================
+     SHORTCUTS
+  ========================================================= */
+
+  const $ = selector =>
+    document.querySelector(selector);
+
+
+  const $$ = selector =>
+    [...document.querySelectorAll(selector)];
+
+
+  /* =========================================================
+     STORAGE
+  ========================================================= */
+
+  function loadStorage(key, fallback) {
+
+    try {
+
+      const saved =
+        localStorage.getItem(key);
+
+      if (!saved) {
+
+        return fallback;
+
       }
 
-      return item;
-    });
+      return JSON.parse(saved);
 
-    localStorage.setItem(LISTINGS_KEY, JSON.stringify(compactListings));
-    listings = compactListings;
-    return true;
-  } catch (secondError) {
-    console.error("Could not save listings:", secondError);
-    return false;
-  }
-}
+    } catch (error) {
 
-function saveCart() {
-  try {
-    localStorage.setItem(CART_KEY, JSON.stringify(cart));
-    return true;
-  } catch (error) {
-    console.error("Could not save cart:", error);
-    return false;
-  }
-}
+      console.warn(
+        "Storage read failed:",
+        error
+      );
 
-function showToast(message) {
-  const toast = $("#toast");
-  if (!toast) {
-    window.alert(message);
-    return;
-  }
+      return fallback;
 
-  toast.textContent = message;
-  toast.classList.remove("hidden");
-
-  window.clearTimeout(toastTimer);
-  toastTimer = window.setTimeout(() => {
-    toast.classList.add("hidden");
-  }, 3500);
-}
-
-function openModal(id) {
-  const modal = document.getElementById(id);
-  if (!modal) return;
-
-  modal.classList.remove("hidden");
-  document.body.classList.add("modal-open");
-
-  const firstField = $("input, select, textarea, button", modal);
-  if (firstField) {
-    window.setTimeout(() => firstField.focus({ preventScroll: true }), 30);
-  }
-}
-
-function closeModal(id) {
-  const modal = document.getElementById(id);
-  if (modal) modal.classList.add("hidden");
-
-  if (!$(".modal-backdrop:not(.hidden)")) {
-    document.body.classList.remove("modal-open");
-  }
-}
-
-function populateCountySelects() {
-  const filter = $("#locationFilter");
-  const formCounty = $("#productCounty");
-
-  if (filter) {
-    const current = filter.value || "All";
-
-    filter.innerHTML =
-      '<option value="All">All counties</option>' +
-      COUNTIES.map((county) =>
-        `<option value="${escapeHTML(county)}">${escapeHTML(county)}</option>`
-      ).join("");
-
-    filter.value = COUNTIES.includes(current) ? current : "All";
-  }
-
-  if (formCounty) {
-    const current = formCounty.value || "";
-
-    formCounty.innerHTML =
-      '<option value="">Select county</option>' +
-      COUNTIES.map((county) =>
-        `<option value="${escapeHTML(county)}">${escapeHTML(county)}</option>`
-      ).join("");
-
-    formCounty.value = COUNTIES.includes(current) ? current : "";
-  }
-}
-
-function openListingModal() {
-  const form = $("#listingForm");
-  if (form) form.reset();
-
-  const error = $("#listingError");
-  if (error) {
-    error.textContent = "";
-    error.classList.add("hidden");
-  }
-
-  populateCountySelects();
-  openModal("listingModal");
-}
-
-/* Resize photos before saving them into browser storage. */
-function compressImage(file) {
-  return new Promise((resolve, reject) => {
-    if (!file) {
-      resolve("");
-      return;
     }
 
-    if (!file.type.startsWith("image/")) {
-      reject(new Error("Choose a valid image file."));
-      return;
+  }
+
+
+  function saveStorage(key, value) {
+
+    try {
+
+      localStorage.setItem(
+        key,
+        JSON.stringify(value)
+      );
+
+      return true;
+
+    } catch (error) {
+
+      console.warn(
+        "Storage save failed:",
+        error
+      );
+
+      return false;
+
     }
 
-    const reader = new FileReader();
+  }
 
-    reader.onerror = () => reject(new Error("Could not read the photo. Try another file."));
 
-    reader.onload = () => {
-      const image = new Image();
+  /* =========================================================
+     HTML ESCAPING
+  ========================================================= */
 
-      image.onerror = () => reject(new Error("Could not open the photo. Try another image."));
+  function escapeHTML(value) {
 
-      image.onload = () => {
-        const maxWidth = 640;
-        const maxHeight = 480;
-        const scale = Math.min(1, maxWidth / image.width, maxHeight / image.height);
+    return String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
 
-        const canvas = document.createElement("canvas");
-        canvas.width = Math.max(1, Math.round(image.width * scale));
-        canvas.height = Math.max(1, Math.round(image.height * scale));
+  }
 
-        const context = canvas.getContext("2d", { alpha: false });
 
-        if (!context) {
-          reject(new Error("Your browser could not process the photo."));
-          return;
+  /* =========================================================
+     MONEY
+  ========================================================= */
+
+  function money(value) {
+
+    return "KSh " +
+      Number(value || 0)
+        .toLocaleString(
+          "en-KE",
+          {
+            maximumFractionDigits: 2
+          }
+        );
+
+  }
+
+
+  /* =========================================================
+     LOAD DATA
+  ========================================================= */
+
+  function initializeData() {
+
+    const storedListings =
+      loadStorage(
+        STORAGE.listings,
+        []
+      );
+
+
+    const userListings =
+      Array.isArray(storedListings)
+        ? storedListings.filter(
+            item => item && item.demo !== true
+          )
+        : [];
+
+
+    listings = [
+
+      ...DEMO_LISTINGS,
+
+      ...userListings
+
+    ];
+
+
+    const storedCart =
+      loadStorage(
+        STORAGE.cart,
+        []
+      );
+
+
+    cart =
+      Array.isArray(storedCart)
+        ? storedCart
+        : [];
+
+  }
+
+
+  /* =========================================================
+     POPULATE SELECTS
+  ========================================================= */
+
+  function populateSelects() {
+
+    const categoryFilter =
+      $("#categoryFilter");
+
+    const productCategory =
+      $("#productCategory");
+
+    const locationFilter =
+      $("#locationFilter");
+
+    const productCounty =
+      $("#productCounty");
+
+
+    CATEGORIES.forEach(
+      ([category]) => {
+
+        categoryFilter.insertAdjacentHTML(
+          "beforeend",
+          `
+          <option value="${escapeHTML(category)}">
+            ${escapeHTML(category)}
+          </option>
+          `
+        );
+
+
+        productCategory.insertAdjacentHTML(
+          "beforeend",
+          `
+          <option value="${escapeHTML(category)}">
+            ${escapeHTML(category)}
+          </option>
+          `
+        );
+
+      }
+    );
+
+
+    COUNTIES.forEach(
+      county => {
+
+        locationFilter.insertAdjacentHTML(
+          "beforeend",
+          `
+          <option value="${escapeHTML(county)}">
+            ${escapeHTML(county)}
+          </option>
+          `
+        );
+
+
+        productCounty.insertAdjacentHTML(
+          "beforeend",
+          `
+          <option value="${escapeHTML(county)}">
+            ${escapeHTML(county)}
+          </option>
+          `
+        );
+
+      }
+    );
+
+  }
+
+
+  /* =========================================================
+     CATEGORY CARDS
+  ========================================================= */
+
+  function renderCategories() {
+
+    const grid =
+      $("#categoryGrid");
+
+
+    if (!grid) {
+
+      return;
+
+    }
+
+
+    grid.innerHTML = "";
+
+
+    CATEGORIES.forEach(
+      ([category, image]) => {
+
+        const button =
+          document.createElement("button");
+
+
+        button.type = "button";
+
+
+        button.className =
+          "category-card";
+
+
+        if (
+          activeCategory === category
+        ) {
+
+          button.classList.add(
+            "selected"
+          );
+
         }
 
-        context.drawImage(image, 0, 0, canvas.width, canvas.height);
-        resolve(canvas.toDataURL("image/jpeg", 0.55));
+
+        button.dataset.category =
+          category;
+
+
+        button.innerHTML = `
+
+          <span
+            class="cat-image"
+            style="background-image:url('${image}')"
+          ></span>
+
+          <span class="cat-shade"></span>
+
+          <span class="cat-name">
+            ${escapeHTML(category)}
+          </span>
+
+        `;
+
+
+        grid.appendChild(button);
+
+      }
+    );
+
+  }
+
+
+  /* =========================================================
+     ⭐ THE IMPORTANT CATEGORY FUNCTION
+  ========================================================= */
+
+  function selectCategory(category) {
+
+    if (
+      category !== "All" &&
+      !CATEGORIES.some(
+        item => item[0] === category
+      )
+    ) {
+
+      category = "All";
+
+    }
+
+
+    activeCategory =
+      category;
+
+
+    const categoryFilter =
+      $("#categoryFilter");
+
+
+    if (categoryFilter) {
+
+      categoryFilter.value =
+        category;
+
+    }
+
+
+    renderCategories();
+
+    renderListings();
+
+
+    const marketHint =
+      $("#marketHint");
+
+
+    if (marketHint) {
+
+      marketHint.textContent =
+        category === "All"
+
+          ? "Browse products listed by farmers and sellers."
+
+          : `Showing products in ${category}.`;
+
+    }
+
+
+    const marketplace =
+      $("#marketplace");
+
+
+    if (marketplace) {
+
+      marketplace.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+
+    }
+
+  }
+
+
+  /* =========================================================
+     FAIR PRICE
+  ========================================================= */
+
+  function getFairPrice(item) {
+
+    const name =
+      String(item.name || "")
+        .toLowerCase();
+
+
+    const guide =
+      FAIR_GUIDE.find(
+        itemGuide =>
+          itemGuide.match(name)
+      );
+
+
+    if (
+      !guide ||
+      item.unit !== guide.unit
+    ) {
+
+      return {
+
+        status: "no-guide",
+
+        label: "No guide yet",
+
+        detail:
+          "No matching demo price guide."
+
       };
 
-      image.src = reader.result;
+    }
+
+
+    if (
+      Number(item.price) <
+      guide.min
+    ) {
+
+      return {
+
+        status: "below",
+
+        label: "Below guide",
+
+        detail:
+          `${guide.name}: ${money(guide.min)}–${money(guide.max)} / kg`
+
+      };
+
+    }
+
+
+    if (
+      Number(item.price) >
+      guide.max
+    ) {
+
+      return {
+
+        status: "above",
+
+        label: "Above guide",
+
+        detail:
+          `${guide.name}: ${money(guide.min)}–${money(guide.max)} / kg`
+
+      };
+
+    }
+
+
+    return {
+
+      status: "within",
+
+      label: "Within guide",
+
+      detail:
+        `${guide.name}: ${money(guide.min)}–${money(guide.max)} / kg`
+
     };
 
-    reader.readAsDataURL(file);
-  });
-}
+  }
 
-/* -----------------------------------------------
-   LISTING CREATION
-   ----------------------------------------------- */
 
-async function handleListingSubmit(event) {
-  event.preventDefault();
+  /* =========================================================
+     FILTER LISTINGS
+  ========================================================= */
 
-  const form = $("#listingForm");
-  const errorBox = $("#listingError");
-  const submitButton = $("#submitListingButton");
+  function getFilteredListings() {
 
-  const showError = (message) => {
-    if (errorBox) {
-      errorBox.textContent = message;
-      errorBox.classList.remove("hidden");
-      errorBox.scrollIntoView({ behavior: "auto", block: "center" });
-    } else {
-      window.alert(message);
+    const search =
+      $("#searchInput")
+        ?.value
+        .trim()
+        .toLowerCase() || "";
+
+
+    const county =
+      $("#locationFilter")
+        ?.value || "All";
+
+
+    const saleType =
+      $("#saleFilter")
+        ?.value || "All";
+
+
+    const fairFilter =
+      $("#fairPriceFilter")
+        ?.value || "All";
+
+
+    const sort =
+      $("#sortFilter")
+        ?.value || "recommended";
+
+
+    let results =
+      listings.filter(
+        item => {
+
+          const searchableText = [
+
+            item.name,
+
+            item.category,
+
+            item.county,
+
+            item.town,
+
+            item.seller,
+
+            item.description
+
+          ]
+            .join(" ")
+            .toLowerCase();
+
+
+          const categoryMatches =
+
+            activeCategory === "All" ||
+
+            item.category === activeCategory;
+
+
+          const countyMatches =
+
+            county === "All" ||
+
+            item.county === county;
+
+
+          const saleMatches =
+
+            saleType === "All" ||
+
+            item.sale === saleType ||
+
+            item.sale === "Both";
+
+
+          const fairMatches =
+
+            fairFilter === "All" ||
+
+            getFairPrice(item).status === fairFilter;
+
+
+          const searchMatches =
+
+            !search ||
+
+            searchableText.includes(search);
+
+
+          return (
+
+            categoryMatches &&
+
+            countyMatches &&
+
+            saleMatches &&
+
+            fairMatches &&
+
+            searchMatches
+
+          );
+
+        }
+      );
+
+
+    if (sort === "newest") {
+
+      results.sort(
+        (a, b) =>
+          (b.createdAt || 0) -
+          (a.createdAt || 0)
+      );
+
     }
-  };
 
-  if (!form) {
-    showError("The listing form was not found. Refresh the page and try again.");
-    return;
+
+    if (sort === "price-low") {
+
+      results.sort(
+        (a, b) =>
+          Number(a.price) -
+          Number(b.price)
+      );
+
+    }
+
+
+    if (sort === "price-high") {
+
+      results.sort(
+        (a, b) =>
+          Number(b.price) -
+          Number(a.price)
+      );
+
+    }
+
+
+    return results;
+
   }
 
-  const readField = (id) =>
-    String(document.getElementById(id)?.value ?? "").trim();
 
-  const name = readField("productName");
-  const category = readField("productCategory");
-  const county = readField("productCounty");
-  const town = readField("productTown");
-  const quantity = readField("productQuantity");
-  const priceText = readField("productPrice");
-  const priceUnit = normalisePriceUnit(readField("productPriceUnit"));
-  const saleType = readField("productSaleType");
-  const condition = readField("productCondition");
-  const seller = readField("sellerName");
-  const phone = readField("sellerPhone");
-  const description = readField("productDescription");
-  const photo = $("#productImage")?.files?.[0] || null;
+  /* =========================================================
+     RENDER LISTINGS
+  ========================================================= */
 
-  if (errorBox) {
-    errorBox.textContent = "";
-    errorBox.classList.add("hidden");
-  }
+  function renderListings() {
 
-  if (!name || !category || !county || !quantity || !priceText || !seller || !phone) {
-    showError("Please fill in every required field before publishing.");
-    return;
-  }
+    const grid =
+      $("#listingGrid");
 
-  if (!Array.from($("#productCategory").options).some((option) => option.value === category || option.textContent === category)) {
-    showError("Please choose a valid product category.");
-    return;
-  }
 
-  if (!COUNTIES.includes(county)) {
-    showError("Please select one of Kenya's 47 counties.");
-    return;
-  }
+    if (!grid) {
 
-  if (!["Retail", "Bulk", "Both"].includes(saleType)) {
-    showError("Choose Retail, Bulk or Both for your sale type.");
-    return;
-  }
+      return;
 
-  if (!Number.isFinite(Number(priceText)) || Number(priceText) <= 0) {
-    showError("Enter a valid price greater than zero.");
-    return;
-  }
+    }
 
-  if (photo && !photo.type.startsWith("image/")) {
-    showError("Choose an image file for your product photo.");
-    return;
-  }
 
-  if (photo && photo.size > 12 * 1024 * 1024) {
-    showError("The selected photo is larger than 12 MB. Choose a smaller photo.");
-    return;
-  }
+    const results =
+      getFilteredListings();
 
-  if (submitButton) {
-    submitButton.disabled = true;
-    submitButton.textContent = "Publishing...";
-  }
 
-  try {
-    const user = readJSON(USER_KEY, null);
-    let image = "";
+    grid.innerHTML = "";
 
-    if (photo) {
-      try {
-        image = await compressImage(photo);
-      } catch (photoError) {
-        throw new Error(photoError.message || "Could not process the product photo.");
+
+    results.forEach(
+      item => {
+
+        const fair =
+          getFairPrice(item);
+
+
+        const card =
+          document.createElement("article");
+
+
+        card.className =
+          "product-card";
+
+
+        card.innerHTML = `
+
+          <div class="product-image-wrap">
+
+            <img
+              class="product-image"
+              src="${escapeHTML(item.image || "")}"
+              alt="${escapeHTML(item.name)}"
+            >
+
+            <span class="sale-badge">
+              ${escapeHTML(item.sale)}
+            </span>
+
+          </div>
+
+
+          <div class="product-body">
+
+            <small>
+              ${escapeHTML(item.category)}
+            </small>
+
+
+            <h3>
+              ${escapeHTML(item.name)}
+            </h3>
+
+
+            <p class="location">
+              📍
+              ${escapeHTML(item.town || "")}
+              ${item.town ? ", " : ""}
+              ${escapeHTML(item.county)}
+            </p>
+
+
+            <div class="price">
+
+              ${money(item.price)}
+
+              <span>
+                / ${escapeHTML(item.unit)}
+              </span>
+
+            </div>
+
+
+            <div
+              class="fair fair-${fair.status}"
+            >
+              ${escapeHTML(fair.label)}
+            </div>
+
+
+            <p class="fair-detail">
+              ${escapeHTML(fair.detail)}
+            </p>
+
+
+            <p class="quantity">
+
+              ${escapeHTML(item.qty)}
+
+              ·
+
+              ${escapeHTML(item.seller)}
+
+            </p>
+
+
+            <div class="card-actions">
+
+              <button
+                type="button"
+                class="small primary"
+                data-add-cart="${escapeHTML(item.id)}"
+              >
+                Add to cart
+              </button>
+
+
+              <a
+                href="tel:${escapeHTML(item.phone)}"
+                class="small"
+              >
+                Call
+              </a>
+
+            </div>
+
+          </div>
+
+        `;
+
+
+        const image =
+          card.querySelector(
+            ".product-image"
+          );
+
+
+        image.addEventListener(
+          "error",
+          () => {
+
+            image.style.display =
+              "none";
+
+          }
+        );
+
+
+        grid.appendChild(card);
+
       }
-    }
-
-    const newListing = {
-      id: `item-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-      name,
-      category,
-      county,
-      town,
-      price: Number(priceText),
-      priceUnit,
-      quantity,
-      saleType,
-      condition: condition || "Good condition",
-      seller,
-      phone,
-      image,
-      description,
-      createdAt: Date.now(),
-      ownerEmail: user?.email || "",
-      demo: false
-    };
-
-    // Add to the current page first so the listing is immediately visible.
-    listings.unshift(newListing);
-
-    const saved = saveListings();
-
-    // Clear conflicting filters so the newly created listing is visible.
-    if ($("#categoryFilter")) $("#categoryFilter").value = "All";
-    if ($("#locationFilter")) $("#locationFilter").value = "All";
-    if ($("#saleFilter")) $("#saleFilter").value = "All";
-    if ($("#fairPriceFilter")) $("#fairPriceFilter").value = "All";
-    if ($("#sortFilter")) $("#sortFilter").value = "newest";
-    if ($("#searchInput")) $("#searchInput").value = "";
-
-    activeSearch = "";
-
-    $$(".category-card").forEach((card) => {
-      card.classList.remove("selected");
-    });
-
-    if ($("#marketTitle")) {
-      $("#marketTitle").textContent = "Marketplace listings";
-    }
-
-    renderListings();
-    renderCart();
-
-    form.reset();
-    closeModal("listingModal");
-
-    $("#marketplace")?.scrollIntoView({
-      behavior: "auto",
-      block: "start"
-    });
-
-    if (!saved) {
-      showToast("Listing is visible for this session, but browser storage could not save it. It may disappear after refresh.");
-    } else if (listingSaveDroppedPhotos) {
-      showToast("Listing published. Some uploaded photos were removed to save browser storage.");
-    } else {
-      showToast("Listing published successfully!");
-    }
-  } catch (error) {
-    console.error("Listing publish failed:", error);
-    showError(error.message || "Could not publish the listing. Please try again.");
-  } finally {
-    if (submitButton) {
-      submitButton.disabled = false;
-      submitButton.textContent = "Publish listing";
-    }
-  }
-}
-
-/* -----------------------------------------------
-   SEARCH, CATEGORY, LOCATION AND FAIR-PRICE FILTERS
-   ----------------------------------------------- */
-
-function getFilteredListings() {
-  const category = $("#categoryFilter")?.value || "All";
-  const county = $("#locationFilter")?.value || "All";
-  const saleType = $("#saleFilter")?.value || "All";
-  const fairFilter = $("#fairPriceFilter")?.value || "All";
-  const sortBy = $("#sortFilter")?.value || "recommended";
-  const search = activeSearch.trim().toLowerCase();
-
-  const result = listings.filter((item) => {
-    const matchesCategory = category === "All" || item.category === category;
-    const matchesCounty = county === "All" || item.county === county;
-    const matchesSale = saleType === "All" ||
-      item.saleType === "Both" ||
-      item.saleType === saleType;
-
-    const fairStatus = getFairPrice(item).status;
-    const matchesFairPrice = fairFilter === "All" || fairStatus === fairFilter;
-
-    const haystack = [
-      item.name, item.category, item.county, item.town,
-      item.seller, item.description, item.saleType, item.priceUnit
-    ].join(" ").toLowerCase();
-
-    return matchesCategory &&
-      matchesCounty &&
-      matchesSale &&
-      matchesFairPrice &&
-      (!search || haystack.includes(search));
-  });
-
-  if (sortBy === "price-low") {
-    result.sort((a, b) => a.price - b.price);
-  } else if (sortBy === "price-high") {
-    result.sort((a, b) => b.price - a.price);
-  } else if (sortBy === "newest") {
-    result.sort((a, b) => b.createdAt - a.createdAt);
-  }
-
-  return result;
-}
-
-/* -----------------------------------------------
-   PRODUCT CARD RENDERING
-   ----------------------------------------------- */
-
-function renderListings() {
-  const grid = $("#listingGrid");
-  if (!grid) return;
-
-  const items = getFilteredListings();
-  const fragment = document.createDocumentFragment();
-
-  items.forEach((item) => {
-    const card = document.createElement("article");
-    card.className = "product-card";
-
-    const saleLabel = item.saleType === "Both"
-      ? "Retail + Bulk"
-      : item.saleType === "Bulk"
-        ? "Bulk offer"
-        : "Retail";
-
-    const imageWrap = document.createElement("div");
-    imageWrap.className = "product-photo-wrap";
-
-    const img = document.createElement("img");
-    img.className = "product-photo";
-    img.alt = item.name;
-    img.loading = "lazy";
-    img.decoding = "async";
-
-    const placeholder = document.createElement("div");
-    placeholder.className = "product-placeholder";
-    placeholder.textContent = item.name;
-
-    if (item.image) {
-      img.src = item.image;
-      placeholder.hidden = true;
-
-      img.addEventListener("error", () => {
-        img.hidden = true;
-        placeholder.hidden = false;
-      }, { once: true });
-
-      imageWrap.append(img, placeholder);
-    } else {
-      img.hidden = true;
-      imageWrap.append(img, placeholder);
-    }
-
-    const saleBadge = document.createElement("span");
-    saleBadge.className = "product-tag";
-    saleBadge.textContent = saleLabel;
-    imageWrap.append(saleBadge);
-
-    const info = document.createElement("div");
-    info.className = "product-info";
-
-    const category = document.createElement("p");
-    category.className = "product-category";
-    category.textContent = item.category;
-
-    const title = document.createElement("h3");
-    title.textContent = item.name;
-
-    const location = document.createElement("p");
-    location.className = "product-location";
-    location.textContent = [item.town, item.county].filter(Boolean).join(", ") || "Kenya";
-
-    const price = document.createElement("div");
-    price.className = "product-price";
-    price.append(document.createTextNode(`${money(item.price)} `));
-
-    const unit = document.createElement("span");
-    unit.className = "price-unit";
-    unit.textContent = `/ ${PRICE_UNIT_LABELS[normalisePriceUnit(item.priceUnit)] || "unit"}`;
-    price.append(unit);
-
-    // Fair-price status is shown for each card.
-    const fair = getFairPrice(item);
-
-    const fairRow = document.createElement("div");
-    fairRow.className = `fair-status fair-${fair.status}`;
-    fairRow.textContent = fair.label;
-
-    const fairDetail = document.createElement("p");
-    fairDetail.className = "fair-price-detail";
-    fairDetail.textContent = fair.detail;
-
-    const quantity = document.createElement("p");
-    quantity.className = "product-quantity";
-    quantity.textContent =
-      `${item.quantity || "Ask seller"} available · ${item.condition || "Good condition"}`;
-
-    const seller = document.createElement("p");
-    seller.className = "product-seller";
-
-    const sellerName = document.createElement("strong");
-    sellerName.textContent = item.seller || "Local seller";
-    seller.append(sellerName, document.createTextNode(item.description || "Contact seller for more details."));
-
-    const actions = document.createElement("div");
-    actions.className = "product-actions";
-
-    const addButton = document.createElement("button");
-    addButton.type = "button";
-    addButton.className = "small-button primary";
-    addButton.dataset.add = item.id;
-    addButton.textContent = "Add to cart";
-    actions.append(addButton);
-
-    const user = readJSON(USER_KEY, null);
-    const isOwner = Boolean(
-      user && item.ownerEmail && user.email === item.ownerEmail
     );
 
-    const actionButton = document.createElement("button");
-    actionButton.type = "button";
-    actionButton.className = "small-button";
 
-    if (isOwner) {
-      actionButton.dataset.delete = item.id;
-      actionButton.textContent = "Delete";
-    } else {
-      actionButton.dataset.chat = item.id;
-      actionButton.textContent = "Chat seller";
+    const resultCount =
+      $("#resultCount");
+
+
+    if (resultCount) {
+
+      resultCount.textContent =
+        `Showing ${results.length} listing${results.length === 1 ? "" : "s"}`;
+
     }
 
-    actions.append(actionButton);
 
-    info.append(
-      category,
-      title,
-      location,
-      price,
-      fairRow,
-      fairDetail,
-      quantity,
-      seller,
-      actions
+    const active =
+      $("#activeCategory");
+
+
+    if (active) {
+
+      active.textContent =
+        activeCategory === "All"
+
+          ? ""
+
+          : `Category: ${activeCategory}`;
+
+    }
+
+
+    const empty =
+      $("#emptyState");
+
+
+    if (empty) {
+
+      empty.classList.toggle(
+        "hidden",
+        results.length !== 0
+      );
+
+    }
+
+  }
+
+
+  /* =========================================================
+     MODALS
+  ========================================================= */
+
+  function openModal(id) {
+
+    const modal =
+      $(id);
+
+
+    if (!modal) {
+
+      return;
+
+    }
+
+
+    modal.classList.remove(
+      "hidden"
     );
 
-    const phone = String(item.phone || "").replace(/[^0-9+]/g, "");
 
-    if (phone) {
-      const call = document.createElement("a");
-      call.className = "plain-button call-link";
-      call.href = `tel:${phone}`;
-      call.textContent = `Call seller · ${item.phone}`;
-      info.append(call);
-    }
-
-    card.append(imageWrap, info);
-    fragment.append(card);
-  });
-
-  grid.replaceChildren(fragment);
-
-  $("#emptyState")?.classList.toggle("hidden", items.length > 0);
-
-  if ($("#resultCount")) {
-    $("#resultCount").textContent =
-      `Showing ${items.length} listing${items.length === 1 ? "" : "s"}`;
-  }
-
-  if ($("#listingTotal")) {
-    $("#listingTotal").textContent = `${listings.length}+`;
-  }
-}
-
-/* -----------------------------------------------
-   CHAT HANDOFF
-   ----------------------------------------------- */
-
-function openChatForListing(id) {
-  const item = listings.find((listing) => listing.id === id);
-
-  if (!item) {
-    showToast("Listing not found.");
-    return;
-  }
-
-  try {
-    localStorage.setItem(PENDING_CHAT_KEY, JSON.stringify({
-      productId: item.id,
-      productName: item.name,
-      seller: item.seller || "Farm seller",
-      phone: item.phone || "",
-      county: item.county || "",
-      price: item.price,
-      message: `Hi ${item.seller || "there"}, I am interested in ${item.name}. Is it available?`
-    }));
-
-    window.location.href = "messages.html";
-  } catch (error) {
-    showToast("Could not open chat in this browser.");
-  }
-}
-
-/* -----------------------------------------------
-   CART
-   ----------------------------------------------- */
-
-function renderCart() {
-  cart = cart.filter((entry) =>
-    listings.some((item) => item.id === entry.id)
-  );
-
-  if ($("#cartCount")) {
-    $("#cartCount").textContent = cart.reduce(
-      (sum, entry) => sum + Number(entry.quantity || 0),
-      0
+    document.body.classList.add(
+      "modal-open"
     );
+
   }
 
-  const cartItems = $("#cartItems");
 
-  if (cartItems) {
-    cartItems.replaceChildren();
+  function closeModal(id) {
 
-    if (cart.length === 0) {
-      const empty = document.createElement("p");
-      empty.className = "muted";
-      empty.textContent = "Your cart is empty.";
-      cartItems.append(empty);
-    } else {
-      cart.forEach((entry) => {
-        const item = listings.find((product) => product.id === entry.id);
-        if (!item) return;
+    const modal =
+      $(id);
 
-        const row = document.createElement("div");
-        row.className = "cart-item";
 
-        const details = document.createElement("div");
-        const name = document.createElement("strong");
-        name.textContent = item.name;
+    if (!modal) {
 
-        const quantity = document.createElement("p");
-        quantity.textContent = `${entry.quantity} × ${money(item.price)}`;
+      return;
 
-        details.append(name, quantity);
-
-        const right = document.createElement("div");
-        const total = document.createElement("strong");
-        total.textContent = money(item.price * entry.quantity);
-
-        const remove = document.createElement("button");
-        remove.type = "button";
-        remove.dataset.removeCart = item.id;
-        remove.textContent = "Remove";
-
-        right.append(total, document.createElement("br"), remove);
-        row.append(details, right);
-        cartItems.append(row);
-      });
     }
-  }
 
-  const total = cart.reduce((sum, entry) => {
-    const item = listings.find((product) => product.id === entry.id);
-    return sum + (item ? item.price * entry.quantity : 0);
-  }, 0);
 
-  if ($("#cartTotal")) {
-    $("#cartTotal").textContent = money(total);
-  }
-
-  saveCart();
-}
-
-function addToCart(id) {
-  const item = listings.find((listing) => listing.id === id);
-  if (!item) return;
-
-  const previous = cart.map((entry) => ({ ...entry }));
-  const existing = cart.find((entry) => entry.id === id);
-
-  if (existing) {
-    existing.quantity += 1;
-  } else {
-    cart.push({ id, quantity: 1 });
-  }
-
-  if (!saveCart()) {
-    cart = previous;
-    showToast("Could not save the cart. Browser storage may be full.");
-    return;
-  }
-
-  renderCart();
-  showToast(`${item.name} added to your cart.`);
-}
-
-function removeFromCart(id) {
-  const previous = cart.map((entry) => ({ ...entry }));
-  cart = cart.filter((entry) => entry.id !== id);
-
-  if (!saveCart()) {
-    cart = previous;
-    showToast("Could not update the cart.");
-    return;
-  }
-
-  renderCart();
-  showToast("Item removed from cart.");
-}
-
-/* -----------------------------------------------
-   CATEGORY AND FILTER CONTROLS
-   ----------------------------------------------- */
-
-function setCategory(category) {
-  const selectedCategory = String(category || "All").trim();
-
-  if ($("#categoryFilter")) $("#categoryFilter").value = selectedCategory;
-  if ($("#locationFilter")) $("#locationFilter").value = "All";
-  if ($("#saleFilter")) $("#saleFilter").value = "All";
-  if ($("#fairPriceFilter")) $("#fairPriceFilter").value = "All";
-  if ($("#sortFilter")) $("#sortFilter").value = "recommended";
-  if ($("#searchInput")) $("#searchInput").value = "";
-
-  activeSearch = "";
-
-  $$(".category-card").forEach((card) => {
-    card.classList.toggle(
-      "selected",
-      card.dataset.category === selectedCategory
+    modal.classList.add(
+      "hidden"
     );
-  });
 
-  if ($("#marketTitle")) {
-    $("#marketTitle").textContent = selectedCategory === "All"
-      ? "Marketplace listings"
-      : `${selectedCategory} listings`;
+
+    document.body.classList.remove(
+      "modal-open"
+    );
+
   }
 
-  renderListings();
 
-  $("#marketplace")?.scrollIntoView({
-    behavior: "auto",
-    block: "start"
-  });
-}
+  /* =========================================================
+     TOAST
+  ========================================================= */
 
-function clearFilters() {
-  if ($("#categoryFilter")) $("#categoryFilter").value = "All";
-  if ($("#locationFilter")) $("#locationFilter").value = "All";
-  if ($("#saleFilter")) $("#saleFilter").value = "All";
-  if ($("#fairPriceFilter")) $("#fairPriceFilter").value = "All";
-  if ($("#sortFilter")) $("#sortFilter").value = "recommended";
-  if ($("#searchInput")) $("#searchInput").value = "";
+  function showToast(message) {
 
-  activeSearch = "";
+    const toast =
+      $("#toast");
 
-  $$(".category-card").forEach((card) => card.classList.remove("selected"));
 
-  if ($("#marketTitle")) {
-    $("#marketTitle").textContent = "Marketplace listings";
-  }
+    if (!toast) {
 
-  renderListings();
-}
+      return;
 
-function updateAccountLink() {
-  const link = $("#accountLink");
-  const user = readJSON(USER_KEY, null);
-
-  if (link && user?.name) {
-    link.textContent = user.name;
-    link.title = "Demo account saved in this browser";
-  }
-}
-
-/* -----------------------------------------------
-   LAZY PHOTO LOADING
-   ----------------------------------------------- */
-
-function setupLazyCategoryPhotos() {
-  const photos = $$(".category-photo[data-photo]");
-
-  const applyPhoto = (element) => {
-    const url = CATEGORY_PHOTOS[element.dataset.photo];
-
-    if (!url || element.dataset.loaded === "true") return;
-
-    element.style.backgroundImage = `url("${url}")`;
-    element.dataset.loaded = "true";
-  };
-
-  if (!("IntersectionObserver" in window)) {
-    photos.forEach(applyPhoto);
-    return;
-  }
-
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (!entry.isIntersecting) return;
-
-      applyPhoto(entry.target);
-      observer.unobserve(entry.target);
-    });
-  }, {
-    rootMargin: "220px 0px",
-    threshold: 0.01
-  });
-
-  photos.forEach((photo) => observer.observe(photo));
-}
-
-/* -----------------------------------------------
-   FLOATING BACK TO TOP
-   ----------------------------------------------- */
-
-function setupBackToTop() {
-  const button = $("#backToTop");
-  if (!button) return;
-
-  const update = () => {
-    button.classList.toggle("visible", window.scrollY > 420);
-    scrollTicking = false;
-  };
-
-  window.addEventListener("scroll", () => {
-    if (scrollTicking) return;
-
-    scrollTicking = true;
-    window.requestAnimationFrame(update);
-  }, { passive: true });
-
-  button.addEventListener("click", () => {
-    const reducedMotion =
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-    window.scrollTo({
-      top: 0,
-      behavior: reducedMotion ? "auto" : "smooth"
-    });
-  });
-
-  update();
-}
-
-/* -----------------------------------------------
-   INITIALISE THE PAGE
-   ----------------------------------------------- */
-
-function init() {
-  populateCountySelects();
-  saveListings();
-
-  setupLazyCategoryPhotos();
-  setupBackToTop();
-
-  [
-    "sellButton",
-    "heroSellButton",
-    "sellSectionButton",
-    "emptySellButton"
-  ].forEach((id) => {
-    document.getElementById(id)?.addEventListener("click", openListingModal);
-  });
-
-  $("#listingForm")?.addEventListener("submit", handleListingSubmit);
-
-  $$("[data-close]").forEach((button) => {
-    button.addEventListener("click", () => closeModal(button.dataset.close));
-  });
-
-  $$(".modal-backdrop").forEach((modal) => {
-    modal.addEventListener("click", (event) => {
-      if (event.target === modal) closeModal(modal.id);
-    });
-  });
-
-  document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") {
-      $$(".modal-backdrop:not(.hidden)").forEach((modal) => closeModal(modal.id));
     }
-  });
 
-  // Direct click listeners ensure photo, label and card clicks all work.
-  $$(".category-card[data-category]").forEach((card) => {
-    card.addEventListener("click", (event) => {
-      event.preventDefault();
-      setCategory(card.dataset.category);
-    });
-  });
 
-  $("#showAllButton")?.addEventListener("click", () => setCategory("All"));
+    toast.textContent =
+      message;
 
-  $("#categoryFilter")?.addEventListener("change", () => {
-    setCategory($("#categoryFilter").value);
-  });
 
-  $("#locationFilter")?.addEventListener("change", renderListings);
-  $("#saleFilter")?.addEventListener("change", renderListings);
-  $("#fairPriceFilter")?.addEventListener("change", renderListings);
-  $("#sortFilter")?.addEventListener("change", renderListings);
-  $("#clearFiltersButton")?.addEventListener("click", clearFilters);
+    toast.classList.add(
+      "show"
+    );
 
-  $("#searchForm")?.addEventListener("submit", (event) => {
+
+    clearTimeout(
+      window.mavunoToast
+    );
+
+
+    window.mavunoToast =
+      setTimeout(
+        () => {
+
+          toast.classList.remove(
+            "show"
+          );
+
+        },
+        2800
+      );
+
+  }
+
+
+  /* =========================================================
+     IMAGE COMPRESSION
+  ========================================================= */
+
+  function compressImage(file) {
+
+    return new Promise(
+      resolve => {
+
+        if (!file) {
+
+          resolve("");
+
+          return;
+
+        }
+
+
+        const reader =
+          new FileReader();
+
+
+        reader.onload =
+          event => {
+
+            const image =
+              new Image();
+
+
+            image.onload =
+              () => {
+
+                const maxSize =
+                  900;
+
+
+                const scale =
+                  Math.min(
+                    1,
+                    maxSize /
+                    Math.max(
+                      image.width,
+                      image.height
+                    )
+                  );
+
+
+                const canvas =
+                  document.createElement(
+                    "canvas"
+                  );
+
+
+                canvas.width =
+                  Math.round(
+                    image.width *
+                    scale
+                  );
+
+
+                canvas.height =
+                  Math.round(
+                    image.height *
+                    scale
+                  );
+
+
+                const context =
+                  canvas.getContext(
+                    "2d"
+                  );
+
+
+                context.drawImage(
+                  image,
+                  0,
+                  0,
+                  canvas.width,
+                  canvas.height
+                );
+
+
+                resolve(
+                  canvas.toDataURL(
+                    "image/jpeg",
+                    0.72
+                  )
+                );
+
+              };
+
+
+            image.onerror =
+              () => resolve("");
+
+
+            image.src =
+              event.target.result;
+
+          };
+
+
+        reader.onerror =
+          () => resolve("");
+
+
+        reader.readAsDataURL(
+          file
+        );
+
+      }
+    );
+
+  }
+
+
+  /* =========================================================
+     CREATE LISTING
+  ========================================================= */
+
+  async function createListing(event) {
+
     event.preventDefault();
 
-    activeSearch = $("#searchInput")?.value || "";
+
+    const error =
+      $("#listingError");
+
+
+    error.classList.add(
+      "hidden"
+    );
+
+
+    const requiredFields = [
+
+      [
+        "productName",
+        "Product name"
+      ],
+
+      [
+        "productCategory",
+        "Category"
+      ],
+
+      [
+        "productCounty",
+        "County"
+      ],
+
+      [
+        "productQuantity",
+        "Quantity"
+      ],
+
+      [
+        "productPrice",
+        "Price"
+      ],
+
+      [
+        "sellerName",
+        "Seller name"
+      ],
+
+      [
+        "sellerPhone",
+        "Phone number"
+      ]
+
+    ];
+
+
+    for (
+      const [id, label]
+      of requiredFields
+    ) {
+
+      const field =
+        $("#" + id);
+
+
+      if (
+        !field ||
+        !field.value.trim()
+      ) {
+
+        error.textContent =
+          `Please enter ${label}.`;
+
+
+        error.classList.remove(
+          "hidden"
+        );
+
+
+        field?.focus();
+
+
+        return;
+
+      }
+
+    }
+
+
+    const price =
+      Number(
+        $("#productPrice").value
+      );
+
+
+    if (
+      !Number.isFinite(price) ||
+      price <= 0
+    ) {
+
+      error.textContent =
+        "Please enter a valid price.";
+
+
+      error.classList.remove(
+        "hidden"
+      );
+
+
+      return;
+
+    }
+
+
+    const image =
+      await compressImage(
+        $("#productImage").files[0]
+      );
+
+
+    const newListing = {
+
+      id:
+        "user-" +
+        Date.now(),
+
+      demo:
+        false,
+
+      name:
+        $("#productName")
+          .value
+          .trim(),
+
+      category:
+        $("#productCategory")
+          .value,
+
+      county:
+        $("#productCounty")
+          .value,
+
+      town:
+        $("#productTown")
+          .value
+          .trim(),
+
+      price:
+
+        price,
+
+      unit:
+        $("#productPriceUnit")
+          .value,
+
+      qty:
+        $("#productQuantity")
+          .value
+          .trim(),
+
+      sale:
+        $("#productSaleType")
+          .value,
+
+      seller:
+        $("#sellerName")
+          .value
+          .trim(),
+
+      phone:
+        $("#sellerPhone")
+          .value
+          .trim(),
+
+      condition:
+        $("#productCondition")
+          .value,
+
+      image:
+
+        image,
+
+      description:
+        $("#productDescription")
+          .value
+          .trim(),
+
+      createdAt:
+        Date.now()
+
+    };
+
+
+    listings.push(
+      newListing
+    );
+
+
+    const userListings =
+      listings.filter(
+        item => item.demo !== true
+      );
+
+
+    const saved =
+      saveStorage(
+        STORAGE.listings,
+        userListings
+      );
+
+
+    /*
+      IMPORTANT:
+      New listing keeps its selected category.
+    */
+
+    activeCategory =
+      newListing.category;
+
+
+    $("#categoryFilter").value =
+      newListing.category;
+
+
+    renderCategories();
+
     renderListings();
 
-    $("#marketplace")?.scrollIntoView({
-      behavior: "auto",
-      block: "start"
-    });
-  });
 
-  $("#cartButton")?.addEventListener("click", () => {
+    closeModal(
+      "#listingModal"
+    );
+
+
+    $("#listingForm").reset();
+
+
+    showToast(
+      saved
+        ? "Listing published successfully! 🎉"
+        : "Listing added for this session."
+    );
+
+  }
+
+
+  /* =========================================================
+     CART
+  ========================================================= */
+
+  function renderCart() {
+
+    const box =
+      $("#cartItems");
+
+
+    const count =
+      $("#cartCount");
+
+
+    if (!box) {
+
+      return;
+
+    }
+
+
+    if (!cart.length) {
+
+      box.innerHTML = `
+
+        <p class="muted">
+          Cart iko empty.
+        </p>
+
+      `;
+
+
+      $("#cartTotal").textContent =
+        "";
+
+
+      count.textContent =
+        "0";
+
+
+      return;
+
+    }
+
+
+    let total = 0;
+
+
+    box.innerHTML = "";
+
+
+    cart.forEach(
+      (listingId, index) => {
+
+        const item =
+          listings.find(
+            listing =>
+              listing.id === listingId
+          );
+
+
+        if (!item) {
+
+          return;
+
+        }
+
+
+        total +=
+          Number(item.price);
+
+
+        box.insertAdjacentHTML(
+          "beforeend",
+          `
+
+          <div class="cart-item">
+
+            <div>
+
+              <strong>
+                ${escapeHTML(item.name)}
+              </strong>
+
+              <small>
+                ${money(item.price)}
+                /
+                ${escapeHTML(item.unit)}
+              </small>
+
+            </div>
+
+
+            <button
+              type="button"
+              data-remove-cart="${index}"
+            >
+              ×
+            </button>
+
+          </div>
+
+          `
+        );
+
+      }
+    );
+
+
+    $("#cartTotal").textContent =
+      `Estimated total: ${money(total)}`;
+
+
+    count.textContent =
+      String(cart.length);
+
+  }
+
+
+  function addToCart(id) {
+
+    cart.push(id);
+
+
+    saveStorage(
+      STORAGE.cart,
+      cart
+    );
+
+
     renderCart();
-    openModal("cartModal");
-  });
 
-  $("#checkoutButton")?.addEventListener("click", () => {
-    showToast(cart.length
-      ? "Demo checkout only. No payment is processed."
-      : "Your cart is empty.");
-  });
 
-  $("#listingGrid")?.addEventListener("click", (event) => {
-    const add = event.target.closest("[data-add]");
-    if (add) {
-      addToCart(add.dataset.add);
-      return;
-    }
-
-    const chat = event.target.closest("[data-chat]");
-    if (chat) {
-      openChatForListing(chat.dataset.chat);
-      return;
-    }
-
-    const deleteButton = event.target.closest("[data-delete]");
-    if (!deleteButton) return;
-
-    const user = readJSON(USER_KEY, null);
-
-    const index = listings.findIndex((item) =>
-      item.id === deleteButton.dataset.delete &&
-      user &&
-      item.ownerEmail &&
-      item.ownerEmail === user.email
+    showToast(
+      "Added to cart 🛒"
     );
 
-    if (index < 0) {
-      showToast("Sign in with the demo account used to create this listing to delete it.");
-      return;
-    }
+  }
 
-    if (!window.confirm("Delete your listing?")) return;
 
-    const removed = listings.splice(index, 1)[0];
+  function removeFromCart(index) {
 
-    if (saveListings()) {
-      cart = cart.filter((entry) => entry.id !== removed.id);
-      saveCart();
-      renderListings();
-      renderCart();
-      showToast("Listing deleted.");
-    } else {
-      listings.splice(index, 0, removed);
-      showToast("Could not delete listing. Browser storage may be full.");
-    }
-  });
-
-  $("#cartItems")?.addEventListener("click", (event) => {
-    const removeButton = event.target.closest("[data-remove-cart]");
-    if (removeButton) removeFromCart(removeButton.dataset.removeCart);
-  });
-
-  $("#menuToggle")?.addEventListener("click", () => {
-    const nav = $("#mainNav");
-    if (!nav) return;
-
-    nav.classList.toggle("open");
-
-    $("#menuToggle").setAttribute(
-      "aria-expanded",
-      nav.classList.contains("open") ? "true" : "false"
+    cart.splice(
+      index,
+      1
     );
-  });
 
-  $$("#mainNav a").forEach((link) => {
-    link.addEventListener("click", () => {
-      $("#mainNav")?.classList.remove("open");
-      $("#menuToggle")?.setAttribute("aria-expanded", "false");
-    });
-  });
 
-  renderListings();
-  renderCart();
-  updateAccountLink();
-}
+    saveStorage(
+      STORAGE.cart,
+      cart
+    );
 
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", init, { once: true });
-} else {
-  init();
-}
+
+    renderCart();
+
+  }
+
+
+  /* =========================================================
+     CLEAR FILTERS
+  ========================================================= */
+
+  function clearFilters() {
+
+    activeCategory =
+      "All";
+
+
+    $("#categoryFilter").value =
+      "All";
+
+
+    $("#locationFilter").value =
+      "All";
+
+
+    $("#saleFilter").value =
+      "All";
+
+
+    $("#fairPriceFilter").value =
+      "All";
+
+
+    $("#sortFilter").value =
+      "recommended";
+
+
+    $("#searchInput").value =
+      "";
+
+
+    renderCategories();
+
+    renderListings();
+
+  }
+
+
+  /* =========================================================
+     EVENT BINDING
+  ========================================================= */
+
+  function bindEvents() {
+
+
+    /*
+      ⭐ CATEGORY BUTTONS
+
+      This is the important part.
+
+      The listener is attached directly
+      to the category container.
+
+      Therefore clicking:
+
+      - image
+      - text
+      - empty area
+      - category card
+
+      all work.
+    */
+
+    $("#categoryGrid")
+      .addEventListener(
+        "click",
+        event => {
+
+          const button =
+            event.target.closest(
+              ".category-card"
+            );
+
+
+          if (!button) {
+
+            return;
+
+          }
+
+
+          const category =
+            button.dataset.category;
+
+
+          selectCategory(
+            category
+          );
+
+        }
+      );
+
+
+    /*
+      VIEW ALL
+    */
+
+    $("#showAllButton")
+      .addEventListener(
+        "click",
+        () => {
+
+          selectCategory(
+            "All"
+          );
+
+        }
+      );
+
+
+    /*
+      CATEGORY SELECT
+    */
+
+    $("#categoryFilter")
+      .addEventListener(
+        "change",
+        event => {
+
+          selectCategory(
+            event.target.value
+          );
+
+        }
+      );
+
+
+    /*
+      SEARCH
+    */
+
+    $("#searchInput")
+      .addEventListener(
+        "input",
+        renderListings
+      );
+
+
+    /*
+      OTHER FILTERS
+    */
+
+    [
+
+      "locationFilter",
+
+      "saleFilter",
+
+      "fairPriceFilter",
+
+      "sortFilter"
+
+    ].forEach(
+      id => {
+
+        $("#" + id)
+          .addEventListener(
+            "change",
+            renderListings
+          );
+
+      }
+    );
+
+
+    /*
+      CREATE LISTING BUTTONS
+    */
+
+    [
+
+      "sellButton",
+
+      "heroSellButton",
+
+      "emptySellButton"
+
+    ].forEach(
+      id => {
+
+        $("#" + id)
+          .addEventListener(
+            "click",
+            () => {
+
+              openModal(
+                "#listingModal"
+              );
+
+            }
+          );
+
+      }
+    );
+
+
+    /*
+      LISTING FORM
+    */
+
+    $("#listingForm")
+      .addEventListener(
+        "submit",
+        createListing
+      );
+
+
+    /*
+      CLOSE BUTTONS
+    */
+
+    $$("[data-close]")
+      .forEach(
+        button => {
+
+          button.addEventListener(
+            "click",
+            () => {
+
+              closeModal(
+                "#" +
+                button.dataset.close
+              );
+
+            }
+          );
+
+        }
+      );
+
+
+    /*
+      CART
+    */
+
+    $("#cartButton")
+      .addEventListener(
+        "click",
+        () => {
+
+          renderCart();
+
+          openModal(
+            "#cartModal"
+          );
+
+        }
+      );
+
+
+    /*
+      ADD TO CART
+    */
+
+    $("#listingGrid")
+      .addEventListener(
+        "click",
+        event => {
+
+          const button =
+            event.target.closest(
+              "[data-add-cart]"
+            );
+
+
+          if (!button) {
+
+            return;
+
+          }
+
+
+          addToCart(
+            button.dataset.addCart
+          );
+
+        }
+      );
+
+
+    /*
+      REMOVE FROM CART
+    */
+
+    $("#cartItems")
+      .addEventListener(
+        "click",
+        event => {
+
+          const button =
+            event.target.closest(
+              "[data-remove-cart]"
+            );
+
+
+          if (!button) {
+
+            return;
+
+          }
+
+
+          removeFromCart(
+            Number(
+              button.dataset.removeCart
+            )
+          );
+
+        }
+      );
+
+
+    /*
+      CLEAR
+    */
+
+    $("#clearFiltersButton")
+      .addEventListener(
+        "click",
+        clearFilters
+      );
+
+
+    /*
+      DEMO CHECKOUT
+    */
+
+    $("#demoCheckout")
+      .addEventListener(
+        "click",
+        () => {
+
+          showToast(
+            "Demo checkout — no real payment taken."
+          );
+
+        }
+      );
+
+
+    /*
+      BACK TO TOP
+    */
+
+    window.addEventListener(
+      "scroll",
+      () => {
+
+        $("#backToTop")
+          .classList.toggle(
+            "show",
+            window.scrollY > 500
+          );
+
+      }
+    );
+
+
+    $("#backToTop")
+      .addEventListener(
+        "click",
+        () => {
+
+          window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+          });
+
+        }
+      );
+
+
+    /*
+      ESCAPE KEY
+    */
+
+    document.addEventListener(
+      "keydown",
+      event => {
+
+        if (
+          event.key === "Escape"
+        ) {
+
+          closeModal(
+            "#listingModal"
+          );
+
+          closeModal(
+            "#cartModal"
+          );
+
+        }
+
+      }
+    );
+
+  }
+
+
+  /* =========================================================
+     START APP
+  ========================================================= */
+
+  function startApp() {
+
+    initializeData();
+
+    populateSelects();
+
+    renderCategories();
+
+    renderListings();
+
+    renderCart();
+
+    bindEvents();
+
+
+    console.log(
+      "🌱 MavunoBridge marketplace loaded successfully."
+    );
+
+  }
+
+
+  /*
+    Start safely after HTML exists.
+  */
+
+  if (
+    document.readyState ===
+    "loading"
+  ) {
+
+    document.addEventListener(
+      "DOMContentLoaded",
+      startApp,
+      {
+        once: true
+      }
+    );
+
+  } else {
+
+    startApp();
+
+  }
+
+
+})();
