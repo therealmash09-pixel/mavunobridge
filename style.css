@@ -326,3 +326,20 @@ input::placeholder, textarea::placeholder { color: #a0a9a0; }
   .auth-panel { padding: 25px 5%; }
   .auth-card { padding: 23px; }
 }
+
+/* SACCO Hub */
+.sacco-hero { background: linear-gradient(115deg, #183522, #326444); }
+.sacco-controls { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-bottom: 22px; }
+.sacco-controls input, .sacco-controls select { width: 100%; min-width: 0; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+.sacco-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.sacco-card { display: flex; flex-direction: column; align-items: start; padding: 22px; border: 1px solid var(--line); border-radius: 12px; background: white; box-shadow: 0 4px 18px #18352206; }
+.sacco-card h3 { margin: 14px 0 4px; font-size: 19px; line-height: 1.25; }
+.sacco-card p:not(.sacco-location) { color: var(--muted); font-size: 12px; flex: 1; margin-top: 12px; }
+.sacco-location { color: var(--green-700); font-size: 11px; margin-bottom: 0; }
+.opportunity-type { display: inline-block; border-radius: 5px; padding: 5px 8px; background: #edf4e7; color: var(--green-800); font-size: 9px; font-weight: 850; letter-spacing: .6px; }
+.interest-panel { border-top: 1px solid var(--line); padding-top: 28px; margin-top: 45px; }
+.interest-panel h2 { font-size: 25px; }
+.saved-interest { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 12px; border-bottom: 1px solid var(--line); font-size: 13px; }
+.saved-interest button { color: #a02c2c; background: transparent; border: 0; font-size: 11px; font-weight: 800; }
+@media (max-width: 800px) { .sacco-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .sacco-grid, .sacco-controls { grid-template-columns: 1fr; } }
