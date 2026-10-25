@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,9 +7,9 @@
   <meta name="description" content="MavunoBridge connects Kenyan farmers, buyers and agricultural opportunities.">
   <title>MavunoBridge | Kenya's Farm Marketplace</title>
 
-  <link rel="stylesheet" href="style.css?v=20261025-4">
-  <script src="app.js?v=20261025-4" defer></script>
-  <script src="language.js?v=20261025-4" defer></script>
+  <link rel="stylesheet" href="style.css?v=20261025-5">
+  <script src="app.js?v=20261025-5" defer></script>
+  <script src="language.js?v=20261025-5" defer></script>
 </head>
 
 <body>
@@ -280,7 +279,33 @@
           <option value="newest">Newest first</option>
         </select>
       </label>
+
+      <label class="fair-filter-field">
+        <span>Fair price filter</span>
+        <select id="fairPriceFilter">
+          <option value="All">All price statuses</option>
+          <option value="within">Within guide</option>
+          <option value="below">Below guide</option>
+          <option value="above">Above guide</option>
+          <option value="no-guide">No guide yet</option>
+        </select>
+      </label>
     </div>
+
+    <aside class="fair-price-guide" id="fairPriceGuide">
+      <div class="fair-guide-icon" aria-hidden="true">✓</div>
+      <div>
+        <strong>Fair price guide — demo reference</strong>
+        <p>
+          Tomatoes: KSh 60–110/kg · Hass avocados: KSh 90–180/kg ·
+          Maize: KSh 45–80/kg.
+        </p>
+        <small>
+          These are illustrative project ranges, not live market prices.
+          County, season, quality and quantity can affect actual prices.
+        </small>
+      </div>
+    </aside>
 
     <div class="active-filter-row">
       <span id="resultCount" aria-live="polite">Loading listings...</span>
@@ -344,18 +369,20 @@
         <p class="eyebrow">SELL ON MAVUNOBRIDGE</p>
         <h2 id="listingModalTitle" data-i18n="createListingTitle">Create a listing</h2>
       </div>
-      <button class="close-button" type="button" data-close="listingModal" aria-label="Close">×</button>
+      <button class="close-button" type="button"
+        data-close="listingModal" aria-label="Close">×</button>
     </div>
 
     <p class="muted" data-i18n="listingHelp">
       Complete the details. Select Both if you sell to retail and bulk buyers.
     </p>
 
-    <form id="listingForm">
+    <form id="listingForm" novalidate>
       <div class="form-grid">
         <label>
           <span data-i18n="productName">Product or service name *</span>
-          <input id="productName" name="productName" required maxlength="80" placeholder="e.g. Fresh Hass avocados">
+          <input id="productName" name="productName" required maxlength="80"
+            placeholder="e.g. Fresh Hass avocados">
         </label>
 
         <label>
@@ -388,17 +415,41 @@
 
         <label>
           <span data-i18n="townArea">Town / area</span>
-          <input id="productTown" name="productTown" maxlength="80" placeholder="e.g. Limuru">
+          <input id="productTown" name="productTown" maxlength="80"
+            placeholder="e.g. Limuru">
         </label>
 
         <label>
           <span data-i18n="quantityAvailable">Quantity available *</span>
-          <input id="productQuantity" name="productQuantity" required maxlength="80" placeholder="e.g. 200 kg">
+          <input id="productQuantity" name="productQuantity" required maxlength="80"
+            placeholder="e.g. 200 kg">
         </label>
 
         <label>
           <span data-i18n="priceKsh">Price in KSh *</span>
-          <input id="productPrice" name="productPrice" type="number" min="0" step="0.01" required placeholder="e.g. 80">
+          <input id="productPrice" name="productPrice" type="number"
+            min="0.01" step="0.01" required placeholder="e.g. 80">
+        </label>
+
+        <label>
+          <span>Price unit *</span>
+          <select id="productPriceUnit" name="productPriceUnit" required>
+            <option value="kg">Per kilogram (kg)</option>
+            <option value="piece">Per piece</option>
+            <option value="tray">Per tray</option>
+            <option value="litre">Per litre</option>
+            <option value="bunch">Per bunch</option>
+            <option value="bag">Per bag</option>
+            <option value="pack">Per pack</option>
+            <option value="jar">Per jar</option>
+            <option value="animal">Per animal</option>
+            <option value="acre">Per acre</option>
+            <option value="service">Per service</option>
+            <option value="unit">Per unit</option>
+          </select>
+          <small class="field-note">
+            Fair-price comparisons only apply when the product and unit match a guide.
+          </small>
         </label>
 
         <label>
@@ -428,12 +479,14 @@
 
         <label>
           <span data-i18n="sellerName">Your name / farm name *</span>
-          <input id="sellerName" name="sellerName" required maxlength="80" placeholder="Seller or farm name">
+          <input id="sellerName" name="sellerName" required maxlength="80"
+            placeholder="Seller or farm name">
         </label>
 
         <label>
           <span data-i18n="phoneNumber">Phone number *</span>
-          <input id="sellerPhone" name="sellerPhone" type="tel" required maxlength="30" placeholder="e.g. 0712345678">
+          <input id="sellerPhone" name="sellerPhone" type="tel" required maxlength="30"
+            placeholder="e.g. 0712345678">
         </label>
 
         <label class="full-width">
@@ -446,19 +499,19 @@
 
         <label class="full-width">
           <span data-i18n="description">Description</span>
-          <textarea id="productDescription" name="productDescription" rows="3" maxlength="500" placeholder="Add product details, harvest date, storage or delivery information."></textarea>
+          <textarea id="productDescription" name="productDescription" rows="3"
+            maxlength="500"
+            placeholder="Add product details, harvest date, storage or delivery information."></textarea>
         </label>
       </div>
 
       <p class="form-error hidden" id="listingError" role="alert"></p>
 
       <div class="modal-actions">
-        <button class="button button-muted" type="button" data-close="listingModal" data-i18n="cancel">
-          Cancel
-        </button>
-        <button class="button button-green" id="submitListingButton" type="submit" data-i18n="publishListing">
-          Publish listing
-        </button>
+        <button class="button button-muted" type="button"
+          data-close="listingModal" data-i18n="cancel">Cancel</button>
+        <button class="button button-green" id="submitListingButton"
+          type="submit" data-i18n="publishListing">Publish listing</button>
       </div>
     </form>
   </div>
@@ -470,7 +523,8 @@
   <div class="modal cart-modal">
     <div class="modal-heading">
       <h2 id="cartTitle" data-i18n="yourCart">Your cart</h2>
-      <button class="close-button" data-close="cartModal" type="button" aria-label="Close">×</button>
+      <button class="close-button" data-close="cartModal" type="button"
+        aria-label="Close">×</button>
     </div>
     <p class="muted" data-i18n="demoCart">Demo cart only. No payment is taken.</p>
     <div id="cartItems"></div>
@@ -478,18 +532,14 @@
       <span data-i18n="estimatedTotal">Estimated total</span>
       <strong id="cartTotal">KSh 0</strong>
     </div>
-    <button class="button button-green full-button" id="checkoutButton" type="button" data-i18n="demoCheckout">
-      Continue to demo checkout
-    </button>
+    <button class="button button-green full-button" id="checkoutButton"
+      type="button" data-i18n="demoCheckout">Continue to demo checkout</button>
   </div>
 </div>
 
 <div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
 
-<!-- FLOATING BACK TO TOP -->
 <button id="backToTop" class="back-to-top" type="button"
-  aria-label="Back to top" title="Back to top">
-  ↑<span>Top</span>
-</button>
+  aria-label="Back to top" title="Back to top">↑<span>Top</span></button>
 </body>
 </html>
