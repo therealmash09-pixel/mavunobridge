@@ -234,6 +234,155 @@
   let activeCategory = "All";
   let toastTimeout = null;
   let isPublishing = false;
+  let currentLang = "mix";
+
+  /* LANGUAGE STRINGS FOR TEXT THAT THE SCRIPT CREATES (cards, cart, toasts) */
+
+  const D = {
+    mix: {
+      addCart: "Add to cart",
+      contact: "Contact seller",
+      demoBadge: "DEMO LISTING",
+      saleRetail: "Retail",
+      saleBulk: "Bulk",
+      saleBoth: "Both",
+      qtyOnRequest: "Quantity on request",
+      sellerFallback: "Seller",
+      fairNoLabel: "No guide yet",
+      fairNoDetail: "No matching demo price guide.",
+      fairBelow: "Below demo guide",
+      fairAbove: "Above demo guide",
+      fairWithin: "Within demo guide",
+      showing: n => `Showing ${n} listing${n === 1 ? "" : "s"}`,
+      categoryLabel: c => `Category: ${c}`,
+      hintAll: "Discover products and services from Kenyan sellers.",
+      hintCat: c => `Showing ${c}. Chagua product unayohitaji.`,
+      noContact: "No contact number was provided for this listing.",
+      cartEmpty: "Your cart is empty. Browse the marketplace to add items.",
+      remove: "Remove",
+      subtotal: v => `Demo subtotal: ${v}`,
+      cartAdded: n => `${n} added to your demo cart.`,
+      cartNotFound: "Listing not found. Refresh the page and try again.",
+      cartSaveFail: "Cart could not be saved in this browser.",
+      cartRemoved: "Item removed from cart.",
+      cartCleared: "Cart cleared.",
+      publish: "Publish listing",
+      publishing: "Publishing...",
+      published: "Listing published! Iko live kwenye marketplace hii browser.",
+      publishedNoPhoto: "Listing published without the photo (it was too big to save).",
+      publishedNoSave: "Listing added, but your browser blocked saving. It will disappear when you refresh.",
+      formMissing: "Listing form could not be found.",
+      fillAll: "Tafadhali jaza required fields zote.",
+      badCategory: "Please choose a valid product category.",
+      badCounty: "Please choose a valid county.",
+      badPrice: "Enter a price greater than zero.",
+      badPhone: "Enter a valid Kenyan phone number, e.g. 0712345678 or +254712345678.",
+      publishFailed: "Could not publish the listing. Please try again.",
+      langChanged: "Language set to Sheng + English."
+    },
+    en: {
+      addCart: "Add to cart",
+      contact: "Contact seller",
+      demoBadge: "DEMO LISTING",
+      saleRetail: "Retail",
+      saleBulk: "Bulk",
+      saleBoth: "Retail + bulk",
+      qtyOnRequest: "Quantity on request",
+      sellerFallback: "Seller",
+      fairNoLabel: "No guide yet",
+      fairNoDetail: "No matching demo price guide.",
+      fairBelow: "Below demo guide",
+      fairAbove: "Above demo guide",
+      fairWithin: "Within demo guide",
+      showing: n => `Showing ${n} listing${n === 1 ? "" : "s"}`,
+      categoryLabel: c => `Category: ${c}`,
+      hintAll: "Discover products and services from Kenyan sellers.",
+      hintCat: c => `Showing ${c}. Pick the product you need.`,
+      noContact: "No contact number was provided for this listing.",
+      cartEmpty: "Your cart is empty. Browse the marketplace to add items.",
+      remove: "Remove",
+      subtotal: v => `Demo subtotal: ${v}`,
+      cartAdded: n => `${n} added to your demo cart.`,
+      cartNotFound: "Listing not found. Refresh the page and try again.",
+      cartSaveFail: "Cart could not be saved in this browser.",
+      cartRemoved: "Item removed from cart.",
+      cartCleared: "Cart cleared.",
+      publish: "Publish listing",
+      publishing: "Publishing...",
+      published: "Listing published! It is now live on the marketplace in this browser.",
+      publishedNoPhoto: "Listing published without the photo (it was too big to save).",
+      publishedNoSave: "Listing added, but your browser blocked saving. It will disappear when you refresh.",
+      formMissing: "Listing form could not be found.",
+      fillAll: "Please fill in all required fields.",
+      badCategory: "Please choose a valid product category.",
+      badCounty: "Please choose a valid county.",
+      badPrice: "Enter a price greater than zero.",
+      badPhone: "Enter a valid Kenyan phone number, e.g. 0712345678 or +254712345678.",
+      publishFailed: "Could not publish the listing. Please try again.",
+      langChanged: "Language changed to English."
+    },
+    sw: {
+      addCart: "Weka kikapuni",
+      contact: "Wasiliana na muuzaji",
+      demoBadge: "TANGAZO LA MFANO",
+      saleRetail: "Rejareja",
+      saleBulk: "Jumla",
+      saleBoth: "Rejareja + jumla",
+      qtyOnRequest: "Kiasi kwa ombi",
+      sellerFallback: "Muuzaji",
+      fairNoLabel: "Hakuna mwongozo bado",
+      fairNoDetail: "Hakuna mwongozo wa bei unaolingana.",
+      fairBelow: "Chini ya mwongozo wa majaribio",
+      fairAbove: "Juu ya mwongozo wa majaribio",
+      fairWithin: "Ndani ya mwongozo wa majaribio",
+      showing: n => n === 1 ? "Tangazo 1 linaonyeshwa" : `Matangazo ${n} yanaonyeshwa`,
+      categoryLabel: c => `Aina: ${c}`,
+      hintAll: "Gundua bidhaa na huduma kutoka kwa wauzaji wa Kenya.",
+      hintCat: c => `Inaonyesha ${c}. Chagua bidhaa unayohitaji.`,
+      noContact: "Hakuna namba ya mawasiliano iliyotolewa kwa tangazo hili.",
+      cartEmpty: "Kikapu chako ni tupu. Tazama soko ili uongeze bidhaa.",
+      remove: "Ondoa",
+      subtotal: v => `Jumla ndogo ya majaribio: ${v}`,
+      cartAdded: n => `${n} imewekwa kwenye kikapu chako cha majaribio.`,
+      cartNotFound: "Tangazo halikupatikana. Onyesha upya ukurasa kisha ujaribu tena.",
+      cartSaveFail: "Kikapu hakikuweza kuhifadhiwa kwenye kivinjari hiki.",
+      cartRemoved: "Bidhaa imeondolewa kwenye kikapu.",
+      cartCleared: "Kikapu kimefutwa.",
+      publish: "Chapisha tangazo",
+      publishing: "Inachapisha...",
+      published: "Tangazo limechapishwa! Sasa lipo kwenye soko katika kivinjari hiki.",
+      publishedNoPhoto: "Tangazo limechapishwa bila picha (ilikuwa kubwa mno kuhifadhiwa).",
+      publishedNoSave: "Tangazo limeongezwa, lakini kivinjari chako kimezuia kuhifadhi. Litatoweka ukionyesha upya ukurasa.",
+      formMissing: "Fomu ya tangazo haikupatikana.",
+      fillAll: "Tafadhali jaza sehemu zote zinazohitajika.",
+      badCategory: "Tafadhali chagua aina halali ya bidhaa.",
+      badCounty: "Tafadhali chagua kaunti halali.",
+      badPrice: "Weka bei inayozidi sifuri.",
+      badPhone: "Weka namba halali ya simu ya Kenya, mfano 0712345678 au +254712345678.",
+      publishFailed: "Imeshindwa kuchapisha tangazo. Tafadhali jaribu tena.",
+      langChanged: "Lugha imebadilishwa."
+    }
+  };
+
+  function t(key, ...args) {
+    const table = D[currentLang] || D.mix;
+    const value = table[key] !== undefined ? table[key] : D.mix[key];
+    return typeof value === "function" ? value(...args) : value;
+  }
+
+  function saleLabel(sale) {
+    if (sale === "Bulk") return t("saleBulk");
+    if (sale === "Both") return t("saleBoth");
+    return t("saleRetail");
+  }
+
+  function updateHint() {
+    const hint = $("#marketHint");
+    if (!hint) return;
+    hint.textContent = activeCategory === "All"
+      ? t("hintAll")
+      : t("hintCat", activeCategory);
+  }
 
   /* STORAGE */
 
@@ -400,13 +549,7 @@
 
     renderCategories();
     renderListings();
-
-    const hint = $("#marketHint");
-    if (hint) {
-      hint.textContent = activeCategory === "All"
-        ? "Discover products and services from Kenyan sellers."
-        : `Showing ${activeCategory}. Chagua product unayohitaji.`;
-    }
+    updateHint();
 
     if (scroll) {
       $("#marketplace")?.scrollIntoView({
@@ -425,15 +568,15 @@
     if (!guide || item.unit !== "kg") {
       return {
         status: "no-guide",
-        label: "No guide yet",
-        detail: "No matching demo price guide."
+        label: t("fairNoLabel"),
+        detail: t("fairNoDetail")
       };
     }
 
     if (Number(item.price) < guide.min) {
       return {
         status: "below",
-        label: "Below demo guide",
+        label: t("fairBelow"),
         detail: `${guide.name}: ${money(guide.min)}–${money(guide.max)} / kg`
       };
     }
@@ -441,14 +584,14 @@
     if (Number(item.price) > guide.max) {
       return {
         status: "above",
-        label: "Above demo guide",
+        label: t("fairAbove"),
         detail: `${guide.name}: ${money(guide.min)}–${money(guide.max)} / kg`
       };
     }
 
     return {
       status: "within",
-      label: "Within demo guide",
+      label: t("fairWithin"),
       detail: `${guide.name}: ${money(guide.min)}–${money(guide.max)} / kg`
     };
   }
@@ -552,13 +695,13 @@
 
       const saleBadge = document.createElement("span");
       saleBadge.className = "sale-badge";
-      saleBadge.textContent = item.sale || "Retail";
+      saleBadge.textContent = saleLabel(item.sale);
       imageWrap.appendChild(saleBadge);
 
       if (item.demo) {
         const demoBadge = document.createElement("span");
         demoBadge.className = "demo-badge";
-        demoBadge.textContent = "DEMO LISTING";
+        demoBadge.textContent = t("demoBadge");
         imageWrap.appendChild(demoBadge);
       }
 
@@ -593,7 +736,7 @@
 
       const quantity = document.createElement("p");
       quantity.className = "quantity";
-      quantity.textContent = `${item.qty || "Quantity on request"} · ${item.seller || "Seller"}`;
+      quantity.textContent = `${item.qty || t("qtyOnRequest")} · ${item.seller || t("sellerFallback")}`;
 
       const actions = document.createElement("div");
       actions.className = "card-actions";
@@ -602,12 +745,12 @@
       addButton.type = "button";
       addButton.className = "small primary";
       addButton.dataset.addCart = item.id;
-      addButton.textContent = "Add to cart";
+      addButton.textContent = t("addCart");
 
       const phone = normalizePhone(item.phone);
       const callLink = document.createElement("a");
       callLink.className = "small";
-      callLink.textContent = "Contact seller";
+      callLink.textContent = t("contact");
 
       if (phone) {
         callLink.href = `tel:${phone}`;
@@ -615,7 +758,7 @@
         callLink.href = "#";
         callLink.addEventListener("click", event => {
           event.preventDefault();
-          showToast("No contact number was provided for this listing.");
+          showToast(t("noContact"));
         });
       }
 
@@ -627,15 +770,14 @@
 
     const resultCount = $("#resultCount");
     if (resultCount) {
-      resultCount.textContent =
-        `Showing ${results.length} listing${results.length === 1 ? "" : "s"}`;
+      resultCount.textContent = t("showing", results.length);
     }
 
     const active = $("#activeCategory");
     if (active) {
       active.textContent = activeCategory === "All"
         ? ""
-        : `Category: ${activeCategory}`;
+        : t("categoryLabel", activeCategory);
     }
 
     const empty = $("#emptyState");
@@ -778,7 +920,7 @@
     const publishButton = $("#publishListingButton");
 
     if (!form) {
-      showToast("Listing form could not be found.");
+      showToast(t("formMissing"));
       return;
     }
 
@@ -803,27 +945,27 @@
     const file = $("#productImage")?.files?.[0] || null;
 
     if (!name || !category || !county || !qty || !seller || !phone) {
-      showListingError("Tafadhali jaza required fields zote.");
+      showListingError(t("fillAll"));
       return;
     }
 
     if (!CATEGORIES.some(([label]) => label === category)) {
-      showListingError("Please choose a valid product category.");
+      showListingError(t("badCategory"));
       return;
     }
 
     if (!COUNTIES.includes(county)) {
-      showListingError("Please choose a valid county.");
+      showListingError(t("badCounty"));
       return;
     }
 
     if (!Number.isFinite(price) || price <= 0) {
-      showListingError("Enter a price greater than zero.");
+      showListingError(t("badPrice"));
       return;
     }
 
     if (!validPhone(phone)) {
-      showListingError("Enter a valid Kenyan phone number, e.g. 0712345678 or +254712345678.");
+      showListingError(t("badPhone"));
       return;
     }
 
@@ -831,7 +973,7 @@
 
     if (publishButton) {
       publishButton.disabled = true;
-      publishButton.textContent = "Publishing...";
+      publishButton.textContent = t("publishing");
     }
 
     try {
@@ -889,28 +1031,29 @@
 
       renderCategories();
       renderListings();
+      updateHint();
 
       form.reset();
       closeModal("listingModal");
 
       if (!storageWorked) {
-        showToast("Listing added, but your browser blocked saving. It will disappear when you refresh.");
+        showToast(t("publishedNoSave"));
       } else if (photoDropped) {
-        showToast("Listing published without the photo (it was too big to save).");
+        showToast(t("publishedNoPhoto"));
       } else {
-        showToast("Listing published! Iko live kwenye marketplace hii browser.");
+        showToast(t("published"));
       }
 
       $("#marketplace")?.scrollIntoView({ behavior: "smooth", block: "start" });
     } catch (error) {
       console.error("Listing publish error:", error);
-      showListingError(error.message || "Could not publish the listing. Please try again.");
+      showListingError(error.message || t("publishFailed"));
     } finally {
       isPublishing = false;
 
       if (publishButton) {
         publishButton.disabled = false;
-        publishButton.textContent = "Publish listing";
+        publishButton.textContent = t("publish");
       }
     }
   }
@@ -919,7 +1062,7 @@
 
   function saveCart() {
     if (!saveStorage(STORAGE.cart, cart)) {
-      showToast("Cart could not be saved in this browser.");
+      showToast(t("cartSaveFail"));
       return false;
     }
     return true;
@@ -929,7 +1072,7 @@
     const item = listings.find(listing => listing.id === id);
 
     if (!item) {
-      showToast("Listing not found. Refresh the page and try again.");
+      showToast(t("cartNotFound"));
       return;
     }
 
@@ -943,7 +1086,7 @@
 
     if (saveCart()) {
       updateCartCount();
-      showToast(`${item.name} added to your demo cart.`);
+      showToast(t("cartAdded", item.name));
     }
   }
 
@@ -970,7 +1113,7 @@
     saveStorage(STORAGE.cart, cart);
 
     if (!cart.length) {
-      container.innerHTML = "<p>Your cart is empty. Browse the marketplace to add items.</p>";
+      container.innerHTML = `<p>${escapeHTML(t("cartEmpty"))}</p>`;
       updateCartCount();
       return;
     }
@@ -999,7 +1142,7 @@
 
       const remove = document.createElement("button");
       remove.type = "button";
-      remove.textContent = "Remove";
+      remove.textContent = t("remove");
       remove.dataset.removeCart = item.id;
 
       row.append(info, remove);
@@ -1010,7 +1153,7 @@
     totalRow.className = "cart-total";
     totalRow.style.fontWeight = "800";
     totalRow.style.marginTop = "18px";
-    totalRow.textContent = `Demo subtotal: ${money(total)}`;
+    totalRow.textContent = t("subtotal", money(total));
     container.appendChild(totalRow);
 
     updateCartCount();
@@ -1020,14 +1163,14 @@
     cart = cart.filter(entry => entry.id !== id);
     saveCart();
     renderCart();
-    showToast("Item removed from cart.");
+    showToast(t("cartRemoved"));
   }
 
   function clearCart() {
     cart = [];
     saveCart();
     renderCart();
-    showToast("Cart cleared.");
+    showToast(t("cartCleared"));
   }
 
   /* FILTER EVENTS */
@@ -1042,8 +1185,7 @@
     if ($("#fairPriceFilter")) $("#fairPriceFilter").value = "All";
     if ($("#sortFilter")) $("#sortFilter").value = "recommended";
 
-    const hint = $("#marketHint");
-    if (hint) hint.textContent = "Discover products and services from Kenyan sellers.";
+    updateHint();
 
     renderCategories();
     renderListings();
@@ -1070,13 +1212,7 @@
       activeCategory = event.target.value || "All";
       renderCategories();
       renderListings();
-
-      const hint = $("#marketHint");
-      if (hint) {
-        hint.textContent = activeCategory === "All"
-          ? "Discover products and services from Kenyan sellers."
-          : `Showing ${activeCategory}. Chagua product unayohitaji.`;
-      }
+      updateHint();
     });
 
     ["searchInput", "locationFilter", "saleFilter", "fairPriceFilter", "sortFilter"]
@@ -1143,68 +1279,269 @@
       const language = event.target.value;
       saveStorage(STORAGE.language, language);
       applyLanguage(language);
-      showToast(
-        language === "sw" ? "Lugha imebadilishwa." :
-        language === "en" ? "Language changed to English." :
-        "Language set to Sheng + English."
-      );
+      showToast(t("langChanged"));
     });
   }
 
-  /* LIGHT LANGUAGE SUPPORT */
+  /* LANGUAGE SUPPORT
+     Each row is [selector, English, Kiswahili, mode].
+     - "Sheng + English" restores the page text exactly as written in index.html.
+     - null for English means "same as the original text".
+     - mode: omitted = text, "html" = innerHTML, "placeholder" = input placeholder.
+     - A selector starting with ^ means "the <label> around this field". */
+
+  const TRANSLATIONS = [
+    // Header and navigation
+    ['.main-nav a[href="#marketplace"]', "Marketplace", "Soko"],
+    ['.main-nav a[href="smart-assist.html"]', "Smart Assist", "Msaidizi Mahiri"],
+    ['.main-nav a[href="sacco.html"]', "SACCO Hub", "Kituo cha SACCO"],
+    ['.main-nav a[href="messages.html"]', "Messages", "Ujumbe"],
+    ["#cartButton", "🛒 Cart ", "🛒 Kikapu "],
+
+    // Hero
+    [".hero .eyebrow", "KENYA'S FARM-TO-MARKET DEMO", "ONYESHO LA KENYA LA SHAMBANI HADI SOKONI"],
+    [".hero h1", "Good harvests deserve <span>better markets.</span>", "Mavuno mazuri yanastahili <span>masoko bora.</span>", "html"],
+    [".hero-description",
+      "Connect directly with farmers, compare produce, discover opportunities and grow your business. Everything in one place.",
+      "Wasiliana moja kwa moja na wakulima, linganisha mazao, gundua fursa na ukuze biashara yako. Yote mahali pamoja."],
+    ["#heroSellButton", "+ Sell your produce", "+ Uza mazao yako"],
+    [".hero-buttons a", "Explore marketplace →", "Tazama soko →"],
+    [".hero-stats div:nth-child(1) span", "Kenyan counties", "Kaunti za Kenya"],
+    [".hero-stats div:nth-child(2) span", "Farm categories", "Aina za bidhaa za shambani"],
+    [".hero-stats div:nth-child(3) strong", "Direct", "Moja kwa moja"],
+    [".hero-stats div:nth-child(3) span", "Buyer connections", "Mawasiliano na wanunuzi"],
+    [".hero .demo-note",
+      "Science fair demonstration · Sample listings are labelled as demo data.",
+      "Onyesho la maonyesho ya sayansi · Matangazo ya mfano yamewekwa alama kuwa data ya majaribio."],
+
+    // Categories section
+    [".category-section .eyebrow", "FIND WHAT YOU NEED", "TAFUTA UNACHOHITAJI"],
+    [".category-section h2", "Explore categories", "Tazama aina za bidhaa"],
+    [".category-section .section-heading p",
+      "Choose a category to see the available products.",
+      "Chagua aina ili uone bidhaa zinazopatikana."],
+    ["#showAllButton", "View all products →", "Tazama bidhaa zote →"],
+
+    // Marketplace section
+    [".marketplace .eyebrow", "FRESH FROM THE FARM", "MAZAO MAPYA KUTOKA SHAMBANI"],
+    [".marketplace h2", "Marketplace", "Soko"],
+    ["#sellButton", "+ Create listing", "+ Tengeneza tangazo"],
+    ["#searchInput", "Search maize, beans, avocados...", "Tafuta mahindi, maharagwe, parachichi...", "placeholder"],
+    ['#categoryFilter option[value="All"]', "All categories", "Aina zote"],
+    ['#locationFilter option[value="All"]', "All counties", "Kaunti zote"],
+    ['#saleFilter option[value="All"]', "All sale types", "Aina zote za mauzo"],
+    ['#saleFilter option[value="Retail"]', "Retail", "Rejareja"],
+    ['#saleFilter option[value="Bulk"]', "Bulk", "Jumla"],
+    ['#saleFilter option[value="Both"]', "Retail + bulk available", "Rejareja + jumla zinapatikana"],
+    ['#fairPriceFilter option[value="All"]', "All price ranges", "Bei zote"],
+    ['#fairPriceFilter option[value="within"]', "Within demo guide", "Ndani ya mwongozo wa majaribio"],
+    ['#fairPriceFilter option[value="below"]', "Below demo guide", "Chini ya mwongozo wa majaribio"],
+    ['#fairPriceFilter option[value="above"]', "Above demo guide", "Juu ya mwongozo wa majaribio"],
+    ['#fairPriceFilter option[value="no-guide"]', "No guide available", "Hakuna mwongozo"],
+    ['#sortFilter option[value="recommended"]', "Recommended", "Zinazopendekezwa"],
+    ['#sortFilter option[value="newest"]', "Newest", "Mpya zaidi"],
+    ['#sortFilter option[value="price-low"]', "Price: low to high", "Bei: chini hadi juu"],
+    ['#sortFilter option[value="price-high"]', "Price: high to low", "Bei: juu hadi chini"],
+    ["#clearFiltersButton", "Clear filters", "Futa vichujio"],
+
+    // Fair-price guide
+    [".fair-guide strong", "🌱 Fair-price guide", "🌱 Mwongozo wa bei ya haki"],
+    [".fair-guide > div:first-child p",
+      "Compare prices before buying. These are illustrative demo ranges, not live market quotations.",
+      "Linganisha bei kabla ya kununua. Hizi ni viwango vya mfano tu, si bei halisi za sokoni."],
+    [".fair-guide-prices span:nth-child(1)", "Tomatoes: KSh 60–110/kg", "Nyanya: KSh 60–110/kg"],
+    [".fair-guide-prices span:nth-child(2)", "Hass avocado: KSh 90–180/kg", "Parachichi la Hass: KSh 90–180/kg"],
+    [".fair-guide-prices span:nth-child(3)", "Maize: KSh 45–80/kg", "Mahindi: KSh 45–80/kg"],
+
+    // Empty state
+    ["#emptyState h3", "No listings found", "Hakuna matangazo yaliyopatikana"],
+    ["#emptyState p",
+      "Try another search or filter, or create a new listing.",
+      "Jaribu utafutaji au kichujio kingine, au tengeneza tangazo jipya."],
+    ["#emptySellButton", "Create a listing", "Tengeneza tangazo"],
+
+    // Feature strip
+    [".feature-strip article:nth-child(1) h3", "Smart Assist", "Msaidizi Mahiri"],
+    [".feature-strip article:nth-child(1) p",
+      "Explore crop-planning and pest information for your farm.",
+      "Gundua mipango ya kupanda mazao na taarifa kuhusu wadudu kwa shamba lako."],
+    [".feature-strip article:nth-child(1) a", "Explore Smart Assist →", "Tazama Msaidizi Mahiri →"],
+    [".feature-strip article:nth-child(2) h3", "SACCO Hub", "Kituo cha SACCO"],
+    [".feature-strip article:nth-child(2) p",
+      "Discover sample savings groups and farming opportunities.",
+      "Gundua vikundi vya akiba vya mfano na fursa za kilimo."],
+    [".feature-strip article:nth-child(2) a", "Explore SACCO Hub →", "Tazama Kituo cha SACCO →"],
+    [".feature-strip article:nth-child(3) h3", "Group buying", "Ununuzi wa pamoja"],
+    [".feature-strip article:nth-child(3) p",
+      "Explore ways buyers can coordinate larger produce orders.",
+      "Gundua njia ambazo wanunuzi wanaweza kuratibu oda kubwa za mazao."],
+    [".feature-strip article:nth-child(3) a", "Browse products →", "Tazama bidhaa →"],
+
+    // Create-listing modal
+    ["#listingModal .eyebrow", "JOIN THE MARKETPLACE", "JIUNGE NA SOKO"],
+    ["#listingModalTitle", "Create a listing", "Tengeneza tangazo"],
+    ["#listingModal .modal-card > p",
+      "Fill in your details. Fields marked * are required.",
+      "Jaza maelezo yako. Sehemu zenye * ni lazima."],
+    ["^#productName", "Product or service name *", "Jina la bidhaa au huduma *"],
+    ["^#productCategory", "Category *", "Aina *"],
+    ["^#productCounty", "County *", "Kaunti *"],
+    ["^#productTown", "Town or area", "Mji au eneo"],
+    ["^#productQuantity", "Quantity available *", "Kiasi kinachopatikana *"],
+    ["^#productPrice", "Price in KSh *", "Bei kwa KSh *"],
+    ["^#productPriceUnit", "Price unit *", "Kipimo cha bei *"],
+    ["^#productSaleType", "Sale type *", "Aina ya mauzo *"],
+    ["^#sellerName", "Your name or farm name *", "Jina lako au la shamba *"],
+    ["^#sellerPhone", "Phone number *", "Namba ya simu *"],
+    ["^#productCondition", "Condition", "Hali"],
+    ["^#productHarvestDate", "Harvest date (optional)", "Tarehe ya mavuno (si lazima)"],
+    ["^#productImage", "Product photo (optional)", "Picha ya bidhaa (si lazima)"],
+    ["^#productDescription", "Description", "Maelezo"],
+    [".form-grid small",
+      "Choose a clear product photo. The demo saves a resized image in this browser.",
+      "Chagua picha safi ya bidhaa. Onyesho hili huhifadhi picha iliyopunguzwa ukubwa kwenye kivinjari hiki."],
+    ["#productName", "e.g. Rosecoco Beans", "mf. Maharagwe ya Rosecoco", "placeholder"],
+    ["#productTown", "e.g. Limuru", "mf. Limuru", "placeholder"],
+    ["#productQuantity", "e.g. 50 kg", "mf. kilo 50", "placeholder"],
+    ["#productPrice", "e.g. 80", "mf. 80", "placeholder"],
+    ["#sellerName", "Your farm or business name", "Jina la shamba au biashara yako", "placeholder"],
+    ["#productDescription",
+      "Describe your produce, packaging, delivery or harvest.",
+      "Eleza mazao yako, vifungashio, uwasilishaji au mavuno.",
+      "placeholder"],
+    ['#productCategory option[value=""]', "Choose a category", "Chagua aina"],
+    ['#productCounty option[value=""]', "Choose a county", "Chagua kaunti"],
+    ['#productPriceUnit option[value="kg"]', "Per kg", "Kwa kilo"],
+    ['#productPriceUnit option[value="piece"]', "Per piece", "Kwa kipande"],
+    ['#productPriceUnit option[value="bag"]', "Per bag", "Kwa gunia"],
+    ['#productPriceUnit option[value="bunch"]', "Per bunch", "Kwa mkungu"],
+    ['#productPriceUnit option[value="tray"]', "Per tray", "Kwa trei"],
+    ['#productPriceUnit option[value="litre"]', "Per litre", "Kwa lita"],
+    ['#productPriceUnit option[value="animal"]', "Per animal", "Kwa mnyama"],
+    ['#productPriceUnit option[value="service"]', "Per service", "Kwa huduma"],
+    ['#productPriceUnit option[value="unit"]', "Per unit", "Kwa kimoja"],
+    ['#productSaleType option[value="Retail"]', "Retail", "Rejareja"],
+    ['#productSaleType option[value="Bulk"]', "Bulk", "Jumla"],
+    ['#productSaleType option[value="Both"]', "Retail + bulk", "Rejareja + jumla"],
+    ['#productCondition option[value="Fresh / good condition"]', "Fresh / good condition", "Mbichi / hali nzuri"],
+    ['#productCondition option[value="Dry"]', "Dry", "Kavu"],
+    ['#productCondition option[value="Processed"]', "Processed", "Imesindikwa"],
+    ['#productCondition option[value="Used"]', "Used", "Imetumika"],
+    ['#productCondition option[value="Other"]', "Other", "Nyingine"],
+    ['#listingForm .modal-actions [data-close]', "Cancel", "Ghairi"],
+
+    // Cart modal
+    ["#cartModal .eyebrow", "YOUR SELECTIONS", "ULICHOCHAGUA"],
+    ["#cartTitle", "Shopping cart", "Kikapu cha ununuzi"],
+    ['#cartModal .modal-actions [data-close]', "Continue shopping", "Endelea kununua"],
+    ["#clearCartButton", "Clear cart", "Futa kikapu"],
+    ["#cartModal .demo-note",
+      "Demo cart only. No real payment is collected.",
+      "Kikapu cha majaribio tu. Hakuna malipo halisi yanayokusanywa."],
+
+    // Footer
+    [".footer-brand > p", "Connecting harvests to opportunities.", "Kuunganisha mavuno na fursa."],
+    ['.footer-links a[href="#marketplace"]', "Marketplace", "Soko"],
+    ['.footer-links a[href="smart-assist.html"]', "Smart Assist", "Msaidizi Mahiri"],
+    ['.footer-links a[href="sacco.html"]', "SACCO Hub", "Kituo cha SACCO"],
+    ['.footer-links a[href="messages.html"]', "Messages", "Ujumbe"],
+    ['.footer-links a[href="login.html"]', "Demo account", "Akaunti ya majaribio"],
+    [".footer-disclaimer",
+      "MavunoBridge is a demonstration project. Sample sellers, prices and listings are illustrative and are not verified live offers.",
+      "MavunoBridge ni mradi wa maonyesho. Wauzaji, bei na matangazo ya mfano ni ya kielelezo tu na si ofa halisi zilizothibitishwa."],
+    [".site-footer > p:last-child",
+      '© <span id="currentYear">2026</span> MavunoBridge · Made for Kenyan agriculture.',
+      '© <span id="currentYear">2026</span> MavunoBridge · Imetengenezwa kwa kilimo cha Kenya.',
+      "html"]
+  ];
+
+  const originalTexts = new Map();
+  let originalsCaptured = false;
+
+  function findTarget(selector) {
+    if (selector.charAt(0) === "^") {
+      const field = $(selector.slice(1));
+      return field ? field.closest("label") : null;
+    }
+    return $(selector);
+  }
+
+  function firstTextNode(element) {
+    for (const node of element.childNodes) {
+      if (node.nodeType === 3 && node.nodeValue.trim()) return node;
+    }
+    return null;
+  }
+
+  function readValue(element, mode) {
+    if (mode === "html") return element.innerHTML;
+    if (mode === "placeholder") return element.placeholder;
+    if (element.children.length === 0) return element.textContent;
+    const node = firstTextNode(element);
+    return node ? node.nodeValue : "";
+  }
+
+  function writeValue(element, mode, value) {
+    if (mode === "html") {
+      element.innerHTML = value;
+    } else if (mode === "placeholder") {
+      element.placeholder = value;
+    } else if (element.children.length === 0) {
+      element.textContent = value;
+    } else {
+      const node = firstTextNode(element);
+      if (node) node.nodeValue = value;
+    }
+  }
+
+  // Remember the page text exactly as written (this is the Sheng + English version).
+  function captureOriginals() {
+    if (originalsCaptured) return;
+    originalsCaptured = true;
+
+    TRANSLATIONS.forEach(([selector, , , mode]) => {
+      const element = findTarget(selector);
+      if (element && !originalTexts.has(element)) {
+        originalTexts.set(element, readValue(element, mode));
+      }
+    });
+  }
 
   function applyLanguage(language) {
-    document.documentElement.lang = language === "sw" ? "sw" : "en";
+    currentLang = ["mix", "en", "sw"].includes(language) ? language : "mix";
+    document.documentElement.lang = currentLang === "sw" ? "sw" : "en";
 
-    // Core interface labels. Product names and seller descriptions remain unchanged.
-    const translations = {
-      en: {
-        marketplace: "Marketplace",
-        create: "+ Create listing",
-        search: "Search maize, beans, avocados...",
-        allCategories: "All categories",
-        allCounties: "All counties"
-      },
-      mix: {
-        marketplace: "Marketplace",
-        create: "+ Create listing",
-        search: "Search maize, beans, avocados...",
-        allCategories: "All categories",
-        allCounties: "All counties"
-      },
-      sw: {
-        marketplace: "Soko",
-        create: "+ Tengeneza tangazo",
-        search: "Tafuta mahindi, maharagwe, parachichi...",
-        allCategories: "Aina zote",
-        allCounties: "Kaunti zote"
+    captureOriginals();
+
+    TRANSLATIONS.forEach(([selector, english, swahili, mode]) => {
+      const element = findTarget(selector);
+      if (!element) return;
+
+      const original = originalTexts.get(element);
+      let value;
+
+      if (currentLang === "mix") {
+        value = original;
+      } else if (currentLang === "sw") {
+        value = swahili;
+      } else {
+        value = english === null || english === undefined ? original : english;
       }
-    };
 
-    const t = translations[language] || translations.mix;
-    const marketLink = $$(".main-nav a").find(a =>
-      a.getAttribute("href") === "#marketplace"
-    );
-
-    if (marketLink) marketLink.textContent = t.marketplace;
-
-    ["sellButton"].forEach(id => {
-      const button = document.getElementById(id);
-      if (button) button.textContent = t.create;
+      if (value === undefined) return;
+      writeValue(element, mode, value);
     });
 
-    const search = $("#searchInput");
-    if (search) search.placeholder = t.search;
+    // The footer line was rewritten above, so refill the year.
+    const year = $("#currentYear");
+    if (year) year.textContent = String(new Date().getFullYear());
 
-    const category = $("#categoryFilter");
-    if (category && category.options.length) {
-      category.options[0].textContent = t.allCategories;
-    }
+    // Redraw the parts that the script builds itself.
+    updateHint();
+    renderListings();
 
-    const county = $("#locationFilter");
-    if (county && county.options.length) {
-      county.options[0].textContent = t.allCounties;
-    }
+    const cartModal = $("#cartModal");
+    if (cartModal && !cartModal.classList.contains("hidden")) renderCart();
   }
 
   function restoreLanguage() {
