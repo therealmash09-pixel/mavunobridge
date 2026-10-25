@@ -1,0 +1,95 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign in | MavunoBridge</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="login.js" defer></script>
+</head>
+<body class="auth-page">
+  <header class="topbar">
+    <a class="brand" href="index.html">
+      <span class="brand-mark">M</span>
+      <span>Mavuno<span class="brand-light">Bridge</span><small>FARMING. CONNECTED.</small></span>
+    </a>
+    <a class="text-link" href="index.html">← Back to marketplace</a>
+  </header>
+
+  <main class="auth-layout">
+    <section class="auth-visual">
+      <p class="eyebrow">YOUR FARM. YOUR MARKET.</p>
+      <h1>Good things grow when we connect.</h1>
+      <p>Discover agricultural products, meet buyers and find tools to support your farming journey.</p>
+      <div class="auth-visual-bottom">
+        <span>MADE FOR KENYAN AGRICULTURE</span>
+      </div>
+    </section>
+
+    <section class="auth-panel">
+      <div class="auth-card">
+        <a class="brand auth-brand" href="index.html">
+          <span class="brand-mark">M</span>
+          <span>Mavuno<span class="brand-light">Bridge</span><small>FARMING. CONNECTED.</small></span>
+        </a>
+
+        <h2>Welcome back</h2>
+        <p class="muted">Sign in to continue to MavunoBridge.</p>
+
+        <button type="button" class="google-button" id="googleDemoButton">
+          <span class="google-letter" aria-hidden="true">G</span>
+          Continue with Google
+        </button>
+
+        <div class="or-divider"><span>OR</span></div>
+
+        <form id="demoLoginForm">
+          <label class="auth-label">Your name
+            <input id="loginName" required maxlength="50" placeholder="Enter your name">
+          </label>
+          <label class="auth-label">Email address
+            <input id="loginEmail" type="email" required maxlength="120" placeholder="you@example.com">
+          </label>
+          <label class="auth-label">I am joining as
+            <select id="loginRole" required>
+              <option value="Buyer">Buyer</option>
+              <option value="Farmer">Farmer / Seller</option>
+              <option value="Both">Both</option>
+            </select>
+          </label>
+          <button class="button button-green auth-submit" type="submit">Continue to marketplace</button>
+        </form>
+
+        <p class="auth-notice" id="loginNotice" role="status">
+          Demo mode: details are saved only in this browser. No real account is created.
+        </p>
+        <a href="index.html" class="auth-back">Continue browsing without signing in</a>
+      </div>
+    </section>
+  </main>
+
+  <div class="modal-backdrop hidden" id="googleDemoModal" role="dialog" aria-modal="true" aria-labelledby="googleModalTitle">
+    <div class="modal google-modal">
+      <div class="google-modal-top">
+        <span class="google-letter">G</span>
+        <span>Demo account chooser</span>
+      </div>
+      <h2 id="googleModalTitle">Choose an account</h2>
+      <p class="muted">This is a demonstration of the sign-in flow, not a real Google authentication window.</p>
+      <form id="googleDemoForm">
+        <label class="auth-label">Name
+          <input id="googleDemoName" required placeholder="Your name">
+        </label>
+        <label class="auth-label">Email address
+          <input id="googleDemoEmail" type="email" required placeholder="you@example.com">
+        </label>
+        <div class="modal-actions">
+          <button type="button" class="button button-muted" id="cancelGoogleDemo">Cancel</button>
+          <button type="submit" class="button button-green">Continue</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</body>
+</html>
