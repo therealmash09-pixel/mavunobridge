@@ -1,111 +1,106 @@
-/* MAVUNOBRIDGE — SACCO AND FARMER GROUP DEMO */
 
-(() => {
-  "use strict";
+"use strict";
 
-  const $ = selector => document.querySelector(selector);
-  const STORAGE_KEY = "mavunobridge_groups_v1";
+const SACCO_KEY = "mavunobridge_sacco_interests_v1";
+const saccoGrid = document.querySelector("#saccoGrid");
+const savedInterests = document.querySelector("#savedInterests");
 
-  const counties = [
-    "Baringo", "Bomet", "Bungoma", "Busia", "Elgeyo-Marakwet",
-    "Embu", "Garissa", "Homa Bay", "Isiolo", "Kajiado",
-    "Kakamega", "Kericho", "Kiambu", "Kilifi", "Kirinyaga",
-    "Kisii", "Kisumu", "Kitui", "Kwale", "Laikipia", "Lamu",
-    "Machakos", "Makueni", "Mandera", "Marsabit", "Meru",
-    "Migori", "Mombasa", "Murang'a", "Nairobi", "Nakuru",
-    "Nandi", "Narok", "Nyamira", "Nyandarua", "Nyeri",
-    "Samburu", "Siaya", "Taita-Taveta", "Tana River",
-    "Tharaka-Nithi", "Trans Nzoia", "Turkana", "Uasin Gishu",
-    "Vihiga", "Wajir", "West Pokot"
-  ];
+function getInterests() {
+  try {
+    const data = JSON.parse(localStorage.getItem(SACCO_KEY) || "[]");
+    return Array.isArray(data) ? data : [];
+  } catch (_) {
+    return [];
+  }
+}
 
-  let groups = [];
+function saveInterests(items) {
+  localStorage.setItem(SACCO_KEY, JSON.stringify(items));
+}
+
+function renderInterests() {
+  const interests = getInterests();
+
+  if (!interests.length) {
+    savedInterests.innerHTML = '<p class="muted">You haven\'t saved an opportunity yet.</p>';
+    return;
+  }
+
+  savedInterests.innerHTML = interests.map((name) => `
+    <div class="saved-interest">
+      <span>${escapeInterest(name)}</span>
+      <button type="button" data-unsave="${escapeInterest(name)}">Remove</button>
+    </div>
+  `).join("");
+}
+
+function escapeInterest(value) {
+  return String(value).replace(/[&<>"']/g, (character) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  })[character]);
+}
+
+function filterOpportunities() {
+  const query = document.querySelector("#saccoSearch").value.trim().toLowerCase();
+  const type = document.querySelector("#saccoType").value;
+
+  saccoGrid.querySelectorAll(".sacco-card").forEach((card) => {
+    const text = card.textContent.toLowerCase();
+    const matchesText = !query || text.includes(query);
+    const matchesType = type === "All" || card.dataset.type === type;
+    card.classList.toggle("hidden", !(matchesText && matchesType));
+  });
+}
+
+document.querySelector("#saccoSearch").addEventListener("input", filterOpportunities);
+document.querySelector("#saccoType").addEventListener("change", filterOpportunities);
+
+saccoGrid.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-opportunity]");
+  if (!button) return;
+
+  const name = button.dataset.opportunity;
+  const interests = getInterests();
+
+  if (interests.includes(name)) {
+    document.querySelectorAll("[data-opportunity]").forEach((item) => {
+      if (item.dataset.opportunity === name) item.textContent = "Saved";
+    });
+    return;
+  }
+
+  interests.push(name);
 
   try {
-    groups = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-    if (!Array.isArray(groups)) groups = [];
-  } catch {
-    groups = [];
+    saveInterests(interests);
+    renderInterests();
+
+    document.querySelectorAll("[data-opportunity]").forEach((item) => {
+      if (item.dataset.opportunity === name) item.textContent = "Saved ✓";
+    });
+  } catch (_) {
+    alert("Could not save your selection in this browser.");
   }
+});
 
-  $("#groupCounty").innerHTML =
-    '<option value="">Choose county</option>' +
-    counties.map(county =>
-      `<option value="${county}">${county}</option>`
-    ).join("");
+savedInterests.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-unsave]");
+  if (!button) return;
 
-  $("#menuToggle").addEventListener("click", () => {
-    $("#mainNav").classList.toggle("open");
+  const name = button.dataset.unsave;
+  saveInterests(getInterests().filter((item) => item !== name));
+
+  document.querySelectorAll("[data-opportunity]").forEach((item) => {
+    if (item.dataset.opportunity === name) item.textContent = "Save interest";
   });
 
-  function saveGroups() {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(groups));
-      return true;
-    } catch {
-      alert("Browser storage is full. Please remove some old demo entries.");
-      return false;
-    }
+  renderInterests();
+});
+
+renderInterests();
+
+document.querySelectorAll("[data-opportunity]").forEach((button) => {
+  if (getInterests().includes(button.dataset.opportunity)) {
+    button.textContent = "Saved ✓";
   }
-
-  function renderGroups() {
-    const list = $("#groupsList");
-
-    if (!groups.length) {
-      list.textContent = "No opportunities saved yet.";
-      return;
-    }
-
-    list.replaceChildren();
-
-    groups.forEach(group => {
-      const article = document.createElement("article");
-      article.className = "message-item";
-
-      const title = document.createElement("b");
-      title.textContent = group.name;
-
-      const location = document.createElement("small");
-      location.textContent = ` · ${group.county}`;
-
-      const description = document.createElement("p");
-      description.textContent = group.description;
-
-      article.append(title, location, description);
-      list.appendChild(article);
-    });
-  }
-
-  document.querySelectorAll(".join").forEach(button => {
-    button.addEventListener("click", () => {
-      groups.unshift({
-        name: button.dataset.group,
-        county: "Not specified",
-        description:
-          "Interest recorded locally. This is not a membership application or a verified organisation."
-      });
-
-      if (saveGroups()) {
-        renderGroups();
-        alert("Interest saved in this browser only. No membership or payment was created.");
-      }
-    });
-  });
-
-  $("#groupForm").addEventListener("submit", event => {
-    event.preventDefault();
-
-    groups.unshift({
-      name: $("#groupName").value.trim(),
-      county: $("#groupCounty").value,
-      description: $("#groupDesc").value.trim()
-    });
-
-    if (saveGroups()) {
-      event.target.reset();
-      renderGroups();
-    }
-  });
-
-  renderGroups();
-})();
+});
