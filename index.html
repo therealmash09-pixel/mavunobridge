@@ -1,1166 +1,400 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#244b32">
-<meta name="description" content="MavunoBridge connects Kenyan farmers and buyers through a smarter agricultural marketplace.">
-<title>MavunoBridge | Better Farming, Bigger Opportunities</title>
-
-<style>
-:root {
-  --green: #285638;
-  --dark: #173823;
-  --light-green: #eaf3e8;
-  --lime: #d6e9a6;
-  --cream: #f7f8f2;
-  --white: #fff;
-  --text: #23352a;
-  --muted: #718074;
-  --border: #e1e8df;
-  --orange: #ed9b43;
-  --shadow: 0 8px 28px rgba(28, 59, 37, .09);
-}
-* { box-sizing: border-box; }
-html { scroll-behavior: smooth; scroll-padding-top: 90px; }
-body {
-  margin: 0;
-  font-family: Arial, Helvetica, sans-serif;
-  color: var(--text);
-  background: #fff;
-  line-height: 1.55;
-}
-button, input, select, textarea { font: inherit; }
-button, a { -webkit-tap-highlight-color: transparent; }
-button { cursor: pointer; }
-a { color: inherit; text-decoration: none; }
-img { display: block; max-width: 100%; }
-.container { width: min(1200px, 92%); margin: auto; }
-.hidden { display: none !important; }
-.muted { color: var(--muted); }
-.small { font-size: .86rem; }
-.eyebrow {
-  color: var(--green); text-transform: uppercase;
-  letter-spacing: 1.7px; font-weight: 800; font-size: .76rem;
-}
-.section { padding: 62px 0; }
-.section-heading {
-  display: flex; justify-content: space-between; align-items: end;
-  gap: 20px; margin-bottom: 25px;
-}
-.section-heading h2 { margin: 5px 0; font-size: clamp(1.65rem, 3vw, 2.3rem); }
-.section-heading p { margin: 0; color: var(--muted); }
-.btn {
-  border: 0; border-radius: 9px; padding: 12px 18px;
-  font-weight: 700; display: inline-flex; align-items: center;
-  justify-content: center; gap: 8px; transition: .2s;
-}
-.btn:hover { transform: translateY(-1px); }
-.btn-primary { background: var(--green); color: white; }
-.btn-primary:hover { background: var(--dark); }
-.btn-light { background: white; color: var(--green); border: 1px solid var(--border); }
-.btn-lime { background: var(--lime); color: var(--dark); }
-.btn-small { padding: 8px 12px; font-size: .88rem; }
-input, select, textarea {
-  width: 100%; padding: 12px; border: 1px solid #dce5da;
-  border-radius: 9px; background: white; color: var(--text);
-  outline: none;
-}
-input:focus, select:focus, textarea:focus { border-color: var(--green); }
-label { display: block; font-weight: 700; font-size: .9rem; margin-bottom: 6px; }
-.field { margin-bottom: 15px; }
-header {
-  position: sticky; top: 0; z-index: 50; background: rgba(255,255,255,.97);
-  border-bottom: 1px solid var(--border); backdrop-filter: blur(12px);
-}
-.nav {
-  min-height: 76px; display: flex; align-items: center;
-  justify-content: space-between; gap: 20px;
-}
-.brand { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-.brand-mark {
-  width: 43px; height: 43px; border-radius: 13px;
-  display: grid; place-items: center; background: var(--green); color: white;
-  font-size: 1.5rem;
-}
-.brand-name { font-size: 1.25rem; font-weight: 900; letter-spacing: -.5px; }
-.brand-name span { color: var(--green); }
-.brand-tag { color: var(--muted); font-size: .68rem; margin-top: -3px; }
-.nav-links { display: flex; gap: 22px; align-items: center; font-size: .9rem; font-weight: 700; }
-.nav-links a:hover { color: var(--green); }
-.nav-actions { display: flex; align-items: center; gap: 9px; }
-.nav-actions select { width: auto; padding: 9px 6px; font-size: .82rem; }
-.icon-btn {
-  background: white; border: 1px solid var(--border); border-radius: 9px;
-  padding: 10px 12px; color: var(--green); font-weight: 800;
-}
-#cartCount {
-  display: inline-grid; place-items: center; min-width: 20px; height: 20px;
-  border-radius: 99px; background: var(--lime); font-size: .75rem; margin-left: 3px;
-}
-#menuToggle { display: none; }
-.mobile-nav { display: none; padding: 12px 0 18px; }
-.mobile-nav a { display: block; padding: 10px; border-bottom: 1px solid var(--border); }
-
-/* HERO SLIDESHOW */
-.hero { padding: 25px 0 30px; background: var(--cream); }
-.hero-frame {
-  min-height: 440px; position: relative; overflow: hidden;
-  border-radius: 22px; background: var(--dark); color: white;
-  isolation: isolate;
-}
-.hero-slide {
-  position: absolute; inset: 0; opacity: 0; visibility: hidden;
-  transition: opacity .8s ease, visibility .8s;
-  background-size: cover; background-position: center;
-}
-.hero-slide.active { opacity: 1; visibility: visible; }
-.hero-slide::before {
-  content: ""; position: absolute; inset: 0;
-  background: linear-gradient(90deg, rgba(12,35,20,.91), rgba(15,40,23,.63) 53%, rgba(15,40,23,.08));
-}
-.hero-content {
-  position: relative; z-index: 2; padding: 66px 7%;
-  max-width: 720px;
-}
-.hero-pill {
-  display: inline-block; padding: 7px 12px; border-radius: 99px;
-  color: #eff8dc; background: rgba(255,255,255,.14);
-  border: 1px solid rgba(255,255,255,.2); font-size: .8rem; font-weight: 700;
-}
-.hero h1 { font-size: clamp(2.4rem, 5vw, 4.25rem); line-height: 1.05; margin: 18px 0; letter-spacing: -1.8px; }
-.hero h1 span { color: var(--lime); }
-.hero-content p { font-size: 1.05rem; max-width: 550px; color: #edf2e9; }
-.hero-buttons { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 25px; }
-.hero-dots {
-  position: absolute; z-index: 4; bottom: 20px; left: 7%;
-  display: flex; gap: 8px; align-items: center;
-}
-.slide-dot {
-  width: 10px; height: 10px; padding: 0; border: 0;
-  border-radius: 20px; background: rgba(255,255,255,.55);
-}
-.slide-dot.active { width: 28px; background: var(--lime); }
-.slide-arrow {
-  position: absolute; z-index: 4; top: 50%; transform: translateY(-50%);
-  border: 1px solid rgba(255,255,255,.5); color: white;
-  background: rgba(20,40,25,.48); width: 42px; height: 42px;
-  border-radius: 50%; font-size: 1.3rem;
-}
-#prevSlide { left: 14px; }
-#nextSlide { right: 14px; }
-.search-strip {
-  display: grid; grid-template-columns: 1fr 190px auto; gap: 10px;
-  padding: 15px; background: white; border: 1px solid var(--border);
-  box-shadow: var(--shadow); border-radius: 14px; margin-top: -1px;
-}
-.search-box { display: flex; align-items: center; gap: 10px; }
-.search-box input { border: 0; padding: 10px; }
-.search-box input:focus { outline: none; }
-.trust-row {
-  display: grid; grid-template-columns: repeat(4,1fr); gap: 15px; margin-top: 22px;
-}
-.trust-item {
-  display: flex; align-items: center; gap: 12px; padding: 15px;
-  background: white; border: 1px solid var(--border); border-radius: 12px;
-}
-.trust-icon {
-  flex-shrink: 0; width: 43px; height: 43px; display: grid; place-items: center;
-  border-radius: 12px; background: var(--light-green); font-size: 1.35rem;
-}
-.trust-item strong { display: block; font-size: .9rem; }
-.trust-item span { color: var(--muted); font-size: .78rem; }
-
-/* CATEGORY CARDS */
-.category-grid { display: grid; grid-template-columns: repeat(6,1fr); gap: 14px; }
-.category-card {
-  position: relative; height: 150px; overflow: hidden; border-radius: 13px;
-  background: #eaf0e7; border: 1px solid var(--border); padding: 0;
-  text-align: left;
-}
-.category-card img { width: 100%; height: 100%; object-fit: cover; transition: transform .35s; }
-.category-card:hover img { transform: scale(1.06); }
-.category-card::after {
-  content: ""; position: absolute; inset: 0;
-  background: linear-gradient(0deg, rgba(15,37,21,.88), transparent 80%);
-}
-.category-card span {
-  position: absolute; z-index: 2; left: 12px; bottom: 12px;
-  color: white; font-weight: 800; font-size: .92rem;
-}
-.category-card.selected { outline: 3px solid var(--green); outline-offset: 2px; }
-.category-emoji { font-size: 1.15rem; margin-right: 4px; }
-
-/* MARKETPLACE */
-.market-section { background: var(--cream); }
-.market-toolbar {
-  display: grid; grid-template-columns: repeat(4,minmax(0,1fr));
-  gap: 12px; padding: 17px; border-radius: 14px;
-  background: white; border: 1px solid var(--border); margin-bottom: 22px;
-}
-.filter-label { font-size: .78rem; color: var(--muted); margin-bottom: 5px; }
-.filter-control { display: flex; align-items: center; gap: 8px; }
-.check-line { display: flex; align-items: center; gap: 8px; font-size: .86rem; }
-.check-line input { width: auto; }
-.listing-topline {
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 12px; margin: 22px 0 14px;
-}
-.product-grid { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 18px; }
-.product-card {
-  background: white; border: 1px solid var(--border); border-radius: 15px;
-  overflow: hidden; transition: transform .2s, box-shadow .2s; min-width: 0;
-}
-.product-card:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
-.product-photo { height: 190px; position: relative; background: #e9efe5; overflow: hidden; }
-.product-photo img { width: 100%; height: 100%; object-fit: cover; }
-.product-tag {
-  position: absolute; left: 10px; top: 10px; border-radius: 6px;
-  background: white; color: var(--green); padding: 5px 8px;
-  font-size: .72rem; font-weight: 800;
-}
-.product-info { padding: 14px; }
-.product-info h3 { font-size: 1.05rem; margin: 0 0 5px; }
-.product-meta { color: var(--muted); font-size: .82rem; margin: 4px 0; }
-.product-price { color: var(--green); font-size: 1.25rem; font-weight: 900; margin-top: 10px; }
-.product-price small { color: var(--muted); font-size: .76rem; font-weight: 500; }
-.product-actions { display: flex; gap: 8px; margin-top: 13px; }
-.product-actions button { flex: 1; padding: 9px 5px; font-size: .8rem; }
-.empty-state {
-  text-align: center; padding: 45px 15px; border: 1px dashed #bdcdbb;
-  border-radius: 14px; background: white;
-}
-.empty-state .big { font-size: 2.7rem; }
-.price-note {
-  background: #f0f6e9; border: 1px solid #dbe9cd; border-radius: 12px;
-  padding: 16px; margin-top: 25px; font-size: .88rem;
-}
-.price-note strong { color: var(--green); }
-
-/* PROMO / FEATURE SECTIONS */
-.feature-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 18px; }
-.feature-card {
-  border: 1px solid var(--border); border-radius: 16px; padding: 23px;
-  background: white;
-}
-.feature-card .feature-icon {
-  width: 51px; height: 51px; display: grid; place-items: center;
-  border-radius: 14px; background: var(--light-green); font-size: 1.65rem;
-}
-.feature-card h3 { margin: 15px 0 7px; }
-.feature-card p { color: var(--muted); font-size: .92rem; }
-.feature-card a { display: inline-block; color: var(--green); font-weight: 800; margin-top: 8px; }
-.split-banner {
-  display: grid; grid-template-columns: 1.1fr .9fr; overflow: hidden;
-  background: var(--dark); border-radius: 18px; color: white; margin-top: 25px;
-}
-.split-copy { padding: 34px; }
-.split-copy h2 { font-size: 2rem; line-height: 1.15; margin: 8px 0; }
-.split-copy p { color: #e0e9df; }
-.split-image { min-height: 280px; background-size: cover; background-position: center; }
-.assist-layout { display: grid; grid-template-columns: .85fr 1.15fr; gap: 22px; }
-.assist-panel {
-  padding: 25px; border-radius: 16px; background: var(--cream);
-  border: 1px solid var(--border);
-}
-.assist-panel h3 { margin-top: 0; }
-.answer-box {
-  padding: 14px; margin-top: 13px; border-radius: 10px;
-  background: white; border: 1px solid var(--border); white-space: pre-wrap;
-}
-.sacco-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
-.sacco-card { padding: 20px; border: 1px solid var(--border); border-radius: 14px; }
-.sacco-card h3 { margin: 0 0 8px; }
-.sacco-card p { color: var(--muted); font-size: .9rem; }
-.message-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-.message-card { border: 1px solid var(--border); border-radius: 14px; padding: 22px; }
-footer { background: #132d1d; color: white; padding: 42px 0 20px; }
-.footer-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 25px; }
-footer p, footer a { color: #d4e0d5; font-size: .9rem; }
-footer a { display: block; margin: 7px 0; }
-.footer-bottom { margin-top: 28px; padding-top: 16px; border-top: 1px solid #38533f; font-size: .8rem; color: #c6d4c8; }
-
-/* MODALS */
-.modal {
-  position: fixed; inset: 0; z-index: 100; background: rgba(10,25,14,.65);
-  display: none; align-items: center; justify-content: center; padding: 18px;
-}
-.modal.open { display: flex; }
-.modal-box {
-  width: min(650px,100%); max-height: 90vh; overflow-y: auto;
-  background: white; border-radius: 17px; padding: 24px; box-shadow: var(--shadow);
-}
-.modal-head { display: flex; justify-content: space-between; align-items: center; gap: 15px; }
-.modal-head h2 { margin: 0; }
-.close-btn { border: 0; background: var(--light-green); border-radius: 8px; padding: 8px 12px; font-size: 1.1rem; }
-.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
-.form-grid .full { grid-column: 1/-1; }
-.cart-row { display: flex; justify-content: space-between; gap: 12px; padding: 13px 0; border-bottom: 1px solid var(--border); }
-.cart-row button { border: 0; background: none; color: #a23b32; }
-.toast {
-  position: fixed; bottom: 22px; left: 50%; transform: translate(-50%,20px);
-  z-index: 200; padding: 12px 18px; background: var(--dark); color: white;
-  border-radius: 10px; box-shadow: var(--shadow); opacity: 0; pointer-events: none;
-  transition: .25s; max-width: 90%; text-align: center;
-}
-.toast.show { opacity: 1; transform: translate(-50%,0); }
-
-@media (max-width: 1000px) {
-  .nav-links { gap: 12px; }
-  .nav-links a { font-size: .82rem; }
-  .nav-actions .login-label { display: none; }
-  .category-grid { grid-template-columns: repeat(4,1fr); }
-  .product-grid { grid-template-columns: repeat(3,minmax(0,1fr)); }
-  .trust-row { grid-template-columns: repeat(2,1fr); }
-}
-@media (max-width: 760px) {
-  .nav { min-height: 66px; }
-  .nav-links { display: none; }
-  #menuToggle { display: inline-block; }
-  .mobile-nav.open { display: block; }
-  .nav-actions { gap: 5px; }
-  .nav-actions select { max-width: 86px; }
-  .brand-name { font-size: 1.05rem; }
-  .brand-tag { display: none; }
-  .brand-mark { width: 37px; height: 37px; }
-  .hero-frame { min-height: 450px; }
-  .hero-content { padding: 55px 8% 70px; }
-  .hero h1 { font-size: 2.7rem; }
-  .hero-slide::before { background: linear-gradient(90deg,rgba(12,35,20,.9),rgba(12,35,20,.53)); }
-  .search-strip { grid-template-columns: 1fr; }
-  .trust-row { gap: 9px; }
-  .trust-item { padding: 10px; }
-  .trust-icon { width: 35px; height: 35px; }
-  .category-grid { grid-template-columns: repeat(3,1fr); gap: 10px; }
-  .category-card { height: 125px; }
-  .market-toolbar { grid-template-columns: repeat(2,minmax(0,1fr)); }
-  .product-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 11px; }
-  .product-photo { height: 150px; }
-  .product-info { padding: 11px; }
-  .product-info h3 { font-size: .95rem; }
-  .product-actions { flex-direction: column; }
-  .feature-grid, .sacco-grid { grid-template-columns: 1fr; }
-  .split-banner, .assist-layout, .message-layout { grid-template-columns: 1fr; }
-  .split-image { min-height: 220px; grid-row: 1; }
-  .footer-grid { grid-template-columns: 1fr 1fr; }
-  .footer-grid > :first-child { grid-column: 1/-1; }
-}
-@media (max-width: 420px) {
-  .container { width: 94%; }
-  .nav-actions select { display: none; }
-  .category-grid { grid-template-columns: repeat(2,1fr); }
-  .market-toolbar { grid-template-columns: 1fr; }
-  .hero h1 { font-size: 2.35rem; }
-  .product-photo { height: 130px; }
-  .product-price { font-size: 1.1rem; }
-  .form-grid { grid-template-columns: 1fr; }
-  .form-grid .full { grid-column: auto; }
-}
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#183b28">
+  <meta name="description" content="MavunoBridge connects Kenyan farmers and buyers through a farm-to-market demo marketplace.">
+  <title>MavunoBridge | From Shamba to Soko</title>
+  <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-<header>
-  <div class="container nav">
-    <a class="brand" href="#home" aria-label="MavunoBridge home">
-      <div class="brand-mark">🌿</div>
-      <div>
-        <div class="brand-name">Mavuno<span>Bridge</span></div>
-        <div class="brand-tag">Farming meets opportunity</div>
-      </div>
+  <header class="site-header">
+    <a class="brand" href="index.html" aria-label="MavunoBridge home">
+      <span class="brand-mark">M</span>
+      <span>Mavuno<span class="brand-accent">Bridge</span>
+        <small>FROM SHAMBA TO SOKO</small>
+      </span>
     </a>
 
-    <nav class="nav-links" aria-label="Main navigation">
-      <a href="#marketplace">Marketplace</a>
-      <a href="#smart-assist">Smart Assist</a>
-      <a href="#sacco">SACCO Hub</a>
-      <a href="#messages">Support</a>
-    </nav>
+    <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation">☰</button>
 
-    <div class="nav-actions">
-      <select id="languageSelect" aria-label="Choose language">
-        <option value="en">English</option>
-        <option value="sw">Kiswahili</option>
-        <option value="sheng">Sheng</option>
-      </select>
-      <button class="icon-btn" id="cartButton" aria-label="Open cart">🛒 <span id="cartCount">0</span></button>
-      <button class="btn btn-primary btn-small" id="loginButton"><span class="login-label">Login</span><span class="login-icon">↗</span></button>
-      <button class="icon-btn" id="menuToggle" aria-label="Open menu" aria-expanded="false">☰</button>
-    </div>
-  </div>
-  <nav class="container mobile-nav" id="mobileNav" aria-label="Mobile navigation">
-    <a href="#marketplace">🛍 Marketplace</a>
-    <a href="#smart-assist">🌦 Smart Assist</a>
-    <a href="#sacco">🤝 SACCO Hub</a>
-    <a href="#messages">💬 Support</a>
-  </nav>
-</header>
+    <nav id="mainNav">
+      <a href="#market" data-i18n="market">Marketplace</a>
+      <a href="smart-assist.html" data-i18n="assist">Smart Assist</a>
+      <a href="sacco.html">SACCO Hub</a>
+      <a href="messages.html" data-i18n="messages">Buyer Requests</a>
 
-<main id="home">
-  <section class="hero">
-    <div class="container">
-      <div class="hero-frame" id="farmerSlideshow" aria-label="Featured farming stories">
-        <div class="hero-slide active" style="background-image:url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1800&q=85')">
-          <div class="hero-content">
-            <span class="hero-pill">🇰🇪 Made for Kenyan agriculture</span>
-            <h1>Better Farming.<br><span>Bigger Opportunities.</span></h1>
-            <p>Connect directly with farmers, discover fresh produce and find better opportunities. Kilimo iko na nafasi ya kila mtu.</p>
-            <div class="hero-buttons">
-              <a href="#marketplace" class="btn btn-lime">Explore Marketplace →</a>
-              <button class="btn btn-light" data-open="listingModal">＋ List a Product</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="hero-slide" style="background-image:url('https://images.unsplash.com/photo-1592982537447-7440770cbfc9?auto=format&fit=crop&w=1800&q=85')">
-          <div class="hero-content">
-            <span class="hero-pill">🌱 Your harvest, your market</span>
-            <h1>Grow More.<br><span>Sell Smarter.</span></h1>
-            <p>Show buyers what you grow, set your selling price and reach customers beyond your local market.</p>
-            <div class="hero-buttons">
-              <a href="#marketplace" class="btn btn-lime">Find Fresh Produce →</a>
-              <button class="btn btn-light" data-open="listingModal">List Your Harvest</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="hero-slide" style="background-image:url('https://images.unsplash.com/photo-1499529112087-3cb3b73cec95?auto=format&fit=crop&w=1800&q=85')">
-          <div class="hero-content">
-            <span class="hero-pill">🤝 Farmers and buyers, pamoja</span>
-            <h1>From Farm<br><span>To Opportunity.</span></h1>
-            <p>Explore farm products, discover agricultural services and learn about savings groups in one place.</p>
-            <div class="hero-buttons">
-              <a href="#sacco" class="btn btn-lime">Explore SACCO Hub →</a>
-              <a href="#smart-assist" class="btn btn-light">Try Smart Assist</a>
-            </div>
-          </div>
-        </div>
-
-        <button class="slide-arrow" id="prevSlide" aria-label="Previous slide">‹</button>
-        <button class="slide-arrow" id="nextSlide" aria-label="Next slide">›</button>
-        <div class="hero-dots" id="slideDots">
-          <button class="slide-dot active" data-slide="0" aria-label="Show slide 1"></button>
-          <button class="slide-dot" data-slide="1" aria-label="Show slide 2"></button>
-          <button class="slide-dot" data-slide="2" aria-label="Show slide 3"></button>
-        </div>
-      </div>
-
-      <form class="search-strip" id="searchForm">
-        <div class="search-box">
-          <span aria-hidden="true">🔎</span>
-          <input id="searchInput" type="search" placeholder="Search tomatoes, maize, avocados..." aria-label="Search products">
-        </div>
-        <select id="searchCategory" aria-label="Search category">
-          <option value="All">All categories</option>
-          <option>Fruits</option><option>Vegetables</option><option>Nuts</option>
-          <option>Starchy Foods</option><option>Grains</option><option>Legumes</option>
-          <option>Spices</option><option>Herbal Products</option><option>Livestock</option>
-          <option>Agricultural Inputs</option><option>Farm Tools</option><option>Farmer Services</option>
+      <label class="language-control">
+        🌐
+        <select id="languageSelect" aria-label="Choose language">
+          <option value="en">English</option>
+          <option value="sw">Kiswahili</option>
+          <option value="sheng">Sheng</option>
         </select>
-        <button class="btn btn-primary" type="submit">Search products</button>
-      </form>
+      </label>
 
-      <div class="trust-row">
-        <div class="trust-item"><div class="trust-icon">🌾</div><div><strong>Farmer-first</strong><span>Built around local needs</span></div></div>
-        <div class="trust-item"><div class="trust-icon">📍</div><div><strong>County discovery</strong><span>Find produce near you</span></div></div>
-        <div class="trust-item"><div class="trust-icon">🤝</div><div><strong>Direct connection</strong><span>Connect with sellers</span></div></div>
-        <div class="trust-item"><div class="trust-icon">💚</div><div><strong>Fair-price guide</strong><span>Compare demo prices</span></div></div>
+      <button class="btn btn-light" id="openCart">
+        🛒 <span data-i18n="cart">Cart</span>
+        <b id="cartCount">0</b>
+      </button>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-copy">
+        <span class="eyebrow" data-i18n="eyebrow">KENYA'S FARM-TO-MARKET BRIDGE</span>
+        <h1 data-i18n="heroTitle">Fresh harvests. Fairer deals. Stronger farmers.</h1>
+        <p data-i18n="heroText">
+          Connect directly with farmers and buyers across Kenya.
+          Nunua fresh, uza smart.
+        </p>
+
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#market" data-i18n="explore">Explore marketplace</a>
+          <button class="btn btn-outline" id="heroSellButton" data-i18n="sellProduce">
+            Sell your produce
+          </button>
+        </div>
+
+        <div class="hero-stats">
+          <span><b>47</b><small>Counties</small></span>
+          <span><b>Direct</b><small>Farmer-to-buyer</small></span>
+          <span><b>Demo</b><small>Fair-price guide</small></span>
+        </div>
       </div>
-    </div>
-  </section>
 
-  <section class="section container" id="categories">
-    <div class="section-heading">
-      <div><div class="eyebrow">Explore the farm</div><h2>Shop by category</h2><p>Find what you need, from fresh produce to farm services.</p></div>
-      <button class="btn btn-light" id="resetCategories">View all products →</button>
-    </div>
-    <div class="category-grid" id="categoryGrid">
-      <button class="category-card" data-category="Fruits"><img loading="lazy" src="https://images.unsplash.com/photo-1619566636858-adf3ef46400b?auto=format&fit=crop&w=500&q=80" alt="Fresh fruits"><span>🍎 Fruits</span></button>
-      <button class="category-card" data-category="Vegetables"><img loading="lazy" src="https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=500&q=80" alt="Fresh vegetables"><span>🥬 Vegetables</span></button>
-      <button class="category-card" data-category="Nuts"><img loading="lazy" src="https://images.unsplash.com/photo-1508061253366-f7da158b6d46?auto=format&fit=crop&w=500&q=80" alt="Nuts"><span>🥜 Nuts</span></button>
-      <button class="category-card" data-category="Starchy Foods"><img loading="lazy" src="https://images.unsplash.com/photo-1518977676601-b53f82aba655?auto=format&fit=crop&w=500&q=80" alt="Potatoes"><span>🥔 Starchy Foods</span></button>
-      <button class="category-card" data-category="Grains"><img loading="lazy" src="https://images.unsplash.com/photo-1551754655-cd27e38d2076?auto=format&fit=crop&w=500&q=80" alt="Maize grains"><span>🌽 Grains</span></button>
-      <button class="category-card" data-category="Legumes"><img loading="lazy" src="https://images.unsplash.com/photo-1515543904379-3d757afe72e4?auto=format&fit=crop&w=500&q=80" alt="Beans and legumes"><span>🫘 Legumes</span></button>
-      <button class="category-card" data-category="Spices"><img loading="lazy" src="https://images.unsplash.com/photo-1532336414038-cf19250c5757?auto=format&fit=crop&w=500&q=80" alt="Spices"><span>🌶️ Spices</span></button>
-      <button class="category-card" data-category="Herbal Products"><img loading="lazy" src="https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?auto=format&fit=crop&w=500&q=80" alt="Herbs"><span>🌿 Herbal Products</span></button>
-      <button class="category-card" data-category="Livestock"><img loading="lazy" src="https://images.unsplash.com/photo-1516467508483-a7212febe31a?auto=format&fit=crop&w=500&q=80" alt="Livestock"><span>🐄 Livestock</span></button>
-      <button class="category-card" data-category="Agricultural Inputs"><img loading="lazy" src="https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=500&q=80" alt="Seedlings and farm inputs"><span>🌱 Farm Inputs</span></button>
-      <button class="category-card" data-category="Farm Tools"><img loading="lazy" src="https://images.unsplash.com/photo-1599685315640-4ec3f2d1b3e1?auto=format&fit=crop&w=500&q=80" alt="Farm tools"><span>🛠️ Farm Tools</span></button>
-      <button class="category-card" data-category="Farmer Services"><img loading="lazy" src="https://images.unsplash.com/photo-1592982537447-7440770cbfc9?auto=format&fit=crop&w=500&q=80" alt="Farm work and services"><span>🚜 Farm Services</span></button>
-    </div>
-  </section>
+      <div class="hero-visual">
+        <img
+          id="heroImage"
+          src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=85"
+          alt="Green farmland"
+        >
 
-  <section class="section market-section" id="marketplace">
-    <div class="container">
+        <div class="hero-image-caption">
+          <span>🌱</span>
+          <div>
+            <b data-i18n="grownHere">Grown close to home</b>
+            <small data-i18n="supportFarmers">Support local farmers, grow local trade.</small>
+          </div>
+        </div>
+
+        <div class="slide-controls">
+          <button id="slidePrev" aria-label="Previous slide">‹</button>
+          <span id="slideDots" aria-live="polite">● ○ ○</span>
+          <button id="slideNext" aria-label="Next slide">›</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="trust-strip">
+      <span>✓ Direct connections</span>
+      <span>✓ Retail & bulk</span>
+      <span>✓ County-based search</span>
+      <span>✓ Demo checkout — no real payment</span>
+    </section>
+
+    <section class="section" id="market">
       <div class="section-heading">
-        <div><div class="eyebrow">The digital soko</div><h2>Fresh from Kenyan farms</h2><p>Browse demo listings from different counties.</p></div>
-        <button class="btn btn-primary" data-open="listingModal">＋ Sell your produce</button>
+        <div>
+          <span class="eyebrow">SOKO YA MAVUNO</span>
+          <h2 data-i18n="marketTitle">Find your next harvest</h2>
+          <p data-i18n="marketSubtitle">
+            Browse produce, farm inputs, livestock and services.
+          </p>
+        </div>
+
+        <button class="btn btn-primary" id="sellButton" type="button" data-i18n="listProduct">
+          + List a product
+        </button>
       </div>
 
-      <div class="market-toolbar">
-        <div><div class="filter-label">Category</div><select id="categoryFilter"><option value="All">All categories</option><option>Fruits</option><option>Vegetables</option><option>Nuts</option><option>Starchy Foods</option><option>Grains</option><option>Legumes</option><option>Spices</option><option>Herbal Products</option><option>Livestock</option><option>Agricultural Inputs</option><option>Farm Tools</option><option>Farmer Services</option></select></div>
-        <div><div class="filter-label">County</div><select id="locationFilter"><option value="All">All counties</option><option>Kiambu</option><option>Nakuru</option><option>Meru</option><option>Uasin Gishu</option><option>Nyandarua</option><option>Machakos</option><option>Kisumu</option><option>Kirinyaga</option><option>Murang'a</option><option>Trans Nzoia</option><option>Nyeri</option><option>Kajiado</option></select></div>
-        <div><div class="filter-label">Sale type</div><select id="saleFilter"><option value="All">Retail & bulk</option><option value="Retail">Retail</option><option value="Bulk">Bulk</option></select></div>
-        <div><div class="filter-label">Sort listings</div><select id="sortFilter"><option value="newest">Recently added</option><option value="low">Price: low to high</option><option value="high">Price: high to low</option><option value="rating">Top rated demo sellers</option></select></div>
-        <div class="filter-control"><label class="check-line"><input id="fairOnly" type="checkbox"> Show listings within guide prices</label></div>
-        <div><div class="filter-label">Price guide</div><button class="btn btn-light btn-small" id="learnFairButton">How it works</button></div>
-        <div><div class="filter-label">Reset</div><button class="btn btn-light btn-small" id="clearFilters">Clear filters</button></div>
-        <div><div class="filter-label">Farmer?</div><button class="btn btn-primary btn-small" data-open="listingModal">List a product</button></div>
+      <div class="search-row">
+        <label class="search-box">
+          <span aria-hidden="true">⌕</span>
+          <input
+            id="searchInput"
+            type="search"
+            placeholder="Search tomatoes, maize, county..."
+            data-i18n-placeholder="searchPlaceholder"
+          >
+        </label>
+
+        <select id="countyFilter" aria-label="Filter by county">
+          <option value="">All counties</option>
+        </select>
+
+        <select id="saleFilter" aria-label="Filter by sale type">
+          <option value="all">Retail + bulk</option>
+          <option value="retail">Retail</option>
+          <option value="bulk">Bulk</option>
+        </select>
+
+        <select id="sortFilter" aria-label="Sort listings">
+          <option value="newest">Newest first</option>
+          <option value="priceLow">Price: low to high</option>
+          <option value="priceHigh">Price: high to low</option>
+        </select>
       </div>
 
-      <div class="listing-topline"><strong id="resultsCount">Loading products...</strong><span class="small muted">Demo listings · Prices in KSh</span></div>
+      <div class="category-grid" id="categoryGrid" aria-label="Product categories"></div>
+
+      <div class="market-meta">
+        <p id="listingCount" aria-live="polite">Loading listings…</p>
+        <label class="check-label">
+          <input type="checkbox" id="fairOnly">
+          Show only prices within the guide
+        </label>
+      </div>
+
       <div class="product-grid" id="listingGrid"></div>
-      <div class="empty-state hidden" id="emptyState"><div class="big">🔎</div><h3>No matching products</h3><p>Try another category or county, ama clear your filters.</p><button class="btn btn-primary" id="showAllButton">Show all products</button></div>
 
-      <div class="price-note" id="priceGuide">
-        <strong>💡 Fair-price guide:</strong> This is an illustrative demo guide, not a live market quotation.
-        Prices change with season, quality, location, transport and quantity. Compare several sellers before buying.
-        <span class="small muted"> Tomato reference: KSh 60–110/kg · Hass avocado: KSh 90–180/kg · Maize: KSh 45–80/kg (demo values only).</span>
+      <div class="empty-state hidden" id="emptyState">
+        <h3>No listings found</h3>
+        <p>Try another search or be the first to list this product.</p>
+        <button class="btn btn-primary" id="emptySell" type="button">List a product</button>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <section class="section container">
-    <div class="section-heading"><div><div class="eyebrow">More than a marketplace</div><h2>Tools for a stronger farming community</h2><p>One platform, more ways to grow.</p></div></div>
-    <div class="feature-grid">
-      <article class="feature-card"><div class="feature-icon">🌦️</div><h3>Smart Assist</h3><p>Explore general crop-planning tips, common pest information and practical questions for your farm.</p><a href="#smart-assist">Explore Smart Assist →</a></article>
-      <article class="feature-card"><div class="feature-icon">🤝</div><h3>SACCO Hub</h3><p>Learn what to check before joining a savings group or agricultural cooperative.</p><a href="#sacco">Visit SACCO Hub →</a></article>
-      <article class="feature-card"><div class="feature-icon">📦</div><h3>Retail and bulk</h3><p>Find smaller quantities for home use or bulk offers for shops and businesses.</p><a href="#marketplace">Browse products →</a></article>
-    </div>
-    <div class="split-banner">
-      <div class="split-copy"><div class="eyebrow" style="color:#d6e9a6">For Kenyan farmers</div><h2>Your harvest deserves a bigger market.</h2><p>Create a demo listing, show your product and let buyers discover what your farm offers.</p><button class="btn btn-lime" data-open="listingModal">＋ Create a listing</button></div>
-      <div class="split-image" role="img" aria-label="Agricultural landscape" style="background-image:url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1000&q=80')"></div>
-    </div>
-  </section>
-
-  <section class="section" id="smart-assist" style="background:#f5f8f1">
-    <div class="container">
-      <div class="section-heading"><div><div class="eyebrow">Your farming companion</div><h2>Smart Assist 🌱</h2><p>Practical demo guidance for your next farming decision.</p></div></div>
-      <div class="assist-layout">
-        <div class="assist-panel">
-          <h3>Farm planning starter</h3>
-          <p class="muted">Choose your county and get general planning prompts. This demo does not fetch live weather data.</p>
-          <div class="field"><label for="countySelect">Your county</label><select id="countySelect"><option>Kiambu</option><option>Nakuru</option><option>Meru</option><option>Uasin Gishu</option><option>Nyandarua</option><option>Machakos</option><option>Kisumu</option><option>Kirinyaga</option><option>Murang'a</option><option>Trans Nzoia</option><option>Nyeri</option><option>Kajiado</option></select></div>
-          <button class="btn btn-primary" id="getInsightButton">Get farming tips</button>
-          <div class="answer-box" id="insightMessage" aria-live="polite">Select your county to get general farm-planning tips.</div>
-        </div>
-        <div class="assist-panel">
-          <h3>Ask a farming question</h3>
-          <p class="muted">Try questions about soil preparation, crop rotation, watering or common pests.</p>
-          <form id="assistantForm">
-            <div class="field"><label for="assistantQuestion">Your question</label><textarea id="assistantQuestion" rows="3" placeholder="Example: How can I reduce pests on my tomato plants?" required></textarea></div>
-            <button class="btn btn-primary" type="submit">Get demo advice</button>
-          </form>
-          <div class="answer-box" id="assistantAnswer" aria-live="polite">Your answer will appear here. For serious crop disease, ask a local agricultural extension officer.</div>
-        </div>
+    <section class="feature-band">
+      <div>
+        <span class="eyebrow">MORE THAN A MARKETPLACE</span>
+        <h2>Tools built around real farm life.</h2>
+        <p>Check crop ideas, connect with farmer groups, or tell farmers what your business needs.</p>
       </div>
-    </div>
-  </section>
 
-  <section class="section container" id="sacco">
-    <div class="section-heading"><div><div class="eyebrow">Save, learn, grow</div><h2>SACCO Hub 🤝</h2><p>Learn about agricultural savings groups and cooperative membership.</p></div></div>
-    <div class="sacco-grid">
-      <article class="sacco-card"><h3>💰 Savings groups</h3><p>Ask about membership fees, savings requirements, withdrawal rules and how members' funds are protected.</p><button class="btn btn-light btn-small" data-sacco="savings">Learn more</button></article>
-      <article class="sacco-card"><h3>🌾 Agricultural loans</h3><p>Compare interest, total repayment, repayment dates, collateral and penalties before accepting a loan.</p><button class="btn btn-light btn-small" data-sacco="loans">Loan checklist</button></article>
-      <article class="sacco-card"><h3>🧑🏽‍🌾 Joining a SACCO</h3><p>Confirm registration, read the rules and speak directly to the cooperative before sending money.</p><button class="btn btn-light btn-small" data-sacco="join">Membership checklist</button></article>
-    </div>
-    <div class="answer-box hidden" id="saccoAnswer" aria-live="polite"></div>
-    <p class="small muted">Demo information only. MavunoBridge does not verify, represent or endorse a particular SACCO in this version.</p>
-  </section>
+      <div class="feature-links">
+        <a href="smart-assist.html">
+          <span>🌦️</span>
+          <b>Smart Assist</b>
+          <small>Crop, pest and weather-aware guidance</small>
+        </a>
 
-  <section class="section" id="messages" style="background:var(--cream)">
-    <div class="container">
-      <div class="section-heading"><div><div class="eyebrow">Tuko pamoja</div><h2>Support and safe trading</h2><p>Keep communication clear and check sellers before making payments.</p></div></div>
-      <div class="message-layout">
-        <article class="message-card"><h3>💬 Buyer and seller support</h3><p class="muted">This demo does not have live private messaging. You can use the seller's provided contact details to discuss the product.</p><button class="btn btn-primary" id="supportButton">Safety tips</button><div class="answer-box hidden" id="supportAnswer">Confirm the product, quantity, location and final price. Ask for current photos where appropriate. Agree on delivery and payment terms clearly. Avoid sharing passwords or PINs, and be careful with requests to pay unfamiliar accounts in advance.</div></article>
-        <article class="message-card"><h3>🛡️ Buy with care</h3><p class="muted">A listing on this demo is not independently verified. Inspect goods where possible and confirm important details with the seller.</p><ul><li>Check quality and quantity.</li><li>Agree on transport costs.</li><li>Compare offers from several sellers.</li><li>Keep your transaction records.</li></ul></article>
+        <a href="sacco.html">
+          <span>🤝</span>
+          <b>SACCO Hub</b>
+          <small>Discover group-saving and shared opportunities</small>
+        </a>
+
+        <a href="messages.html">
+          <span>💬</span>
+          <b>Buyer Requests</b>
+          <small>Post the produce you need</small>
+        </a>
       </div>
-    </div>
-  </section>
-</main>
+    </section>
 
-<footer>
-  <div class="container">
-    <div class="footer-grid">
-      <div><a class="brand" href="#home"><div class="brand-mark">🌿</div><div class="brand-name" style="color:white">Mavuno<span>Bridge</span><div class="brand-tag">Farming meets opportunity</div></div></a><p>Connecting farmers and buyers through a smarter agricultural marketplace. Built as a Kenyan marketplace demo.</p></div>
-      <div><strong>Explore</strong><a href="#marketplace">Marketplace</a><a href="#categories">Product categories</a><a href="#smart-assist">Smart Assist</a></div>
-      <div><strong>Community</strong><a href="#sacco">SACCO Hub</a><a href="#messages">Support and safety</a><a href="#home">Back to top ↑</a></div>
-    </div>
-    <div class="footer-bottom">© <span id="currentYear"></span> MavunoBridge · Science fair demonstration · Prices and listings are illustrative demo data.</div>
-  </div>
-</footer>
-
-<!-- LIST A PRODUCT -->
-<div class="modal" id="listingModal" role="dialog" aria-modal="true" aria-labelledby="listingModalTitle">
-  <div class="modal-box">
-    <div class="modal-head"><h2 id="listingModalTitle">List your product</h2><button class="close-btn" data-close="listingModal" aria-label="Close">✕</button></div>
-    <p class="muted small">Create a sample listing stored in this browser. No real account is required.</p>
-    <form id="listingForm">
-      <div class="form-grid">
-        <div class="field"><label for="listingName">Product name *</label><input id="listingName" required placeholder="e.g. Fresh tomatoes"></div>
-        <div class="field"><label for="listingType">Category *</label><select id="listingType" required><option value="Fruits">Fruits</option><option value="Vegetables">Vegetables</option><option value="Nuts">Nuts</option><option value="Starchy Foods">Starchy Foods</option><option value="Grains">Grains</option><option value="Legumes">Legumes</option><option value="Spices">Spices</option><option value="Herbal Products">Herbal Products</option><option value="Livestock">Livestock</option><option value="Agricultural Inputs">Agricultural Inputs</option><option value="Farm Tools">Farm Tools</option><option value="Farmer Services">Farmer Services</option></select></div>
-        <div class="field"><label for="listingLocation">County *</label><select id="listingLocation" required><option>Kiambu</option><option>Nakuru</option><option>Meru</option><option>Uasin Gishu</option><option>Nyandarua</option><option>Machakos</option><option>Kisumu</option><option>Kirinyaga</option><option>Murang'a</option><option>Trans Nzoia</option><option>Nyeri</option><option>Kajiado</option></select></div>
-        <div class="field"><label for="listingSeller">Seller / farm name *</label><input id="listingSeller" required placeholder="e.g. Green Valley Farm"></div>
-        <div class="field"><label for="listingPhone">Contact phone (optional)</label><input id="listingPhone" type="tel" placeholder="e.g. 07xx xxx xxx"></div>
-        <div class="field"><label for="listingQuantity">Quantity *</label><input id="listingQuantity" required type="number" min="1" value="50"></div>
-        <div class="field"><label for="listingStockUnit">Unit</label><select id="listingStockUnit"><option>kg</option><option>bag</option><option>crate</option><option>piece</option><option>litre</option><option>animal</option><option>service</option><option>item</option></select></div>
-        <div class="field"><label for="saleType">Sale type</label><select id="saleType"><option value="Both">Retail & bulk</option><option value="Retail">Retail only</option><option value="Bulk">Bulk only</option></select></div>
-        <div class="field"><label for="retailPrice">Retail price (KSh)</label><input id="retailPrice" type="number" min="0" placeholder="Price per unit"></div>
-        <div class="field"><label for="bulkPrice">Bulk price (KSh, optional)</label><input id="bulkPrice" type="number" min="0" placeholder="Price per unit"></div>
-        <div class="field full"><label for="listingImage">Product photo URL (optional)</label><input id="listingImage" type="url" placeholder="https://..."></div>
-        <div class="field full"><label for="listingDescription">Description</label><textarea id="listingDescription" rows="3" placeholder="Describe freshness, variety, harvest date or service details"></textarea></div>
-      </div>
-      <button class="btn btn-primary" type="submit">Publish demo listing</button>
-    </form>
-  </div>
-</div>
-
-<!-- CART -->
-<div class="modal" id="cartModal" role="dialog" aria-modal="true" aria-labelledby="cartTitle">
-  <div class="modal-box">
-    <div class="modal-head"><h2 id="cartTitle">Your cart 🛒</h2><button class="close-btn" data-close="cartModal" aria-label="Close">✕</button></div>
-    <div id="cartItems"></div>
-    <div id="cartEmpty" class="empty-state"><div class="big">🧺</div><h3>Your cart is empty</h3><p>Add products from the marketplace to see them here.</p></div>
-    <div id="cartSummary" class="hidden"><hr><h3>Demo subtotal: <span id="cartSubtotal">KSh 0</span></h3><p class="small muted">This demo does not take payments or arrange delivery.</p><button class="btn btn-primary" id="checkoutButton">Review demo order</button></div>
-  </div>
-</div>
-
-<!-- PRODUCT DETAILS -->
-<div class="modal" id="productModal" role="dialog" aria-modal="true" aria-labelledby="productModalTitle">
-  <div class="modal-box"><div class="modal-head"><h2 id="productModalTitle">Product details</h2><button class="close-btn" data-close="productModal" aria-label="Close">✕</button></div><div id="productDetails"></div></div>
-</div>
-
-<!-- DEMO LOGIN -->
-<div class="modal" id="loginModal" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
-  <div class="modal-box">
-    <div class="modal-head"><h2 id="loginTitle">Welcome to MavunoBridge</h2><button class="close-btn" data-close="loginModal" aria-label="Close">✕</button></div>
-    <p class="muted">This is a demo sign-in form. It does not create a real account or authenticate a user.</p>
-    <form id="loginForm"><div class="field"><label for="loginEmail">Email</label><input id="loginEmail" type="email" required placeholder="you@example.com"></div><div class="field"><label for="loginPassword">Demo password</label><input id="loginPassword" type="password" required minlength="4" placeholder="Enter any 4+ characters"></div><button class="btn btn-primary" type="submit">Continue in demo</button><p id="loginMessage" class="small muted" aria-live="polite"></p></form>
-  </div>
-</div>
-
-<div class="toast" id="toast" role="status" aria-live="polite"></div>
-
-<script>
-"use strict";
-
-/* ==========================================================
-   MAVUNOBRIDGE — SELF-CONTAINED MARKETPLACE DEMO
-   No backend or API keys required.
-   ========================================================== */
-
-const STORAGE = {
-  listings: "mavunobridge_listings_v3",
-  cart: "mavunobridge_cart_v3",
-  language: "mavunobridge_language_v3"
-};
-
-const PHOTO = {
-  avocado: "https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?auto=format&fit=crop&w=700&q=80",
-  tomato: "https://images.unsplash.com/photo-1546094096-0df4bcaaa337?auto=format&fit=crop&w=700&q=80",
-  maize: "https://images.unsplash.com/photo-1551754655-cd27e38d2076?auto=format&fit=crop&w=700&q=80",
-  beans: "https://images.unsplash.com/photo-1515543904379-3d757afe72e4?auto=format&fit=crop&w=700&q=80",
-  potato: "https://images.unsplash.com/photo-1518977676601-b53f82aba655?auto=format&fit=crop&w=700&q=80",
-  banana: "https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?auto=format&fit=crop&w=700&q=80",
-  onion: "https://images.unsplash.com/photo-1508747703725-719777637510?auto=format&fit=crop&w=700&q=80",
-  greens: "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=700&q=80",
-  mango: "https://images.unsplash.com/photo-1553279768-865429fa0078?auto=format&fit=crop&w=700&q=80",
-  groundnuts: "https://images.unsplash.com/photo-1567892737950-30c4db37cd89?auto=format&fit=crop&w=700&q=80",
-  chilli: "https://images.unsplash.com/photo-1588252303782-cb80119abd6d?auto=format&fit=crop&w=700&q=80",
-  herbs: "https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?auto=format&fit=crop&w=700&q=80",
-  livestock: "https://images.unsplash.com/photo-1516467508483-a7212febe31a?auto=format&fit=crop&w=700&q=80",
-  seedlings: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=700&q=80",
-  tools: "https://images.unsplash.com/photo-1599685315640-4ec3f2d1b3e1?auto=format&fit=crop&w=700&q=80",
-  farm: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=700&q=80"
-};
-
-/* These are fictional sample listings and illustrative prices. */
-const DEMO_LISTINGS = [
-  {id:"demo-1",name:"Fresh Hass Avocados",category:"Fruits",county:"Kiambu",seller:"Green Valley Farm",phone:"",quantity:180,unit:"kg",retailPrice:140,bulkPrice:110,saleType:"Both",rating:4.8,description:"Fresh Hass avocados. Contact the demo seller to confirm ripeness and availability.",image:PHOTO.avocado,createdAt:Date.now()-1000},
-  {id:"demo-2",name:"Fresh Red Tomatoes",category:"Vegetables",county:"Nakuru",seller:"Rift Fresh Produce",phone:"",quantity:120,unit:"kg",retailPrice:85,bulkPrice:65,saleType:"Both",rating:4.7,description:"Red tomatoes for home cooking, shops and bulk buyers. Inspect quality before purchase.",image:PHOTO.tomato,createdAt:Date.now()-2000},
-  {id:"demo-3",name:"Dry Maize Grain",category:"Grains",county:"Uasin Gishu",seller:"North Rift Grains",phone:"",quantity:500,unit:"kg",retailPrice:65,bulkPrice:52,saleType:"Bulk",rating:4.6,description:"Dry maize grain. Confirm moisture level, grade, bag size and availability with the seller.",image:PHOTO.maize,createdAt:Date.now()-3000},
-  {id:"demo-4",name:"Red Kidney Beans",category:"Legumes",county:"Meru",seller:"Meru Harvest Co-op",phone:"",quantity:95,unit:"kg",retailPrice:160,bulkPrice:135,saleType:"Both",rating:4.8,description:"Dry beans for household and wholesale use. Sample listing for demonstration.",image:PHOTO.beans,createdAt:Date.now()-4000},
-  {id:"demo-5",name:"Irish Potatoes",category:"Starchy Foods",county:"Nyandarua",seller:"Highland Roots Farm",phone:"",quantity:260,unit:"kg",retailPrice:58,bulkPrice:45,saleType:"Both",rating:4.5,description:"Potatoes for cooking and trade. Confirm size, variety and bag weight before buying.",image:PHOTO.potato,createdAt:Date.now()-5000},
-  {id:"demo-6",name:"Sweet Bananas",category:"Fruits",county:"Kisumu",seller:"Lakeview Farm",phone:"",quantity:75,unit:"kg",retailPrice:90,bulkPrice:70,saleType:"Both",rating:4.6,description:"Bananas for retail or bulk orders. Availability and ripeness must be confirmed.",image:PHOTO.banana,createdAt:Date.now()-6000},
-  {id:"demo-7",name:"Dry Red Onions",category:"Vegetables",county:"Nakuru",seller:"Sunrise Produce",phone:"",quantity:150,unit:"kg",retailPrice:100,bulkPrice:78,saleType:"Both",rating:4.4,description:"Red onions for shops, kitchens and market traders.",image:PHOTO.onion,createdAt:Date.now()-7000},
-  {id:"demo-8",name:"Fresh Sukuma Wiki",category:"Vegetables",county:"Machakos",seller:"Mwangaza Smallholder Farm",phone:"",quantity:65,unit:"bunch",retailPrice:25,bulkPrice:18,saleType:"Both",rating:4.7,description:"Fresh leafy greens. Ask the seller about harvest and delivery time.",image:PHOTO.greens,createdAt:Date.now()-8000},
-  {id:"demo-9",name:"Ripe Mangoes",category:"Fruits",county:"Meru",seller:"Eastern Orchard",phone:"",quantity:100,unit:"kg",retailPrice:95,bulkPrice:72,saleType:"Both",rating:4.6,description:"Seasonal mangoes. Check variety, ripeness and the quantity available.",image:PHOTO.mango,createdAt:Date.now()-9000},
-  {id:"demo-10",name:"Raw Groundnuts",category:"Nuts",county:"Machakos",seller:"Acacia Nut Growers",phone:"",quantity:80,unit:"kg",retailPrice:220,bulkPrice:185,saleType:"Both",rating:4.5,description:"Groundnuts for food processing and household use. Confirm quality with seller.",image:PHOTO.groundnuts,createdAt:Date.now()-10000},
-  {id:"demo-11",name:"Fresh Chillies",category:"Spices",county:"Kirinyaga",seller:"Spice Patch Farm",phone:"",quantity:30,unit:"kg",retailPrice:180,bulkPrice:140,saleType:"Both",rating:4.4,description:"Chillies for kitchens and traders. Sample prices are illustrative.",image:PHOTO.chilli,createdAt:Date.now()-11000},
-  {id:"demo-12",name:"Fresh Farm Herbs",category:"Herbal Products",county:"Kiambu",seller:"Herb Garden Kenya",phone:"",quantity:25,unit:"bunch",retailPrice:50,bulkPrice:35,saleType:"Both",rating:4.5,description:"Fresh culinary herbs. Confirm exact variety and intended use with the seller.",image:PHOTO.herbs,createdAt:Date.now()-12000},
-  {id:"demo-13",name:"Indigenous Chicken",category:"Livestock",county:"Murang'a",seller:"Kahawa Poultry Farm",phone:"",quantity:20,unit:"animal",retailPrice:900,bulkPrice:750,saleType:"Both",rating:4.7,description:"Sample livestock listing. Confirm age, health, vaccination records and collection arrangements.",image:PHOTO.livestock,createdAt:Date.now()-13000},
-  {id:"demo-14",name:"Vegetable Seedlings",category:"Agricultural Inputs",county:"Kiambu",seller:"Seedling Centre",phone:"",quantity:1000,unit:"item",retailPrice:8,bulkPrice:5,saleType:"Both",rating:4.6,description:"Demo seedling offer. Check variety, age and growing conditions before ordering.",image:PHOTO.seedlings,createdAt:Date.now()-14000},
-  {id:"demo-15",name:"Basic Farm Tool Set",category:"Farm Tools",county:"Nyeri",seller:"Farm Tools Corner",phone:"",quantity:12,unit:"item",retailPrice:1200,bulkPrice:1000,saleType:"Both",rating:4.3,description:"Illustrative listing for common farm tools. Confirm exact items and condition.",image:PHOTO.tools,createdAt:Date.now()-15000},
-  {id:"demo-16",name:"Land Preparation Service",category:"Farmer Services",county:"Uasin Gishu",seller:"Demo Tractor Services",phone:"",quantity:10,unit:"service",retailPrice:3500,bulkPrice:3000,saleType:"Both",rating:4.5,description:"Sample farm-service listing. Agree on acreage, fuel, timing and the final price directly.",image:PHOTO.farm,createdAt:Date.now()-16000}
-];
-
-const PRICE_GUIDE = {
-  "Fresh Red Tomatoes": [60,110],
-  "Fresh Hass Avocados": [90,180],
-  "Dry Maize Grain": [45,80],
-  "Irish Potatoes": [35,80],
-  "Red Kidney Beans": [100,220]
-};
-
-function readStorage(key, fallback) {
-  try {
-    const raw = localStorage.getItem(key);
-    return raw ? JSON.parse(raw) : fallback;
-  } catch (error) {
-    return fallback;
-  }
-}
-function saveStorage(key, value) {
-  try { localStorage.setItem(key, JSON.stringify(value)); }
-  catch (error) { console.warn("Browser storage is unavailable.", error); }
-}
-function getListings() {
-  const saved = readStorage(STORAGE.listings, null);
-  if (Array.isArray(saved) && saved.length) return saved;
-  saveStorage(STORAGE.listings, DEMO_LISTINGS);
-  return [...DEMO_LISTINGS];
-}
-let listings = getListings();
-let cart = readStorage(STORAGE.cart, []);
-let currentSlide = 0;
-let slideTimer = null;
-let toastTimer = null;
-let activeLanguage = readStorage(STORAGE.language, "en");
-
-const $ = (selector, root = document) => root.querySelector(selector);
-const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
-const escapeHTML = value => String(value ?? "").replace(/[&<>"']/g, char => ({
-  "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;"
-}[char]));
-const money = value => "KSh " + Number(value || 0).toLocaleString("en-KE");
-const getPrimaryPrice = product => Number(product.retailPrice || product.bulkPrice || 0);
-const imageFor = product => product.image || PHOTO.farm;
-
-function showToast(message) {
-  const toast = $("#toast");
-  toast.textContent = message;
-  toast.classList.add("show");
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => toast.classList.remove("show"), 2600);
-}
-
-/* MODALS */
-function openModal(id) {
-  const modal = document.getElementById(id);
-  if (!modal) return;
-  modal.classList.add("open");
-  document.body.style.overflow = "hidden";
-}
-function closeModal(id) {
-  const modal = document.getElementById(id);
-  if (!modal) return;
-  modal.classList.remove("open");
-  if (!$(".modal.open")) document.body.style.overflow = "";
-}
-$$("[data-open]").forEach(button => button.addEventListener("click", () => openModal(button.dataset.open)));
-$$("[data-close]").forEach(button => button.addEventListener("click", () => closeModal(button.dataset.close)));
-$$(".modal").forEach(modal => modal.addEventListener("click", event => {
-  if (event.target === modal) closeModal(modal.id);
-}));
-document.addEventListener("keydown", event => {
-  if (event.key === "Escape") $$(".modal.open").forEach(modal => closeModal(modal.id));
-});
-
-/* SLIDESHOW: arrows, dots and auto-play */
-function showSlide(index) {
-  const slides = $$(".hero-slide");
-  const dots = $$(".slide-dot");
-  if (!slides.length) return;
-  currentSlide = (index + slides.length) % slides.length;
-  slides.forEach((slide, i) => slide.classList.toggle("active", i === currentSlide));
-  dots.forEach((dot, i) => {
-    dot.classList.toggle("active", i === currentSlide);
-    dot.setAttribute("aria-pressed", String(i === currentSlide));
-  });
-}
-function startSlideshow() {
-  clearInterval(slideTimer);
-  slideTimer = setInterval(() => showSlide(currentSlide + 1), 5500);
-}
-function restartSlideshow() { startSlideshow(); }
-$("#prevSlide").addEventListener("click", () => { showSlide(currentSlide - 1); restartSlideshow(); });
-$("#nextSlide").addEventListener("click", () => { showSlide(currentSlide + 1); restartSlideshow(); });
-$$(".slide-dot").forEach(dot => dot.addEventListener("click", () => {
-  showSlide(Number(dot.dataset.slide));
-  restartSlideshow();
-}));
-$("#farmerSlideshow").addEventListener("mouseenter", () => clearInterval(slideTimer));
-$("#farmerSlideshow").addEventListener("mouseleave", startSlideshow);
-document.addEventListener("visibilitychange", () => {
-  if (document.hidden) clearInterval(slideTimer);
-  else startSlideshow();
-});
-showSlide(0);
-startSlideshow();
-
-/* MOBILE NAVIGATION */
-$("#menuToggle").addEventListener("click", () => {
-  const nav = $("#mobileNav");
-  const opened = nav.classList.toggle("open");
-  $("#menuToggle").setAttribute("aria-expanded", String(opened));
-});
-$$(".mobile-nav a").forEach(link => link.addEventListener("click", () => {
-  $("#mobileNav").classList.remove("open");
-  $("#menuToggle").setAttribute("aria-expanded", "false");
-}));
-
-/* FILTERS AND SEARCH */
-function currentFilters() {
-  return {
-    search: $("#searchInput").value.trim().toLowerCase(),
-    category: $("#categoryFilter").value,
-    county: $("#locationFilter").value,
-    sale: $("#saleFilter").value,
-    sort: $("#sortFilter").value,
-    fairOnly: $("#fairOnly").checked
-  };
-}
-function isFairPrice(product) {
-  const range = PRICE_GUIDE[product.name];
-  if (!range) return false;
-  const price = getPrimaryPrice(product);
-  return price >= range[0] && price <= range[1];
-}
-function getFilteredListings() {
-  const filters = currentFilters();
-  let result = listings.filter(product => {
-    const text = [product.name, product.category, product.county, product.seller, product.description]
-      .join(" ").toLowerCase();
-    const matchesSearch = !filters.search || text.includes(filters.search);
-    const matchesCategory = filters.category === "All" || product.category === filters.category;
-    const matchesCounty = filters.county === "All" || product.county === filters.county;
-    const matchesSale = filters.sale === "All" || product.saleType === "Both" || product.saleType === filters.sale;
-    const matchesFair = !filters.fairOnly || isFairPrice(product);
-    return matchesSearch && matchesCategory && matchesCounty && matchesSale && matchesFair;
-  });
-  if (filters.sort === "low") result.sort((a,b) => getPrimaryPrice(a) - getPrimaryPrice(b));
-  if (filters.sort === "high") result.sort((a,b) => getPrimaryPrice(b) - getPrimaryPrice(a));
-  if (filters.sort === "rating") result.sort((a,b) => Number(b.rating || 0) - Number(a.rating || 0));
-  if (filters.sort === "newest") result.sort((a,b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
-  return result;
-}
-function productCard(product) {
-  const image = escapeHTML(imageFor(product));
-  const retail = Number(product.retailPrice || product.bulkPrice || 0);
-  const bulk = Number(product.bulkPrice || product.retailPrice || 0);
-  const tag = product.saleType === "Bulk" ? "Bulk sale" : product.saleType === "Retail" ? "Retail" : "Retail & bulk";
-  const fair = isFairPrice(product);
-  return `
-    <article class="product-card">
-      <div class="product-photo">
-        <img loading="lazy" src="${image}" alt="${escapeHTML(product.name)}" onerror="this.onerror=null;this.src='${PHOTO.farm}'">
-        <span class="product-tag">${escapeHTML(tag)}</span>
-      </div>
-      <div class="product-info">
-        <h3>${escapeHTML(product.name)}</h3>
-        <div class="product-meta">📍 ${escapeHTML(product.county)} County</div>
-        <div class="product-meta">👨🏽‍🌾 ${escapeHTML(product.seller)}</div>
-        <div class="product-meta">⭐ ${Number(product.rating || 4.5).toFixed(1)} <span class="muted">· demo rating</span></div>
-        <div class="product-meta">${escapeHTML(product.quantity)} ${escapeHTML(product.unit || "kg")} listed</div>
-        <div class="product-price">${money(retail)} <small>/ ${escapeHTML(product.unit || "unit")}</small></div>
-        ${product.bulkPrice && product.saleType !== "Retail" ? `<div class="product-meta">Bulk guide: ${money(bulk)} / ${escapeHTML(product.unit || "unit")}</div>` : ""}
-        ${fair ? '<div class="product-meta" style="color:#285638;font-weight:700">✓ Within demo guide</div>' : ""}
-        <div class="product-actions">
-          <button class="btn btn-light" data-details="${escapeHTML(product.id)}">Details</button>
-          <button class="btn btn-primary" data-add="${escapeHTML(product.id)}">＋ Add to cart</button>
+    <section class="section compact">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">HOW IT WORKS</span>
+          <h2>Simple, direct, transparent.</h2>
         </div>
       </div>
-    </article>`;
-}
-function renderListings() {
-  const filtered = getFilteredListings();
-  $("#resultsCount").textContent = `${filtered.length} product${filtered.length === 1 ? "" : "s"} found`;
-  $("#listingGrid").innerHTML = filtered.map(productCard).join("");
-  $("#emptyState").classList.toggle("hidden", filtered.length !== 0);
-}
-function setCategory(category) {
-  $("#categoryFilter").value = category;
-  $("#searchCategory").value = category;
-  $$(".category-card").forEach(card => card.classList.toggle("selected", card.dataset.category === category));
-  renderListings();
-  $("#marketplace").scrollIntoView({behavior:"smooth"});
-}
-$("#categoryGrid").addEventListener("click", event => {
-  const card = event.target.closest("[data-category]");
-  if (card) setCategory(card.dataset.category);
-});
-$("#resetCategories").addEventListener("click", clearFilters);
-$("#clearFilters").addEventListener("click", clearFilters);
-$("#showAllButton").addEventListener("click", clearFilters);
-function clearFilters() {
-  $("#searchInput").value = "";
-  $("#searchCategory").value = "All";
-  $("#categoryFilter").value = "All";
-  $("#locationFilter").value = "All";
-  $("#saleFilter").value = "All";
-  $("#sortFilter").value = "newest";
-  $("#fairOnly").checked = false;
-  $$(".category-card").forEach(card => card.classList.remove("selected"));
-  renderListings();
-}
-["categoryFilter","locationFilter","saleFilter","sortFilter","fairOnly"].forEach(id => {
-  $("#" + id).addEventListener("change", renderListings);
-});
-$("#searchForm").addEventListener("submit", event => {
-  event.preventDefault();
-  $("#categoryFilter").value = $("#searchCategory").value;
-  renderListings();
-  $("#marketplace").scrollIntoView({behavior:"smooth"});
-});
-$("#searchInput").addEventListener("input", renderListings);
-$("#searchCategory").addEventListener("change", () => {
-  $("#categoryFilter").value = $("#searchCategory").value;
-  renderListings();
-});
-$("#learnFairButton").addEventListener("click", () => {
-  $("#priceGuide").scrollIntoView({behavior:"smooth",block:"center"});
-  showToast("Price ranges are illustrative demo values, not live market prices.");
-});
 
-/* PRODUCT DETAILS */
-function findProduct(id) {
-  return listings.find(product => String(product.id) === String(id));
-}
-function showProductDetails(id) {
-  const product = findProduct(id);
-  if (!product) return;
-  $("#productModalTitle").textContent = product.name;
-  $("#productDetails").innerHTML = `
-    <img src="${escapeHTML(imageFor(product))}" alt="${escapeHTML(product.name)}" style="width:100%;height:230px;object-fit:cover;border-radius:12px;margin:15px 0" onerror="this.onerror=null;this.src='${PHOTO.farm}'">
-    <p><strong>Category:</strong> ${escapeHTML(product.category)}</p>
-    <p><strong>County:</strong> ${escapeHTML(product.county)}</p>
-    <p><strong>Seller:</strong> ${escapeHTML(product.seller)}</p>
-    <p><strong>Quantity:</strong> ${escapeHTML(product.quantity)} ${escapeHTML(product.unit || "kg")}</p>
-    <p><strong>Retail price:</strong> ${money(product.retailPrice || product.bulkPrice)}</p>
-    ${product.bulkPrice ? `<p><strong>Bulk price:</strong> ${money(product.bulkPrice)}</p>` : ""}
-    <p><strong>Sale type:</strong> ${escapeHTML(product.saleType || "Both")}</p>
-    <p>${escapeHTML(product.description || "Contact the seller to confirm product details.")}</p>
-    ${product.phone ? `<p><strong>Seller contact:</strong> <a href="tel:${escapeHTML(product.phone)}">${escapeHTML(product.phone)}</a></p>` : '<p class="muted small">Demo seller: no contact number has been provided.</p>'}
-    <button class="btn btn-primary" data-add="${escapeHTML(product.id)}">＋ Add to cart</button>
-    <p class="small muted">Sample listing only. Confirm availability, quality and price before buying.</p>`;
-  openModal("productModal");
-}
-$("#listingGrid").addEventListener("click", event => {
-  const details = event.target.closest("[data-details]");
-  const add = event.target.closest("[data-add]");
-  if (details) showProductDetails(details.dataset.details);
-  if (add) addToCart(add.dataset.add);
-});
-$("#productDetails").addEventListener("click", event => {
-  const add = event.target.closest("[data-add]");
-  if (add) addToCart(add.dataset.add);
-});
+      <div class="steps-grid">
+        <article>
+          <span>01</span>
+          <h3>Find or list</h3>
+          <p>Search by product and county, or add your own listing.</p>
+        </article>
 
-/* CART */
-function saveCart() {
-  saveStorage(STORAGE.cart, cart);
-  renderCart();
-}
-function addToCart(id) {
-  const product = findProduct(id);
-  if (!product) return;
-  const existing = cart.find(item => String(item.id) === String(id));
-  if (existing) existing.quantity += 1;
-  else cart.push({id:product.id,quantity:1});
-  saveCart();
-  showToast(product.name + " added to your cart.");
-}
-function renderCart() {
-  const count = cart.reduce((sum,item) => sum + Number(item.quantity || 0), 0);
-  $("#cartCount").textContent = count;
-  let total = 0;
-  const valid = cart.filter(item => findProduct(item.id));
-  cart = valid;
-  $("#cartItems").innerHTML = cart.map(item => {
-    const product = findProduct(item.id);
-    const price = getPrimaryPrice(product);
-    total += price * item.quantity;
-    return `<div class="cart-row"><div><strong>${escapeHTML(product.name)}</strong><div class="small muted">${money(price)} × ${item.quantity}</div></div><div><strong>${money(price * item.quantity)}</strong><br><button data-remove="${escapeHTML(product.id)}">Remove</button></div></div>`;
-  }).join("");
-  $("#cartEmpty").classList.toggle("hidden", cart.length > 0);
-  $("#cartSummary").classList.toggle("hidden", cart.length === 0);
-  $("#cartSubtotal").textContent = money(total);
-  saveStorage(STORAGE.cart, cart);
-}
-$("#cartButton").addEventListener("click", () => { renderCart(); openModal("cartModal"); });
-$("#cartItems").addEventListener("click", event => {
-  const button = event.target.closest("[data-remove]");
-  if (!button) return;
-  cart = cart.filter(item => String(item.id) !== String(button.dataset.remove));
-  saveCart();
-  showToast("Item removed from cart.");
-});
-$("#checkoutButton").addEventListener("click", () => {
-  showToast("Demo order reviewed. No payment has been made.");
-  closeModal("cartModal");
-});
+        <article>
+          <span>02</span>
+          <h3>Compare fairly</h3>
+          <p>Check sale type, condition, harvest timing and the illustrative price guide.</p>
+        </article>
 
-/* CREATE A DEMO LISTING */
-$("#listingForm").addEventListener("submit", event => {
-  event.preventDefault();
-  const name = $("#listingName").value.trim();
-  const category = $("#listingType").value;
-  const county = $("#listingLocation").value;
-  const seller = $("#listingSeller").value.trim();
-  const quantity = Number($("#listingQuantity").value);
-  const unit = $("#listingStockUnit").value;
-  const retailPrice = Number($("#retailPrice").value || $("#bulkPrice").value || 0);
-  const bulkPrice = Number($("#bulkPrice").value || $("#retailPrice").value || 0);
-  const saleType = $("#saleType").value;
-  const phone = $("#listingPhone").value.trim();
-  const image = $("#listingImage").value.trim();
-  const description = $("#listingDescription").value.trim();
+        <article>
+          <span>03</span>
+          <h3>Connect directly</h3>
+          <p>Contact the seller to confirm stock, collection, delivery and payment.</p>
+        </article>
+      </div>
+    </section>
+  </main>
 
-  if (!name || !seller || !quantity || quantity < 1) {
-    showToast("Please complete the required fields.");
-    return;
-  }
-  if (!retailPrice && !bulkPrice) {
-    showToast("Add at least one selling price.");
-    return;
-  }
-  const newListing = {
-    id:"user-" + Date.now(),
-    name, category, county, seller, quantity, unit,
-    retailPrice, bulkPrice, saleType, phone,
-    image:image || categoryPhoto(category),
-    description:description || "Demo listing created in this browser.",
-    rating:5,
-    createdAt:Date.now()
-  };
-  listings.unshift(newListing);
-  saveStorage(STORAGE.listings, listings);
-  event.target.reset();
-  $("#listingQuantity").value = 50;
-  closeModal("listingModal");
-  clearFilters();
-  showToast("Your demo listing is now published!");
-  $("#marketplace").scrollIntoView({behavior:"smooth"});
-});
-function categoryPhoto(category) {
-  const map = {
-    "Fruits":PHOTO.mango, "Vegetables":PHOTO.tomato, "Nuts":PHOTO.groundnuts,
-    "Starchy Foods":PHOTO.potato, "Grains":PHOTO.maize, "Legumes":PHOTO.beans,
-    "Spices":PHOTO.chilli, "Herbal Products":PHOTO.herbs, "Livestock":PHOTO.livestock,
-    "Agricultural Inputs":PHOTO.seedlings, "Farm Tools":PHOTO.tools, "Farmer Services":PHOTO.farm
-  };
-  return map[category] || PHOTO.farm;
-}
+  <footer>
+    <a class="brand" href="index.html">
+      <span class="brand-mark">M</span>
+      <span>Mavuno<span class="brand-accent">Bridge</span><small>FROM SHAMBA TO SOKO</small></span>
+    </a>
 
-/* DEMO LOGIN */
-$("#loginButton").addEventListener("click", () => openModal("loginModal"));
-$("#loginForm").addEventListener("submit", event => {
-  event.preventDefault();
-  const email = $("#loginEmail").value.trim();
-  $("#loginMessage").textContent = "Demo mode: " + email + " can explore the marketplace. No account was created and no credentials were saved.";
-  showToast("Demo sign-in form completed.");
-});
+    <p>
+      Science fair demo. Listings and cart are stored in this browser.
+      No real payments or escrow are processed.
+    </p>
 
-/* SMART ASSIST — OFFLINE GENERAL GUIDANCE */
-const countyTips = {
-  "Kiambu":"Check local rainfall forecasts, soil drainage and the crop's water needs. Plan vegetable planting around reliable water and inspect crops regularly for pests.",
-  "Nakuru":"Check local forecasts before planting. Review soil conditions, seed quality and crop rotation options suitable for your farm.",
-  "Meru":"Consider your farm's altitude, water availability and crop variety. Check seedlings and monitor fruit or vegetable crops for pest signs.",
-  "Uasin Gishu":"Before planting grains, check the current seasonal forecast, soil fertility, seed quality and local agricultural advice.",
-  "Nyandarua":"Plan for cool conditions and drainage needs. Check variety suitability and inspect potato crops regularly.",
-  "Machakos":"Water planning is important in drier periods. Check the current forecast, conserve soil moisture and seek advice on drought-tolerant varieties.",
-  "Kisumu":"Check drainage, humidity and current local forecasts. Monitor crops regularly and avoid unnecessary watering when soils are already wet.",
-  "Kirinyaga":"Check water availability and local crop advice. Use good seed, monitor pests and avoid applying farm chemicals without proper guidance.",
-  "Murang'a":"Check local rainfall, soil condition and crop suitability. Prune and manage orchard crops according to reliable local guidance.",
-  "Trans Nzoia":"Check the current planting-season forecast, seed quality, soil fertility and advice from local extension officers.",
-  "Nyeri":"Review local temperatures, rainfall, soil drainage and the best planting calendar for your specific crop.",
-  "Kajiado":"Plan water carefully, check drought risk and seek local advice about suitable crop varieties and livestock water needs."
-};
-$("#getInsightButton").addEventListener("click", () => {
-  const county = $("#countySelect").value;
-  $("#insightMessage").textContent = county + " County — planning tip:\n" + (countyTips[county] || "Check current local forecasts, soil conditions and advice from an agricultural extension officer.") + "\n\nThis is general demo guidance, not a live forecast. Confirm local conditions before making farm decisions.";
-});
-$("#assistantForm").addEventListener("submit", event => {
-  event.preventDefault();
-  const question = $("#assistantQuestion").value.trim().toLowerCase();
-  let answer;
-  if (/tomato|pest|insect|aphid|worm|disease|leaf/.test(question)) {
-    answer = "For crop pests or leaf damage, first identify the pest or disease correctly. Inspect several plants, note which leaves are affected and take clear photos. Remove badly affected plant material only where appropriate. Ask a local agricultural extension officer for a diagnosis before using pesticides, and follow product labels and protective instructions.";
-  } else if (/water|irrigat|dry|drought|rain/.test(question)) {
-    answer = "Check soil moisture near the root zone, the crop's growth stage and the local forecast. Water deeply when appropriate for the crop and soil, avoid waterlogging, and use mulch where suitable to reduce moisture loss. This demo does not access live weather data.";
-  } else if (/soil|fertili|compost|nutrient/.test(question)) {
-    answer = "Start with a soil test if available. Choose compost or fertilizer according to the crop's needs and test results, and follow recommended application rates. Avoid guessing fertilizer quantities. A local agricultural extension officer can help you choose a suitable plan.";
-  } else if (/plant|crop|seed|rotation|grow/.test(question)) {
-    answer = "Choose crops suited to your soil, water supply, local climate and market demand. Check seed quality, the recommended planting calendar and spacing. Crop rotation can help manage some pests and soil problems. Ask a local extension officer for county- and crop-specific advice.";
-  } else {
-    answer = "Good question! Start by identifying the crop, its growth stage and the exact problem. Check soil moisture and recent weather, take photos if you see symptoms, and compare your observations with trusted agricultural guidance. For a precise recommendation, ask a local agricultural extension officer. This demo does not connect to a live AI service.";
-  }
-  $("#assistantAnswer").textContent = answer;
-});
+    <div>
+      <a href="smart-assist.html">Smart Assist</a> ·
+      <a href="sacco.html">SACCO Hub</a> ·
+      <a href="messages.html">Buyer Requests & Support</a>
+    </div>
+  </footer>
 
-/* SACCO HUB */
-const saccoAnswers = {
-  savings:"Before joining, ask about the minimum share capital, regular savings, membership fees, withdrawal rules, dividends and how your money is protected. Request the written membership rules and verify the cooperative's registration independently.",
-  loans:"Compare the interest rate, all fees, total repayment, repayment schedule, collateral and late-payment penalties. Do not borrow until you understand the full cost. Ask for the terms in writing and never share your PIN.",
-  join:"Confirm the SACCO's official registration and contact details independently. Read its bylaws, understand your obligations and ask for official receipts. Avoid sending money to a personal number without independently verifying the request."
-};
-$$("[data-sacco]").forEach(button => button.addEventListener("click", () => {
-  const box = $("#saccoAnswer");
-  box.textContent = saccoAnswers[button.dataset.sacco];
-  box.classList.remove("hidden");
-  box.scrollIntoView({behavior:"smooth",block:"nearest"});
-}));
-$("#supportButton").addEventListener("click", () => $("#supportAnswer").classList.toggle("hidden"));
+  <!-- LISTING FORM -->
+  <div class="modal-backdrop hidden" id="listingModal" role="dialog" aria-modal="true" aria-labelledby="listingModalTitle">
+    <div class="modal">
+      <button class="modal-close" data-close="listingModal" aria-label="Close">×</button>
 
-/* LANGUAGE PREFERENCE — demo-level interface changes */
-const languageText = {
-  en:{market:"Marketplace",assist:"Smart Assist",sacco:"SACCO Hub",support:"Support",explore:"Explore Marketplace →",list:"＋ List a Product",search:"Search products"},
-  sw:{market:"Soko",assist:"Msaidizi wa Kilimo",sacco:"SACCO Hub",support:"Msaada",explore:"Angalia Soko →",list:"＋ Weka Bidhaa",search:"Tafuta bidhaa"},
-  sheng:{market:"Soko",assist:"Smart Assist",sacco:"SACCO Hub",support:"Help",explore:"Cheki Soko →",list:"＋ Weka Bidhaa",search:"Tafuta bidhaa"}
-};
-function applyLanguage(language) {
-  activeLanguage = language;
-  saveStorage(STORAGE.language, language);
-  $("#languageSelect").value = language;
-  const words = languageText[language] || languageText.en;
-  const navLinks = $$(".nav-links a");
-  if (navLinks.length >= 4) {
-    navLinks[0].textContent = words.market;
-    navLinks[1].textContent = words.assist;
-    navLinks[2].textContent = words.sacco;
-    navLinks[3].textContent = words.support;
-  }
-  const mobileLinks = $$(".mobile-nav a");
-  if (mobileLinks.length >= 4) {
-    mobileLinks[0].textContent = "🛍 " + words.market;
-    mobileLinks[1].textContent = "🌦 " + words.assist;
-    mobileLinks[2].textContent = "🤝 " + words.sacco;
-    mobileLinks[3].textContent = "💬 " + words.support;
-  }
-  $(".hero-buttons .btn-lime").textContent = words.explore;
-  $("#searchForm button").textContent = words.search;
-}
-$("#languageSelect").addEventListener("change", event => {
-  applyLanguage(event.target.value);
-  showToast("Language preference updated. Some demo text remains in English.");
-});
+      <h2 id="listingModalTitle">List your produce</h2>
+      <p class="muted">
+        Add your product details. The fair-price checker is an illustrative guide,
+        not a live market quote.
+      </p>
 
-/* INITIALISE */
-$("#currentYear").textContent = new Date().getFullYear();
-renderListings();
-renderCart();
-applyLanguage(["en","sw","sheng"].includes(activeLanguage) ? activeLanguage : "en");
+      <form id="listingForm" class="form-grid">
+        <label>
+          Product name *
+          <input name="name" required placeholder="e.g. Hass avocados">
+        </label>
 
-/* A safe fallback: if saved data was invalid or empty, restore sample products. */
-if (!Array.isArray(listings) || listings.length === 0) {
-  listings = [...DEMO_LISTINGS];
-  saveStorage(STORAGE.listings, listings);
-  renderListings();
-}
-</script>
+        <label>
+          Category *
+          <select name="category" id="formCategory" required></select>
+        </label>
+
+        <label>
+          County *
+          <select name="county" id="formCounty" required></select>
+        </label>
+
+        <label>
+          Town / area
+          <input name="town" placeholder="e.g. Limuru">
+        </label>
+
+        <label>
+          Farmer / seller name *
+          <input name="farmer" required placeholder="Your name or farm name">
+        </label>
+
+        <label>
+          Phone number *
+          <input name="phone" required type="tel" placeholder="07xx xxx xxx">
+        </label>
+
+        <label>
+          Quantity available *
+          <input name="quantity" required type="number" min="0.1" step="0.1" placeholder="e.g. 50">
+        </label>
+
+        <label>
+          Unit
+          <select name="unit">
+            <option>kg</option>
+            <option>bag</option>
+            <option>crate</option>
+            <option>piece</option>
+            <option>litre</option>
+            <option>animal</option>
+            <option>unit</option>
+          </select>
+        </label>
+
+        <label>
+          Price (KSh per unit) *
+          <input name="price" required type="number" min="1" step="0.01" placeholder="Enter your selling price">
+        </label>
+
+        <label>
+          Sale type
+          <select name="saleType">
+            <option value="both">Retail and bulk</option>
+            <option value="retail">Retail only</option>
+            <option value="bulk">Bulk only</option>
+          </select>
+        </label>
+
+        <label>
+          Condition
+          <select name="condition">
+            <option>Fresh</option>
+            <option>Good</option>
+            <option>Needs sorting</option>
+            <option>Processed / dried</option>
+            <option>Other</option>
+          </select>
+        </label>
+
+        <label>
+          Harvest date
+          <input name="harvestDate" type="date">
+        </label>
+
+        <label>
+          Best-buy window (days)
+          <input name="freshDays" type="number" min="1" max="60" value="5">
+        </label>
+
+        <label class="full">
+          Description / farmer story
+          <textarea name="description" rows="3" placeholder="Tell buyers about quality, collection or delivery."></textarea>
+        </label>
+
+        <label class="full">
+          Product photo
+          <input name="photo" type="file" accept="image/*" id="photoInput">
+          <small>For this demo, use a small image file to avoid filling browser storage.</small>
+          <img id="photoPreview" class="photo-preview hidden" alt="Selected product preview">
+        </label>
+
+        <div class="price-check full" id="priceCheck">
+          <b>Fair-price checker</b>
+          <p>Enter a product name and price to see the guide.</p>
+        </div>
+
+        <label class="full">
+          Quality checklist
+          <select name="quality">
+            <option value="A">Grade A — clean, consistent, good condition</option>
+            <option value="B">Grade B — mixed sizes / needs sorting</option>
+            <option value="C">Grade C — surplus / imperfect but usable</option>
+          </select>
+        </label>
+
+        <div class="full form-actions">
+          <button type="button" class="btn btn-outline" data-close="listingModal">Cancel</button>
+          <button class="btn btn-primary" type="submit">Publish listing</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- CART -->
+  <div class="modal-backdrop hidden" id="cartModal" role="dialog" aria-modal="true" aria-labelledby="cartTitle">
+    <div class="modal">
+      <button class="modal-close" data-close="cartModal" aria-label="Close">×</button>
+
+      <h2 id="cartTitle">Your cart</h2>
+      <div id="cartItems"></div>
+
+      <div class="cart-total">
+        <span>Estimated total</span>
+        <b id="cartTotal">KSh 0</b>
+      </div>
+
+      <label>
+        Fulfilment
+        <select id="fulfilment">
+          <option>Arrange pickup with seller</option>
+          <option>Ask seller about delivery</option>
+        </select>
+      </label>
+
+      <button class="btn btn-primary btn-block" id="checkoutButton" type="button">
+        Create demo order
+      </button>
+
+      <p class="muted tiny">
+        No money is charged. Contact sellers to confirm stock, delivery and payment.
+      </p>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="app.js" defer></script>
 </body>
 </html>
