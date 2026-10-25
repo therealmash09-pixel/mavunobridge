@@ -1,136 +1,78 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Smart Assist | MavunoBridge</title>
   <link rel="stylesheet" href="style.css">
+  <script src="smart-assist.js" defer></script>
 </head>
 <body>
-  <header class="site-header">
-    <a class="brand" href="index.html">
-      <span class="brand-mark">M</span>
-      <span>Mavuno<span class="brand-accent">Bridge</span><small>FROM SHAMBA TO SOKO</small></span>
-    </a>
-    <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation">☰</button>
-    <nav id="mainNav">
-      <a href="index.html">Marketplace</a>
-      <a href="smart-assist.html">Smart Assist</a>
-      <a href="sacco.html">SACCO Hub</a>
-      <a href="messages.html">Buyer Requests</a>
-    </nav>
+  <header class="topbar">
+    <a class="brand" href="index.html"><span class="brand-mark">M</span><span>Mavuno<span class="brand-light">Bridge</span><small>FARMING. CONNECTED.</small></span></a>
+    <a href="index.html" class="text-link">← Marketplace</a>
   </header>
 
-  <section class="page-hero">
-    <span class="eyebrow">FARMER SUPPORT TOOLKIT</span>
-    <h1>Smart Assist for your shamba.</h1>
-    <p>
-      Get practical crop, pest and weather-aware tips.
-      Hii ni demo guidance — confirm important decisions with an agricultural extension officer.
-    </p>
-  </section>
-
-  <main class="page-wrap">
-    <section class="panel">
-      <h2>Tell us about your farm</h2>
-      <p>Choose your county and crop, then describe what is happening.</p>
-
-      <form id="assistForm" class="panel-grid">
-        <label>
-          County
-          <select id="county" required>
-            <option value="">Choose county</option>
-          </select>
-        </label>
-
-        <label>
-          Crop
-          <select id="crop">
-            <option>Maize</option>
-            <option>Tomatoes</option>
-            <option>Beans</option>
-            <option>Potatoes</option>
-            <option>Avocado</option>
-            <option>Sukuma wiki</option>
-            <option>Green grams</option>
-            <option>Bananas</option>
-            <option>Onions</option>
-            <option>Other</option>
-          </select>
-        </label>
-
-        <label>
-          Farm conditions
-          <select id="weather">
-            <option value="normal">Normal / not sure</option>
-            <option value="dry">Dry spell / little rain</option>
-            <option value="wet">Heavy rain / waterlogged</option>
-            <option value="cool">Cool weather</option>
-            <option value="hot">Very hot</option>
-          </select>
-        </label>
-
-        <label>
-          What are you noticing?
-          <select id="symptom">
-            <option value="none">No obvious problem — planning</option>
-            <option value="yellow">Yellowing leaves</option>
-            <option value="holes">Holes / insects on leaves</option>
-            <option value="spots">Spots or mould-like patches</option>
-            <option value="wilting">Wilting plants</option>
-            <option value="stunted">Slow growth</option>
-          </select>
-        </label>
-
-        <label class="full">
-          Extra details
-          <textarea id="details" rows="3" placeholder="When did it start? How many plants are affected?"></textarea>
-        </label>
-
-        <div class="full">
-          <button class="btn btn-primary" type="submit">Get farm guidance</button>
-        </div>
-      </form>
-
-      <div class="result-box hidden" id="assistResult" aria-live="polite"></div>
+  <main class="page-shell">
+    <section class="page-hero smart-hero">
+      <p class="eyebrow">YOUR DIGITAL FARMING COMPANION</p>
+      <h1>Smarter decisions.<br>Better harvests.</h1>
+      <p>Get practical crop-planning ideas, pest guidance and farming tips tailored to your selected Kenyan county.</p>
+      <span class="demo-label">DEMO MODE · NOT A LIVE WEATHER FORECAST</span>
     </section>
 
-    <section class="panel" style="margin-top:20px">
-      <h2>Season-ready checklist</h2>
-      <div class="steps-grid">
-        <article>
-          <span>01</span>
-          <h3>Check soil moisture</h3>
-          <p>Feel the soil below the surface before watering. Avoid waterlogging around roots.</p>
-        </article>
-        <article>
-          <span>02</span>
-          <h3>Inspect leaves</h3>
-          <p>Check both sides of leaves and compare affected plants with healthy ones.</p>
-        </article>
-        <article>
-          <span>03</span>
-          <h3>Keep records</h3>
-          <p>Record planting dates, rainfall, inputs and changes after treatment.</p>
-        </article>
+    <section class="section page-section">
+      <div class="section-heading">
+        <div><p class="eyebrow">PERSONALISED FARM PLANNER</p><h2>Tell us about your farm</h2><p class="muted">Chagua county and crop to get a tailored starting point.</p></div>
+      </div>
+
+      <form id="assistForm" class="assist-form">
+        <label>County
+          <select id="assistCounty" required>
+            <option value="Nakuru">Nakuru</option><option value="Kiambu">Kiambu</option>
+            <option value="Uasin Gishu">Uasin Gishu</option><option value="Meru">Meru</option>
+            <option value="Machakos">Machakos</option><option value="Kisumu">Kisumu</option>
+            <option value="Nyandarua">Nyandarua</option><option value="Bungoma">Bungoma</option>
+          </select>
+        </label>
+        <label>Crop or plant
+          <select id="assistCrop" required>
+            <option value="Maize">Maize</option><option value="Beans">Beans</option>
+            <option value="Tomatoes">Tomatoes</option><option value="Potatoes">Potatoes</option>
+            <option value="Avocados">Avocados</option><option value="Green grams">Green grams</option>
+            <option value="Kale">Kale / Sukuma wiki</option><option value="Bananas">Bananas</option>
+          </select>
+        </label>
+        <label>Farm condition
+          <select id="assistCondition">
+            <option value="normal">Normal conditions</option>
+            <option value="dry">Soil is dry</option>
+            <option value="wet">Heavy rain / wet soil</option>
+            <option value="pests">Noticed pests or crop damage</option>
+          </select>
+        </label>
+        <button class="button button-green" type="submit">Generate farm tips →</button>
+      </form>
+
+      <div id="assistResults" class="assist-results" aria-live="polite">
+        <div class="assist-placeholder"><h3>Your farm plan will appear here</h3><p>Choose your county and crop, then select “Generate farm tips”.</p></div>
       </div>
     </section>
 
-    <p class="notice" style="margin-top:20px">
-      Weather note: this demo does not fetch live forecasts. It uses the conditions you select.
-      It cannot reliably diagnose crop disease. Follow product labels and seek local expert advice
-      before applying pesticides.
-    </p>
+    <section class="section page-section">
+      <p class="eyebrow">QUICK LEARNING</p>
+      <h2>Farm knowledge corner</h2>
+      <div class="knowledge-grid">
+        <article class="knowledge-card"><span class="knowledge-number">01</span><h3>Soil health</h3><p>Improve soil with suitable organic matter, protect it from erosion and consider a soil test before applying fertiliser.</p></article>
+        <article class="knowledge-card"><span class="knowledge-number">02</span><h3>Pest scouting</h3><p>Check both sides of leaves and inspect several plants. Note affected areas before choosing a control method.</p></article>
+        <article class="knowledge-card"><span class="knowledge-number">03</span><h3>Water management</h3><p>Check soil moisture before watering. Avoid waterlogging and use mulch where appropriate to reduce evaporation.</p></article>
+      </div>
+    </section>
+
+    <div class="page-cta"><div><h2>Need farm equipment or inputs?</h2><p>Find tools, inputs and products in the marketplace.</p></div><a href="index.html#categories" class="button button-light">Explore products →</a></div>
   </main>
 
-  <footer>
-    <a class="brand" href="index.html">
-      <span class="brand-mark">M</span>
-      <span>Mavuno<span class="brand-accent">Bridge</span><small>FROM SHAMBA TO SOKO</small></span>
-    </a>
-    <p>Practical demo guidance for Kenya's farmers. Not a live forecast or diagnosis.</p>
-  </footer>
-
-  <script src="smart-assist.js" defer></script>
+  <footer class="footer"><a href="index.html">MavunoBridge Marketplace</a><p>Demo planning tips are general guidance, not live weather or a diagnosis of crop disease.</p></footer>
 </body>
 </html>
