@@ -1,133 +1,114 @@
-/* MAVUNOBRIDGE — OFFLINE SMART ASSIST DEMO */
 
-(() => {
-  "use strict";
+"use strict";
 
-  const $ = selector => document.querySelector(selector);
+const assistForm = document.querySelector("#assistForm");
+const assistResults = document.querySelector("#assistResults");
 
-  const counties = [
-    "Baringo", "Bomet", "Bungoma", "Busia", "Elgeyo-Marakwet",
-    "Embu", "Garissa", "Homa Bay", "Isiolo", "Kajiado",
-    "Kakamega", "Kericho", "Kiambu", "Kilifi", "Kirinyaga",
-    "Kisii", "Kisumu", "Kitui", "Kwale", "Laikipia", "Lamu",
-    "Machakos", "Makueni", "Mandera", "Marsabit", "Meru",
-    "Migori", "Mombasa", "Murang'a", "Nairobi", "Nakuru",
-    "Nandi", "Narok", "Nyamira", "Nyandarua", "Nyeri",
-    "Samburu", "Siaya", "Taita-Taveta", "Tana River",
-    "Tharaka-Nithi", "Trans Nzoia", "Turkana", "Uasin Gishu",
-    "Vihiga", "Wajir", "West Pokot"
-  ];
+const cropGuidance = {
+  "Maize": {
+    planting: "Use certified seed suited to your area's altitude and rainfall. Check spacing and planting depth on the seed packet.",
+    pests: "Scout for fall armyworm, especially in the leaf whorl. Check for fresh damage and get local agricultural guidance before treating.",
+    harvest: "Check grain maturity and moisture before harvesting and storing. Keep harvested grain dry and protected from pests."
+  },
+  "Beans": {
+    planting: "Choose a variety suited to your area and use well-drained soil. Avoid planting into waterlogged ground.",
+    pests: "Inspect leaves, stems and pods regularly for chewing damage, aphids and disease symptoms.",
+    harvest: "Harvest when pods are mature and dry the crop safely before storage."
+  },
+  "Tomatoes": {
+    planting: "Use healthy seedlings, maintain good spacing and provide support where appropriate. Avoid leaving leaves wet for long periods.",
+    pests: "Check leaf undersides and new growth for whiteflies, aphids, caterpillars and unusual spots. Confirm the cause before applying a treatment.",
+    harvest: "Harvest at the maturity stage your buyer needs. Handle fruit carefully to prevent bruising."
+  },
+  "Potatoes": {
+    planting: "Use healthy certified seed potatoes and rid soil around plants. Rotate away from potatoes and related crops when possible.",
+    pests: "Scout for late-blight symptoms and insect damage. If disease is spreading, seek advice from a local agricultural officer quickly.",
+    harvest: "Avoid harvesting into very wet soil. Cure and store tubers according to recommended local practices."
+  },
+  "Avocados": {
+    planting: "Use a healthy tree suited to your conditions. Good drainage and careful moisture management are important.",
+    pests: "Inspect new shoots, leaves and fruit for damage. Seek local advice if you find symptoms you cannot identify.",
+    harvest: "Follow maturity guidance for your avocado variety and market. Harvest carefully to avoid bruises."
+  },
+  "Green grams": {
+    planting: "Select a locally recommended variety and use well-drained soil. Avoid excessive waterlogging.",
+    pests: "Check leaves and pods for insect damage and look out for yellowing or unusual spots.",
+    harvest: "Harvest mature pods promptly and dry the grain properly before storage."
+  },
+  "Kale": {
+    planting: "Use healthy seedlings and keep consistent moisture without waterlogging. Plant spacing helps air move through the crop.",
+    pests: "Inspect leaf undersides for caterpillars and aphids. Use locally recommended control methods once the pest is identified.",
+    harvest: "Harvest outer leaves carefully and continue checking plants for pests and nutrient issues."
+  },
+  "Bananas": {
+    planting: "Use healthy planting material and maintain soil moisture. Organic mulch can help conserve water where appropriate.",
+    pests: "Check leaves, stems and fruit for damage. Remove diseased plant material using local agricultural guidance.",
+    harvest: "Handle bunches gently and harvest at the maturity stage needed for your intended market."
+  }
+};
 
-  const countySelect = $("#county");
+const countyNotes = {
+  "Nakuru": "Conditions vary between locations in Nakuru County. Check your local rainfall and soil before planting.",
+  "Kiambu": "Elevation and conditions differ across Kiambu. Match crop varieties to your specific area.",
+  "Uasin Gishu": "Plan planting around local rainfall and soil conditions; avoid relying on county-wide assumptions.",
+  "Meru": "Conditions vary with altitude and location. Confirm the recommended varieties for your part of Meru.",
+  "Machakos": "Some areas experience dry spells. Plan water use carefully and consider locally recommended drought-tolerant varieties.",
+  "Kisumu": "Account for local rainfall, humidity and drainage. Avoid assuming every part of the county has the same conditions.",
+  "Nyandarua": "Local temperature and altitude can affect crop suitability. Consult nearby agricultural extension services.",
+  "Bungoma": "Use local rainfall patterns and soil conditions to plan planting and crop management."
+};
 
-  countySelect.innerHTML =
-    '<option value="">Choose county</option>' +
-    counties.map(county =>
-      `<option value="${county}">${county}</option>`
-    ).join("");
+function escapeAssist(value) {
+  return String(value).replace(/[&<>"']/g, (character) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  })[character]);
+}
 
-  $("#menuToggle").addEventListener("click", () => {
-    $("#mainNav").classList.toggle("open");
-  });
+function createTips(county, crop, condition) {
+  const guidance = cropGuidance[crop] || cropGuidance["Maize"];
+  const tips = [guidance.planting, guidance.pests, guidance.harvest];
 
-  const symptomAdvice = {
-    none: "No obvious problem reported. Scout the crop regularly and record changes early.",
-    yellow: "Yellow leaves can have several causes, including water stress, nutrient issues, root problems or pests. Check which leaves are affected and inspect the plant before choosing a treatment.",
-    holes: "Leaf holes may be caused by caterpillars, beetles or other pests. Inspect both sides of several leaves and look for insects or droppings. Get the pest identified before applying controls.",
-    spots: "Spots may have fungal, bacterial or other causes. Avoid handling wet plants and seek a local diagnosis before treatment.",
-    wilting: "Wilting can be caused by dry soil, waterlogged roots, disease or stem damage. Check soil moisture first instead of automatically adding more water.",
-    stunted: "Slow growth may relate to soil fertility, moisture, seed quality, weeds, pests or spacing. Compare healthy and affected plants."
+  if (condition === "dry") {
+    tips.unshift("Dry soil selected: check moisture below the surface before watering, mulch where appropriate, and seek local advice on water-efficient methods.");
+  } else if (condition === "wet") {
+    tips.unshift("Wet soil selected: check field drainage and avoid working saturated soil. Watch for increased disease pressure after prolonged wet conditions.");
+  } else if (condition === "pests") {
+    tips.unshift("Crop damage selected: photograph affected plants, inspect several locations and confirm the pest or disease before applying a treatment.");
+  }
+
+  return {
+    county: countyNotes[county] || "Check local soil and rainfall information before making farm decisions.",
+    tips
   };
+}
 
-  const cropAdvice = {
-    "Maize": "Check planting timing and spacing with local extension advice. Scout for unusual leaf damage and get pests identified before considering treatment.",
-    "Tomatoes": "Water near the soil when practical, support plants where suitable, and scout for leaf damage and fruit problems.",
-    "Beans": "Check drainage, manage weeds early and monitor leaves for holes or unusual spots.",
-    "Potatoes": "Use healthy seed tubers, earth up where suitable, and seek advice promptly if unusual dark lesions appear during wet conditions.",
-    "Avocado": "Check drainage, avoid root damage and seek help if leaves or fruit develop unusual symptoms.",
-    "Sukuma wiki": "Inspect leaf undersides regularly, manage weeds and harvest appropriately.",
-    "Green grams": "Monitor moisture during establishment and manage weeds early.",
-    "Bananas": "Maintain suitable soil moisture and ensure water can drain away from the plant base.",
-    "Onions": "Use well-drained beds and watch for leaf damage or unusual patches.",
-    "Other": "Share the crop name and clear symptoms with your local agricultural extension officer."
-  };
+assistForm?.addEventListener("submit", (event) => {
+  event.preventDefault();
+  if (!assistForm.reportValidity()) return;
 
-  $("#assistForm").addEventListener("submit", event => {
-    event.preventDefault();
+  const county = document.querySelector("#assistCounty").value;
+  const crop = document.querySelector("#assistCrop").value;
+  const condition = document.querySelector("#assistCondition").value;
+  const result = createTips(county, crop, condition);
 
-    const county = $("#county").value;
-    const crop = $("#crop").value;
-    const weather = $("#weather").value;
-    const symptom = $("#symptom").value;
-    const details = $("#details").value.trim();
+  assistResults.innerHTML = `
+    <div class="assist-result-heading">
+      <p class="eyebrow">YOUR FARMING GUIDE</p>
+      <h2>${escapeAssist(crop)} · ${escapeAssist(county)} County</h2>
+      <p>${escapeAssist(result.county)}</p>
+    </div>
+    <div class="tip-grid">
+      ${result.tips.map((tip, index) => `
+        <article class="tip-card">
+          <span class="tip-index">${String(index + 1).padStart(2, "0")}</span>
+          <p>${escapeAssist(tip)}</p>
+        </article>`).join("")}
+    </div>
+    <p class="assist-disclaimer">These are general, rule-based demo suggestions. They do not use live weather data or identify a pest from an image. Confirm advice with your local agricultural extension officer.</p>
+    <button class="button button-green" id="assistAgainButton" type="button">Update my farm plan</button>
+  `;
 
-    if (!county) {
-      alert("Please choose your county first.");
-      return;
-    }
-
-    const advice = [];
-
-    if (weather === "dry") {
-      advice.push(
-        "Dry spell: check soil moisture, mulch where suitable and prioritise young plants when water is limited. Follow local advice for your crop."
-      );
-    } else if (weather === "wet") {
-      advice.push(
-        "Heavy rain: check drainage, avoid walking on waterlogged beds and watch for signs of plant disease. Follow input labels about application during rainy conditions."
-      );
-    } else if (weather === "hot") {
-      advice.push(
-        "Hot conditions: monitor moisture and wilting. Water at cooler times where practical and protect sensitive young seedlings when appropriate."
-      );
-    } else if (weather === "cool") {
-      advice.push(
-        "Cool conditions: growth may slow for some crops. Check locally recommended planting times and monitor soil moisture."
-      );
-    } else {
-      advice.push(
-        "Planning: use local seasonal advice and your rainfall records. The selected county does not tell us today's actual weather."
-      );
-    }
-
-    advice.push(symptomAdvice[symptom]);
-    advice.push(`Crop note for ${crop}: ${cropAdvice[crop]}`);
-
-    if (details) {
-      advice.push(
-        `Your note: "${details}". Keep this information when asking an extension officer for advice.`
-      );
-    }
-
-    const result = $("#assistResult");
-    result.replaceChildren();
-
-    const heading = document.createElement("h3");
-    heading.textContent = `Farm guidance for ${county} County`;
-    result.appendChild(heading);
-
-    const disclaimer = document.createElement("p");
-    disclaimer.className = "muted";
-    disclaimer.textContent =
-      "Rule-based demo guidance — not a live weather report or confirmed diagnosis.";
-    result.appendChild(disclaimer);
-
-    const list = document.createElement("ul");
-
-    advice.forEach(text => {
-      const item = document.createElement("li");
-      item.textContent = text;
-      list.appendChild(item);
-    });
-
-    result.appendChild(list);
-
-    const nextStep = document.createElement("p");
-    nextStep.textContent =
-      "Next step: take clear photos of the whole plant and affected leaves, note when symptoms began, and ask your county agricultural extension officer before using pesticides or major inputs.";
-    result.appendChild(nextStep);
-
-    result.classList.remove("hidden");
-    result.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  document.querySelector("#assistAgainButton")?.addEventListener("click", () => {
+    assistForm.scrollIntoView({ behavior: "smooth", block: "center" });
   });
-})();
+});
