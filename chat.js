@@ -1,118 +1,166 @@
-"use strict";
+/* MAVUNOBRIDGE — BUYER REQUESTS AND SUPPORT NOTES */
 
-/* =========================================================
-   MAVUNOMART CHAT STORE
-   Demo version: data lives in localStorage (same browser).
-   For real buyer<->seller messaging across devices, swap the
-   read/write functions for Firebase / Supabase calls.
-========================================================= */
+(() => {
+  "use strict";
 
-const ChatStore = (() => {
+  const $ = selector => document.querySelector(selector);
+  const DEMANDS_KEY = "mavunobridge_demands_v2";
+  const SUPPORT_KEY = "mavunobridge_support_notes_v1";
 
-  const KEY = "shambamarket_inquiries_v1";
-  const ID_KEY = "shambamarket_identity_v1";
+  const counties = [
+    "Baringo", "Bomet", "Bungoma", "Busia", "Elgeyo-Marakwet",
+    "Embu", "Garissa", "Homa Bay", "Isiolo", "Kajiado",
+    "Kakamega", "Kericho", "Kiambu", "Kilifi", "Kirinyaga",
+    "Kisii", "Kisumu", "Kitui", "Kwale", "Laikipia", "Lamu",
+    "Machakos", "Makueni", "Mandera", "Marsabit", "Meru",
+    "Migori", "Mombasa", "Murang'a", "Nairobi", "Nakuru",
+    "Nandi", "Narok", "Nyamira", "Nyandarua", "Nyeri",
+    "Samburu", "Siaya", "Taita-Taveta", "Tana River",
+    "Tharaka-Nithi", "Trans Nzoia", "Turkana", "Uasin Gishu",
+    "Vihiga", "Wajir", "West Pokot"
+  ];
 
-  const read = (key, fallback) => {
-    try { return JSON.parse(localStorage.getItem(key)) ?? fallback; }
-    catch { return fallback; }
-  };
-  const write = (key, value) =>
-    localStorage.setItem(key, JSON.stringify(value));
+  function readList(key) {
+    try {
+      const value = JSON.parse(localStorage.getItem(key) || "[]");
+      return Array.isArray(value) ? value : [];
+    } catch {
+      return [];
+    }
+  }
 
-  const all = () => read(KEY, []);
-  const save = list => write(KEY, list);
-  const identity = () => read(ID_KEY, null);
-  const setIdentity = value => write(ID_KEY, value);
+  let demands = readList(DEMANDS_KEY);
+  let notes = readList(SUPPORT_KEY);
 
-  const money = n => Number(n || 0).toLocaleString("en-KE");
+  $("#dCounty").innerHTML =
+    '<option value="">Choose county</option>' +
+    counties.map(county =>
+      `<option value="${county}">${county}</option>`
+    ).join("");
 
-  /* One conversation per seller, built from the cart */
-  function createFromCart(cart, listings, buyerName) {
+  $("#menuToggle").addEventListener("click", () => {
+    $("#mainNav").classList.toggle("open");
+  });
 
-    const groups = {};
+  function saveList(key, data) {
+    try {
+      localStorage.setItem(key, JSON.stringify(data));
+      return true;
+    } catch {
+      alert("Browser storage is full. Try removing old demo entries.");
+      return false;
+    }
+  }
 
-    cart.forEach(ci => {
-      const p = listings.find(l => l.id === ci.productId);
-      if (!p) return;
-      const bulk = ci.priceType === "bulk";
-      (groups[p.seller] ||= { phone: p.phone, items: [] }).items.push({
-        productId: p.id,
-        name: p.name,
-        qty: ci.quantity,
-        priceType: ci.priceType,
-        unit: bulk ? p.bulkUnit : p.retailUnit,
-        price: Number(bulk ? p.bulkPrice : p.retailPrice)
+  function render() {
+    const demandList = $("#demandList");
+    demandList.replaceChildren();
+
+    if (!demands.length) {
+      demandList.textContent = "No buyer requests yet. Post the first one.";
+    } else {
+      demands.forEach(demand => {
+        const article = document.createElement("article");
+        article.className = "message-item";
+
+        const title = document.createElement("b");
+        title.textContent = demand.product;
+
+        const meta = document.createElement("small");
+        meta.textContent = ` · ${demand.county} County · ${demand.type}`;
+
+        const quantity = document.createElement("p");
+        quantity.textContent =
+          `${demand.quantity ? demand.quantity + " units needed" : "Quantity flexible"}` +
+          `${demand.date ? " · Needed by " + demand.date : ""}`;
+
+        const details = document.createElement("p");
+        details.textContent = demand.details || "No extra details provided.";
+
+        const date = document.createElement("small");
+        date.textContent = `Posted ${demand.posted}`;
+
+        article.append(title, meta, quantity, details, date);
+
+        if (demand.contact) {
+          const contact = document.createElement("p");
+          contact.textContent = `Buyer contact: ${demand.contact}`;
+          article.appendChild(contact);
+        }
+
+        demandList.appendChild(article);
       });
-    });
+    }
 
-    const list = all();
-    const ids = [];
+    const supportList = $("#supportList");
+    supportList.replaceChildren();
 
-    Object.entries(groups).forEach(([seller, g]) => {
-      const now = Date.now();
-      const total = g.items.reduce((s, i) => s + i.qty * i.price, 0);
-      const summary = g.items
-        .map(i => `${i.qty} ${i.unit} ${i.name}`).join(", ");
-      const id = `chat-${now}-${Math.random().toString(36).slice(2, 6)}`;
+    if (!notes.length) {
+      supportList.textContent = "No support notes saved.";
+    } else {
+      notes.forEach(note => {
+        const article = document.createElement("article");
+        article.className = "message-item";
 
-      list.unshift({
-        id, seller, sellerPhone: g.phone, buyer: buyerName,
-        items: g.items, total, status: "new", createdAt: now,
-        unread: { buyer: 0, seller: 1 },
-        messages: [{
-          from: "system", at: now,
-          text: `${buyerName} is interested in: ${summary}. Estimated total KSh ${money(total)}.`
-        }]
+        const text = document.createElement("p");
+        text.textContent = note.text;
+
+        const date = document.createElement("small");
+        date.textContent = `Saved ${note.date}`;
+
+        article.append(text, date);
+        supportList.appendChild(article);
       });
-      ids.push(id);
+    }
+  }
+
+  $("#demandForm").addEventListener("submit", event => {
+    event.preventDefault();
+
+    const request = {
+      product: $("#dProduct").value.trim(),
+      county: $("#dCounty").value,
+      quantity: $("#dQty").value,
+      date: $("#dDate").value,
+      contact: $("#dContact").value.trim(),
+      type: $("#dType").value,
+      details: $("#dDetails").value.trim(),
+      posted: new Date().toLocaleString()
+    };
+
+    demands.unshift(request);
+
+    if (saveList(DEMANDS_KEY, demands)) {
+      event.target.reset();
+      render();
+    } else {
+      demands.shift();
+    }
+  });
+
+  $("#supportForm").addEventListener("submit", event => {
+    event.preventDefault();
+
+    notes.unshift({
+      text: $("#supportText").value.trim(),
+      date: new Date().toLocaleString()
     });
 
-    save(list);
-    return ids;
+    if (saveList(SUPPORT_KEY, notes)) {
+      event.target.reset();
+      render();
+    } else {
+      notes.shift();
+    }
+  });
+
+  // Receive a product enquiry passed from the marketplace.
+  const prefill = sessionStorage.getItem("mavunobridge_prefill_demand");
+
+  if (prefill) {
+    $("#dProduct").value = prefill;
+    sessionStorage.removeItem("mavunobridge_prefill_demand");
   }
 
-  function update(id, fn) {
-    const list = all();
-    const convo = list.find(c => c.id === id);
-    if (!convo) return null;
-    fn(convo);
-    save(list);
-    return convo;
-  }
-
-  function send(id, role, text, extra = {}) {
-    return update(id, c => {
-      c.messages.push({ from: role, text, at: Date.now(), ...extra });
-      const other = role === "buyer" ? "seller" : "buyer";
-      c.unread[other] = (c.unread[other] || 0) + 1;
-      if (role === "seller" && c.status === "new") c.status = "open";
-    });
-  }
-
-  function setStatus(id, status, note) {
-    return update(id, c => {
-      c.status = status;
-      c.messages.push({ from: "system", text: note, at: Date.now() });
-      c.unread.buyer++; c.unread.seller++;
-    });
-  }
-
-  function markRead(id, role) {
-    update(id, c => { c.unread[role] = 0; });
-  }
-
-  function unreadCount(who) {
-    if (!who) return 0;
-    return all()
-      .filter(c => who.role === "buyer"
-        ? c.buyer === who.name
-        : c.seller === who.name)
-      .reduce((s, c) => s + (c.unread?.[who.role] || 0), 0);
-  }
-
-  return {
-    all, update, identity, setIdentity, createFromCart,
-    send, setStatus, markRead, unreadCount, money
-  };
-
+  render();
 })();
