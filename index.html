@@ -3,435 +3,1068 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#244a32">
-  <meta name="description" content="MavunoBridge connects Kenyan farmers and buyers.">
-  <title>MavunoBridge | Kenyan Farm Marketplace</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#176b45">
+  <meta name="description" content="MavunoBridge connects Kenyan farmers and buyers through fair pricing, agricultural products and farming support.">
+  <title>MavunoBridge | Better Farming. Bigger Opportunities.</title>
 
-<header class="site-header">
-  <div class="nav-wrapper">
-    <a class="brand" href="index.html">
-      <span class="brand-icon">🌿</span>
-      <span>Mavuno<span class="brand-highlight">Bridge</span></span>
+  <style>
+    :root {
+      --green: #087747;
+      --green-dark: #123e2c;
+      --green-light: #e9f7ee;
+      --text: #183d30;
+      --muted: #687c73;
+      --border: #dce9e1;
+      --bg: #f7faf7;
+      --white: #fff;
+      --radius: 16px;
+      --shadow: 0 5px 20px #183d300c;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 90px; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, "Segoe UI", Arial, sans-serif;
+      line-height: 1.5;
+    }
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    img { max-width: 100%; }
+    a { color: inherit; text-decoration: none; }
+    .hidden { display: none !important; }
+    .muted { color: var(--muted); }
+    .small { font-size: .83rem; }
+    .container { width: min(1400px, 94%); margin: auto; }
+
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      gap: 8px; padding: 11px 17px; border: 1px solid var(--green);
+      border-radius: 10px; background: var(--green); color: white;
+      font-weight: 750; transition: .2s; cursor: pointer;
+    }
+    .btn:hover { background: #065d38; transform: translateY(-1px); }
+    .btn.outline { background: white; color: var(--green); }
+    .btn.outline:hover { background: var(--green-light); }
+    .btn.ghost { background: transparent; color: var(--text); border-color: var(--border); }
+    .btn.small-btn { padding: 7px 11px; font-size: .86rem; }
+    button:focus-visible, input:focus-visible, select:focus-visible {
+      outline: 3px solid #85d7ac; outline-offset: 2px;
+    }
+
+    /* Header */
+    .header {
+      background: #ffffffed; backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 50;
+    }
+    .nav {
+      min-height: 72px; display: flex; align-items: center;
+      justify-content: space-between; gap: 20px;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+    .brand-mark {
+      width: 46px; height: 46px; display: grid; place-items: center;
+      border-radius: 15px; background: var(--green-light); font-size: 27px;
+    }
+    .brand-name { font-size: 1.55rem; line-height: 1.1; font-weight: 900; letter-spacing: -.8px; }
+    .brand-tag { font-size: .74rem; color: var(--muted); }
+    .nav-links { display: flex; align-items: center; gap: 22px; font-weight: 750; }
+    .nav-links a { padding: 9px 0; }
+    .nav-links a:hover { color: var(--green); }
+    .nav-actions { display: flex; align-items: center; gap: 9px; }
+    .language { padding: 10px; background: white; border: 1px solid var(--border); border-radius: 10px; max-width: 130px; }
+    .cart-button { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; }
+    .cart-count { display: inline-grid; place-items: center; min-width: 20px; height: 20px; border-radius: 50%; background: var(--green); color: white; font-size: .75rem; }
+    .menu-toggle { display: none; }
+    .mobile-nav { padding: 0 0 15px; display: grid; gap: 10px; }
+
+    /* Farmer slideshow */
+    .hero { position: relative; overflow: hidden; background: #143d2b; color: white; min-height: 330px; }
+    .hero-slide {
+      min-height: 330px; display: none; align-items: center; position: relative;
+      background-size: cover; background-position: center 43%;
+    }
+    .hero-slide.active { display: flex; animation: fadeIn .55s ease; }
+    .hero-slide::before {
+      content: ""; position: absolute; inset: 0;
+      background: linear-gradient(90deg, #082b1ef0 0%, #103b2bcf 38%, #0b352c35 76%, #082b1e35 100%);
+    }
+    .hero-content { position: relative; z-index: 1; width: min(1400px, 88%); margin: auto; padding: 48px 0 62px; }
+    .eyebrow { text-transform: uppercase; letter-spacing: 1.7px; font-size: .76rem; font-weight: 800; color: #bdebd0; }
+    .hero h1 { font-size: clamp(2.1rem, 4vw, 3.6rem); line-height: 1.08; max-width: 570px; margin: 13px 0; letter-spacing: -1.3px; }
+    .hero p { max-width: 490px; font-size: 1.08rem; color: #edf8f0; }
+    .hero-buttons { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 23px; }
+    .hero .btn.outline { background: #ffffff14; border-color: #ffffffb0; color: white; }
+    .slide-arrow {
+      position: absolute; z-index: 3; top: 48%; transform: translateY(-50%);
+      width: 42px; height: 42px; border-radius: 50%; border: 1px solid #ffffff99;
+      background: #ffffff30; color: white; font-size: 1.5rem;
+    }
+    .slide-arrow:hover { background: #ffffff50; }
+    .slide-prev { left: 20px; }
+    .slide-next { right: 20px; }
+    .slide-dots { position: absolute; z-index: 3; bottom: 18px; left: 0; right: 0; display: flex; justify-content: center; gap: 10px; }
+    .slide-dot { width: 10px; height: 10px; padding: 0; border: 1px solid white; border-radius: 50%; background: transparent; }
+    .slide-dot.active { background: white; transform: scale(1.15); }
+    .hero-chip {
+      position: absolute; right: 5%; bottom: 23px; z-index: 2;
+      background: #ffffffed; color: var(--green-dark); border-radius: 12px;
+      padding: 11px 15px; font-weight: 750; box-shadow: var(--shadow);
+    }
+
+    /* Search and categories */
+    .search-panel {
+      display: grid; grid-template-columns: 1fr 230px 150px; gap: 12px;
+      padding: 12px; margin: 15px 0 27px; background: #effaf3;
+      border: 1px solid #ccebd7; border-radius: 13px;
+    }
+    .field {
+      width: 100%; min-width: 0; padding: 12px 13px; border-radius: 9px;
+      border: 1px solid #d6e3da; background: white; color: var(--text);
+    }
+    .section { margin: 28px 0 34px; }
+    .section-heading { display: flex; justify-content: space-between; align-items: end; gap: 15px; margin-bottom: 14px; }
+    .section-heading h2 { margin: 0; font-size: 1.32rem; letter-spacing: -.4px; }
+    .section-heading p { margin: 3px 0 0; color: var(--muted); font-size: .9rem; }
+    .heading-icon { color: var(--green); margin-right: 8px; }
+    .category-grid { display: grid; grid-template-columns: repeat(10, minmax(0,1fr)); gap: 12px; }
+    .category-card {
+      min-width: 0; overflow: hidden; border: 1px solid var(--border);
+      background: white; border-radius: 13px; padding: 7px;
+      text-align: center; box-shadow: var(--shadow); transition: .2s;
+      color: var(--text); font-weight: 750; font-size: .85rem;
+    }
+    .category-card:hover, .category-card.active {
+      border-color: var(--green); background: var(--green-light); transform: translateY(-2px);
+    }
+    .category-card img { width: 100%; height: 72px; object-fit: cover; border-radius: 8px; display: block; margin-bottom: 7px; }
+    .category-card span { display: block; padding: 1px 0 5px; }
+
+    /* Product section */
+    .market-layout { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 23px; align-items: start; }
+    .market-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+    .sort-wrap { position: relative; }
+    .sort-options {
+      position: absolute; right: 0; top: calc(100% + 8px); width: 235px; z-index: 20;
+      padding: 8px; background: white; border: 1px solid var(--border);
+      border-radius: 13px; box-shadow: 0 12px 35px #102f201c;
+    }
+    .sort-option { display: block; width: 100%; text-align: left; padding: 10px; border: 0; border-radius: 8px; background: white; color: var(--text); }
+    .sort-option:hover, .sort-option.selected { background: var(--green-light); color: var(--green); font-weight: 800; }
+    .filter-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 13px 0; }
+    .filter-chip { border: 1px solid var(--border); background: white; color: var(--text); padding: 8px 12px; border-radius: 30px; font-size: .86rem; }
+    .filter-chip.active { background: var(--green-light); border-color: #b9e4c8; color: var(--green); font-weight: 800; }
+    .product-grid { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 13px; }
+    .product-card { min-width: 0; background: white; border: 1px solid var(--border); border-radius: 13px; overflow: hidden; box-shadow: var(--shadow); display: flex; flex-direction: column; }
+    .product-photo { height: 135px; position: relative; background: #e9f1eb; }
+    .product-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .price-badge { position: absolute; top: 9px; left: 9px; border-radius: 30px; padding: 4px 9px; color: white; font-size: .72rem; font-weight: 850; }
+    .price-badge.within { background: #0b9b5a; }
+    .price-badge.below { background: #0b8c60; }
+    .price-badge.above { background: #ed8b16; }
+    .product-body { padding: 11px; display: flex; flex-direction: column; flex: 1; }
+    .product-body h3 { font-size: .98rem; margin: 0 0 3px; }
+    .product-price { color: var(--green); font-size: 1.05rem; font-weight: 900; }
+    .reference { font-size: .78rem; color: var(--muted); margin: 1px 0 8px; }
+    .product-meta { font-size: .79rem; color: #526c60; margin: 2px 0; }
+    .product-actions { display: flex; gap: 7px; margin-top: auto; padding-top: 11px; }
+    .product-actions .btn { flex: 1; padding: 8px 6px; font-size: .82rem; }
+    .empty-state { padding: 30px 15px; text-align: center; background: white; border: 1px dashed var(--border); border-radius: 13px; }
+    .fair-panel { background: linear-gradient(160deg,#e5f8ed,#f8fffa); border: 1px solid #ccebd9; border-radius: 15px; padding: 17px; }
+    .fair-panel h2 { font-size: 1.17rem; margin: 0 0 4px; }
+    .fair-line { display: flex; justify-content: space-between; gap: 8px; border-top: 1px solid #d4eadc; padding: 11px 0; font-size: .83rem; }
+    .fair-note { background: #d6f2e2; border-radius: 10px; padding: 12px; font-size: .83rem; margin-top: 7px; }
+    .status-dot { display: inline-block; width: 11px; height: 11px; border-radius: 50%; margin-right: 5px; }
+    .dot-below { background: #14a86a; } .dot-within { background: #f1c43e; } .dot-above { background: #f28a1a; }
+
+    /* Other feature panels */
+    .feature-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 15px; }
+    .feature-card { border: 1px solid var(--border); border-radius: var(--radius); background: white; padding: 20px; box-shadow: var(--shadow); }
+    .feature-icon { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; background: var(--green-light); font-size: 1.4rem; }
+    .feature-card h3 { margin: 12px 0 5px; }
+    .feature-card p { color: var(--muted); font-size: .91rem; }
+    .assist-box { background: white; border: 1px solid var(--border); border-radius: 14px; padding: 15px; margin-top: 12px; }
+    .assist-answer { background: var(--green-light); padding: 12px; border-radius: 10px; margin-top: 10px; white-space: pre-wrap; font-size: .9rem; }
+
+    footer { background: #103b2b; color: #e8f6ed; padding: 30px 0; margin-top: 40px; }
+    .footer-inner { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+
+    /* Modals */
+    .modal {
+      position: fixed; inset: 0; z-index: 100; display: none; align-items: center;
+      justify-content: center; padding: 16px; background: #061d14a6;
+    }
+    .modal.open { display: flex; }
+    .modal-box { width: min(570px,100%); max-height: 90vh; overflow: auto; background: white; border-radius: 17px; padding: 22px; box-shadow: 0 20px 70px #0003; }
+    .modal-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 16px; }
+    .modal-head h2 { margin: 0; font-size: 1.35rem; }
+    .close-modal { width: 35px; height: 35px; border: 1px solid var(--border); background: white; border-radius: 50%; font-size: 1.2rem; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .form-field { display: grid; gap: 5px; font-size: .88rem; font-weight: 700; }
+    .form-field.full { grid-column: 1 / -1; }
+    .form-field input, .form-field select, .form-field textarea { width: 100%; border: 1px solid var(--border); border-radius: 9px; padding: 11px; background: white; color: var(--text); }
+    .cart-row { display: grid; grid-template-columns: 1fr auto; gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+    .cart-row-actions { display: flex; align-items: center; gap: 7px; margin-top: 6px; }
+    .qty-btn { width: 27px; height: 27px; border: 1px solid var(--border); background: white; border-radius: 7px; }
+    .toast { position: fixed; z-index: 200; bottom: 20px; left: 50%; transform: translateX(-50%); background: #103b2b; color: white; padding: 12px 18px; border-radius: 10px; box-shadow: var(--shadow); max-width: 90%; text-align: center; }
+
+    @keyframes fadeIn { from { opacity: .4; } to { opacity: 1; } }
+
+    @media (max-width: 1120px) {
+      .category-grid { grid-template-columns: repeat(5,minmax(0,1fr)); }
+      .product-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+      .nav-links { gap: 12px; }
+      .market-layout { grid-template-columns: minmax(0,1fr) 270px; }
+    }
+    @media (max-width: 850px) {
+      .nav-links { display: none; }
+      .menu-toggle { display: inline-flex; }
+      .market-layout { grid-template-columns: 1fr; }
+      .fair-panel { order: 2; }
+      .hero-chip { display: none; }
+      .search-panel { grid-template-columns: 1fr 1fr; }
+      .search-panel .btn { grid-column: 1 / -1; }
+    }
+    @media (max-width: 560px) {
+      .nav { min-height: 64px; gap: 8px; }
+      .brand-name { font-size: 1.14rem; }
+      .brand-tag { font-size: .63rem; }
+      .brand-mark { width: 37px; height: 37px; }
+      .nav-actions { gap: 5px; }
+      .language { max-width: 88px; padding: 8px 5px; font-size: .8rem; }
+      .login-button { display: none; }
+      .hero, .hero-slide { min-height: 340px; }
+      .hero-content { width: 83%; padding: 38px 0 60px; }
+      .hero h1 { font-size: 2.05rem; }
+      .hero p { font-size: .96rem; }
+      .slide-prev { left: 6px; } .slide-next { right: 6px; }
+      .slide-arrow { width: 32px; height: 32px; font-size: 1.1rem; }
+      .search-panel { grid-template-columns: 1fr; }
+      .search-panel .btn { grid-column: auto; }
+      .category-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+      .category-card img { height: 95px; }
+      .product-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 9px; }
+      .product-photo { height: 115px; }
+      .product-body { padding: 9px; }
+      .product-actions { flex-direction: column; }
+      .feature-grid { grid-template-columns: 1fr; }
+      .section-heading { align-items: start; flex-direction: column; }
+      .form-grid { grid-template-columns: 1fr; }
+      .form-field.full { grid-column: auto; }
+      .container { width: 93%; }
+    }
+  </style>
+</head>
+
+<body>
+<header class="header">
+  <div class="container nav">
+    <a href="#home" class="brand" aria-label="MavunoBridge home">
+      <div class="brand-mark">🌿</div>
+      <div>
+        <div class="brand-name">MavunoBridge</div>
+        <div class="brand-tag">Farmers · Buyers · Prosperity</div>
+      </div>
     </a>
 
-    <nav class="desktop-nav" aria-label="Main navigation">
+    <nav class="nav-links" aria-label="Main navigation">
       <a href="#marketplace">Marketplace</a>
-      <a href="smart-assist.html">Smart Assist</a>
-      <a href="sacco.html">SACCO Hub</a>
-      <a href="messages.html">Messages</a>
+      <a href="#smart-assist">Smart Assist</a>
+      <a href="#sacco">SACCO Hub</a>
+      <a href="#messages">Messages</a>
     </nav>
 
     <div class="nav-actions">
-      <select id="languageSelect" aria-label="Choose language">
+      <select class="language" id="languageSelect" aria-label="Choose language">
         <option value="en">🇬🇧 English</option>
         <option value="sw">🇰🇪 Kiswahili</option>
-        <option value="sheng">💬 Sheng</option>
+        <option value="sheng">🇰🇪 Sheng</option>
       </select>
-
-      <button class="icon-button" id="cartButton" type="button">
-        🛒 <span id="cartCount">0</span>
-      </button>
-
-      <button class="btn btn-primary" id="loginButton" type="button">Login</button>
-
-      <button class="menu-toggle" id="menuToggle" type="button"
-        aria-label="Open menu" aria-expanded="false">☰</button>
+      <button class="cart-button" id="cartButton" aria-label="Open shopping cart">🛒 <span class="cart-count" id="cartCount">0</span></button>
+      <button class="btn login-button" id="loginButton">Login</button>
+      <button class="btn ghost menu-toggle" id="menuToggle" aria-expanded="false" aria-controls="mobileNav">☰</button>
     </div>
   </div>
-
-  <nav class="mobile-nav hidden" id="mobileNav" aria-label="Mobile menu">
+  <div class="container mobile-nav hidden" id="mobileNav">
     <a href="#marketplace">Marketplace</a>
-    <a href="smart-assist.html">Smart Assist</a>
-    <a href="sacco.html">SACCO Hub</a>
-    <a href="messages.html">Messages</a>
-  </nav>
+    <a href="#smart-assist">Smart Assist</a>
+    <a href="#sacco">SACCO Hub</a>
+    <a href="#messages">Messages</a>
+  </div>
 </header>
 
-<main>
-  <section class="marketplace-section" id="marketplace">
-    <div class="section-heading">
-      <div>
-        <span class="eyebrow">🇰🇪 KENYAN FARM MARKET</span>
-        <h1>Find your farm products</h1>
-        <p>Fresh produce, fair connections, biashara opportunities.</p>
+<main id="home">
+  <section class="hero" aria-label="Farmer slideshow" id="farmerSlideshow">
+    <div class="hero-slide active" style="background-image:url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1900&q=85')">
+      <div class="hero-content">
+        <div class="eyebrow">Growing Kenya together</div>
+        <h1>Better Farming.<br>Bigger Opportunities.</h1>
+        <p>Connect with farmers and buyers, discover fair prices, and grow your business.</p>
+        <div class="hero-buttons">
+          <a href="#marketplace" class="btn">🌿 Explore Marketplace →</a>
+          <button class="btn outline" data-open="listingModal">＋ List a Product</button>
+        </div>
       </div>
-      <button class="btn btn-primary" id="sellButton" type="button">＋ Sell</button>
     </div>
+    <div class="hero-slide" style="background-image:url('https://images.unsplash.com/photo-1592982537447-7440770cbfc9?auto=format&fit=crop&w=1900&q=85')">
+      <div class="hero-content">
+        <div class="eyebrow">Made for Kenyan farmers</div>
+        <h1>Your Harvest.<br>Your Market.</h1>
+        <p>Showcase your produce, reach more buyers and share your farming story.</p>
+        <div class="hero-buttons">
+          <a href="#marketplace" class="btn">Browse Products →</a>
+          <button class="btn outline" data-open="listingModal">＋ List a Product</button>
+        </div>
+      </div>
+    </div>
+    <div class="hero-slide" style="background-image:url('https://images.unsplash.com/photo-1464226184884-fa280b87c399?auto=format&fit=crop&w=1900&q=85')">
+      <div class="hero-content">
+        <div class="eyebrow">Fresh produce · Fair connections</div>
+        <h1>From Farm<br>To Opportunity.</h1>
+        <p>Explore agricultural products, compare reference prices and connect with sellers.</p>
+        <div class="hero-buttons">
+          <a href="#featured" class="btn">Discover Produce →</a>
+          <a href="#smart-assist" class="btn outline">Ask Smart Assist</a>
+        </div>
+      </div>
+    </div>
+    <button class="slide-arrow slide-prev" id="prevSlide" aria-label="Previous slide">‹</button>
+    <button class="slide-arrow slide-next" id="nextSlide" aria-label="Next slide">›</button>
+    <div class="slide-dots" id="slideDots" aria-label="Choose slide">
+      <button class="slide-dot active" aria-label="Slide 1"></button>
+      <button class="slide-dot" aria-label="Slide 2"></button>
+      <button class="slide-dot" aria-label="Slide 3"></button>
+    </div>
+    <div class="hero-chip">🚜 Fresh Produce · Fair Prices · Stronger Communities</div>
+  </section>
 
+  <div class="container">
     <form class="search-panel" id="searchForm">
-      <div class="search-field">
-        <label for="searchInput">Search products</label>
-        <input id="searchInput" type="search"
-          placeholder="Maize, tomatoes, avocado..." autocomplete="off">
-      </div>
-
-      <div class="search-field">
-        <label for="searchCategory">Category</label>
-        <select id="searchCategory">
-          <option value="all">All products</option>
-          <option value="fruits">Fruits</option>
-          <option value="vegetables">Vegetables</option>
-          <option value="nuts">Nuts</option>
-          <option value="starchy">Starchy foods</option>
-          <option value="grains">Grains</option>
-          <option value="legumes">Legumes</option>
-          <option value="livestock">Livestock & animal products</option>
-          <option value="inputs">Farm inputs & equipment</option>
-          <option value="services">Farm services</option>
-          <option value="spices">Spices & herbs</option>
-        </select>
-      </div>
-
-      <button class="btn btn-primary search-button" type="submit">Search</button>
+      <input class="field" id="searchInput" type="search" placeholder="🔎 Search products (e.g. maize, tomatoes, avocado...)" aria-label="Search products">
+      <select class="field" id="searchCategory" aria-label="Search by category">
+        <option value="all">▦ All categories</option>
+        <option value="fruits">Fruits</option><option value="vegetables">Vegetables</option>
+        <option value="nuts">Nuts</option><option value="starchy">Starchy foods</option>
+        <option value="grains">Grains</option><option value="legumes">Legumes</option>
+        <option value="livestock">Livestock</option><option value="inputs">Farm inputs</option>
+        <option value="services">Farm services & tools</option><option value="spices">Spices & herbs</option>
+      </select>
+      <button class="btn" type="submit">🔎 Search</button>
     </form>
 
-    <div class="category-heading">
-      <h2>Shop categories</h2>
-      <p>Tap a category to explore.</p>
-    </div>
-
-    <div class="category-grid" id="categoryGrid">
-      <button class="category-card active" type="button" data-category="all">
-        <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=350&q=80" alt="">
-        <span>All</span>
-      </button>
-      <button class="category-card" type="button" data-category="fruits">
-        <img src="https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=350&q=80" alt="">
-        <span>🍎 Fruits</span>
-      </button>
-      <button class="category-card" type="button" data-category="vegetables">
-        <img src="https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=350&q=80" alt="">
-        <span>🥬 Vegetables</span>
-      </button>
-      <button class="category-card" type="button" data-category="nuts">
-        <img src="https://images.unsplash.com/photo-1508061253366-f7da158b6d46?auto=format&fit=crop&w=350&q=80" alt="">
-        <span>🥜 Nuts</span>
-      </button>
-      <button class="category-card" type="button" data-category="starchy">
-        <img src="https://images.unsplash.com/photo-1518977676601-b53f82aba655?auto=format&fit=crop&w=350&q=80" alt="">
-        <span>🥔 Starchy</span>
-      </button>
-      <button class="category-card" type="button" data-category="grains">
-        <img src="https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&w=350&q=80" alt="">
-        <span>🌾 Grains</span>
-      </button>
-      <button class="category-card" type="button" data-category="legumes">
-        <img src="https://images.unsplash.com/photo-1515543904379-3d757afe72e4?auto=format&fit=crop&w=350&q=80" alt="">
-        <span>🫘 Legumes</span>
-      </button>
-      <button class="category-card" type="button" data-category="livestock">
-        <img src="https://images.unsplash.com/photo-1500595046743-cd271d694d30?auto=format&fit=crop&w=350&q=80" alt="">
-        <span>🐄 Livestock</span>
-      </button>
-      <button class="category-card" type="button" data-category="inputs">
-        <img src="https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=350&q=80" alt="">
-        <span>🧰 Farm inputs</span>
-      </button>
-      <button class="category-card" type="button" data-category="services">
-        <img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=350&q=80" alt="">
-        <span>🚜 Services</span>
-      </button>
-      <button class="category-card" type="button" data-category="spices">
-        <img src="https://images.unsplash.com/photo-1532336414038-cf19250c5757?auto=format&fit=crop&w=350&q=80" alt="">
-        <span>🌿 Spices</span>
-      </button>
-    </div>
-
-    <div class="filter-panel">
-      <div class="filter-group">
-        <label for="locationFilter">County</label>
-        <select id="locationFilter">
-          <option value="all">All counties</option>
-          <option>Kiambu</option><option>Nakuru</option>
-          <option>Meru</option><option>Machakos</option>
-          <option>Kisumu</option><option>Uasin Gishu</option>
-          <option>Nyandarua</option><option>Busia</option>
-          <option>Murang'a</option><option>Makueni</option>
-          <option>Kakamega</option><option>Embu</option>
-          <option>Nairobi</option><option>Kericho</option>
-          <option>Laikipia</option><option>Kisii</option>
-        </select>
+    <section class="section" id="categories">
+      <div class="section-heading">
+        <div><h2><span class="heading-icon">🌿</span>Shop Categories</h2><p>Tap a category to explore.</p></div>
+        <button class="btn ghost small-btn" id="resetCategories">View all</button>
       </div>
-
-      <div class="filter-group">
-        <label for="sortSelect">Sort</label>
-        <select id="sortSelect">
-          <option value="newest">Newest</option>
-          <option value="price-low">Price: low to high</option>
-          <option value="price-high">Price: high to low</option>
-          <option value="name">Product name</option>
-        </select>
+      <div class="category-grid" id="categoryGrid">
+        <button class="category-card active" data-category="all"><img src="https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=500&q=80" alt="Fresh produce"><span>▦ All</span></button>
+        <button class="category-card" data-category="fruits"><img src="https://images.unsplash.com/photo-1619566636858-adf3ef46400b?auto=format&fit=crop&w=500&q=80" alt="Fresh fruits"><span>🍎 Fruits</span></button>
+        <button class="category-card" data-category="vegetables"><img src="https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=500&q=80" alt="Vegetables"><span>🥬 Vegetables</span></button>
+        <button class="category-card" data-category="nuts"><img src="https://images.unsplash.com/photo-1508061253366-f7da158b6d46?auto=format&fit=crop&w=500&q=80" alt="Nuts"><span>🥜 Nuts</span></button>
+        <button class="category-card" data-category="starchy"><img src="https://images.unsplash.com/photo-1518977676601-b53f82aba655?auto=format&fit=crop&w=500&q=80" alt="Potatoes"><span>🥔 Starchy</span></button>
+        <button class="category-card" data-category="grains"><img src="https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&w=500&q=80" alt="Grains"><span>🌾 Grains</span></button>
+        <button class="category-card" data-category="legumes"><img src="https://images.unsplash.com/photo-1515543904379-3d757afe72e4?auto=format&fit=crop&w=500&q=80" alt="Beans and legumes"><span>🫘 Legumes</span></button>
+        <button class="category-card" data-category="livestock"><img src="https://images.unsplash.com/photo-1516467508483-a7212febe31a?auto=format&fit=crop&w=500&q=80" alt="Livestock"><span>🐄 Livestock</span></button>
+        <button class="category-card" data-category="inputs"><img src="https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=500&q=80" alt="Farm seedlings"><span>🌱 Inputs</span></button>
+        <button class="category-card" data-category="services"><img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=500&q=80" alt="Farm services"><span>🚜 Services</span></button>
+        <button class="category-card" data-category="spices"><img src="https://images.unsplash.com/photo-1532336414038-cf19250c5757?auto=format&fit=crop&w=500&q=80" alt="Spices"><span>🌶️ Spices & Herbs</span></button>
       </div>
+    </section>
 
-      <div class="filter-group">
-        <label for="saleTypeFilter">Buying option</label>
-        <select id="saleTypeFilter">
-          <option value="all">All listings</option>
-          <option value="retail">Retail</option>
-          <option value="bulk">Bulk / wholesale</option>
-        </select>
+    <section class="section" id="marketplace">
+      <div class="market-layout">
+        <div>
+          <div class="section-heading" id="featured">
+            <div><h2><span class="heading-icon">🌿</span>Featured Products</h2><p id="resultsCount">Discover products from farmers across Kenya.</p></div>
+            <div class="market-toolbar">
+              <button class="filter-chip" id="fairOnlyButton" aria-pressed="false">⚖ Fair price first</button>
+              <div class="sort-wrap">
+                <button class="btn ghost small-btn" id="sortButton" aria-expanded="false">☷ Sort by ▾</button>
+                <div class="sort-options hidden" id="sortOptions">
+                  <button class="sort-option selected" data-sort="newest">🕒 Newest listings</button>
+                  <button class="sort-option" data-sort="low">↗ Price: low to high</button>
+                  <button class="sort-option" data-sort="high">↘ Price: high to low</button>
+                  <button class="sort-option" data-sort="rated">⭐ Top-rated farmers</button>
+                  <button class="sort-option" data-sort="fair">⚖ Fair price first</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="filter-row">
+            <button class="filter-chip active" data-sale="all">All listings</button>
+            <button class="filter-chip" data-sale="retail">🛍 Retail</button>
+            <button class="filter-chip" data-sale="bulk">📦 Bulk</button>
+            <select class="field" style="width:auto;padding:8px 10px" id="locationFilter" aria-label="Filter by county">
+              <option value="all">All counties</option>
+              <option>Kiambu</option><option>Nakuru</option><option>Uasin Gishu</option>
+              <option>Meru</option><option>Nyandarua</option><option>Machakos</option><option>Kisumu</option>
+            </select>
+          </div>
+
+          <div class="product-grid" id="listingGrid"></div>
+          <div class="empty-state hidden" id="emptyState">
+            <div style="font-size:2rem">🌱</div><h3>No matching products yet</h3>
+            <p class="muted">Try another search or choose a different category.</p>
+            <button class="btn" id="showAllButton">Show all products</button>
+          </div>
+        </div>
+
+        <aside class="fair-panel" id="fairPricing">
+          <h2>⚖ Fair Pricing Guide</h2>
+          <p class="muted small">Compare prices and make better buying decisions.</p>
+          <div class="fair-line"><span><i class="status-dot dot-below"></i>Below reference</span><strong>Good deal</strong></div>
+          <div class="fair-line"><span><i class="status-dot dot-within"></i>Within reference</span><strong>Fair range</strong></div>
+          <div class="fair-line"><span><i class="status-dot dot-above"></i>Above reference</span><strong>Compare first</strong></div>
+          <div class="fair-note">ℹ️ Reference prices are illustrative demo guides, not official live market prices. County, season, quality, quantity and transport affect prices.</div>
+          <button class="btn outline" style="width:100%;margin-top:12px" id="learnFairButton">How it works →</button>
+        </aside>
       </div>
+    </section>
 
-      <button class="btn btn-outline" id="showAllButton" type="button">Reset filters</button>
-    </div>
-
-    <div class="sale-filter-buttons">
-      <button class="filter-chip active" type="button" data-sale-filter="all">All</button>
-      <button class="filter-chip" type="button" data-sale-filter="retail">Retail</button>
-      <button class="filter-chip" type="button" data-sale-filter="bulk">Bulk</button>
-    </div>
-
-    <div class="results-heading">
-      <div>
-        <h2>Products for you</h2>
-        <p id="resultsCount" aria-live="polite">Loading products...</p>
+    <section class="section" id="smart-assist">
+      <div class="section-heading">
+        <div><h2><span class="heading-icon">🤖</span>Smart Assist</h2><p>Farming support for your county — rahisi, practical advice.</p></div>
+        <span class="filter-chip">AI farming helper demo</span>
       </div>
-    </div>
-
-    <div class="empty-state hidden" id="emptyState">
-      <h3>No matching products found</h3>
-      <p>Try another product, county or category.</p>
-    </div>
-
-    <div class="listing-grid" id="listingGrid" aria-live="polite"></div>
-
-    <p class="price-disclaimer">
-      Demo listings and indicative prices are for demonstration only. Confirm
-      availability, units and final prices directly with sellers.
-    </p>
-  </section>
-
-  <section class="smart-section">
-    <div class="smart-panel">
-      <div class="smart-copy">
-        <span class="eyebrow">SMART FARMING</span>
-        <h2>Need farming advice?</h2>
-        <p>Get general crop tips based on your county.</p>
-        <label for="countySelect">Your county</label>
-        <select id="countySelect">
-          <option>Kiambu</option><option>Nakuru</option>
-          <option>Meru</option><option>Machakos</option>
-          <option>Kisumu</option><option>Uasin Gishu</option>
-          <option>Nyandarua</option><option>Makueni</option>
-          <option>Kakamega</option><option>Embu</option>
-        </select>
-        <button class="btn btn-primary" id="getInsightButton" type="button">Get farming tips</button>
-        <p id="insightMessage" aria-live="polite">Choose a county to begin.</p>
-        <a href="smart-assist.html">Open Smart Assist →</a>
+      <div class="feature-grid">
+        <article class="feature-card">
+          <div class="feature-icon">🌦️</div><h3>Weather & Planting</h3>
+          <p>Choose your county to see demo guidance and seasonal considerations.</p>
+          <label class="form-field">Your county
+            <select class="field" id="countySelect">
+              <option value="Kiambu">Kiambu</option><option value="Nakuru">Nakuru</option>
+              <option value="Uasin Gishu">Uasin Gishu</option><option value="Meru">Meru</option>
+              <option value="Machakos">Machakos</option><option value="Kisumu">Kisumu</option>
+            </select>
+          </label>
+          <button class="btn" style="margin-top:10px" id="getInsightButton">Get farming tips</button>
+          <div class="assist-answer hidden" id="insightMessage"></div>
+        </article>
+        <article class="feature-card">
+          <div class="feature-icon">🐛</div><h3>Pest & Crop Help</h3>
+          <p>Describe your crop issue to get general first-step guidance.</p>
+          <textarea class="field" id="pestQuestion" rows="3" placeholder="e.g. My tomato leaves have yellow spots..."></textarea>
+          <button class="btn" style="margin-top:10px" id="pestHelpButton">Get suggestions</button>
+          <div class="assist-answer hidden" id="pestAnswer"></div>
+        </article>
+        <article class="feature-card">
+          <div class="feature-icon">💬</div><h3>Ask the Farm Assistant</h3>
+          <p>Ask a farming question. This demo provides starter guidance; a live AI connection is not yet configured.</p>
+          <form id="assistantForm" class="assist-box">
+            <input class="field" id="assistantQuestion" placeholder="Ask about maize, soil, pests..." required>
+            <button class="btn" style="margin-top:9px;width:100%" type="submit">Ask assistant →</button>
+          </form>
+          <div class="assist-answer hidden" id="assistantAnswer" aria-live="polite"></div>
+        </article>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <section class="community-section">
-    <div class="community-card">
-      <h2>🤝 SACCO Hub</h2>
-      <p>Explore farming groups and community opportunities.</p>
-      <a class="btn btn-primary" href="sacco.html">Explore SACCO Hub</a>
-    </div>
-    <div class="community-card">
-      <h2>💬 Messages</h2>
-      <p>Find your seller conversations.</p>
-      <a class="btn btn-outline" href="messages.html">Open messages</a>
-    </div>
-  </section>
+    <section class="section" id="sacco">
+      <div class="section-heading"><div><h2><span class="heading-icon">🤝</span>SACCO Hub & Opportunities</h2><p>Discover community finance and farmer support opportunities.</p></div></div>
+      <div class="feature-grid">
+        <article class="feature-card"><div class="feature-icon">💰</div><h3>Farmer Savings</h3><p>Learn about savings groups and how to compare membership requirements.</p><button class="btn outline" data-sacco="savings">Explore savings</button></article>
+        <article class="feature-card"><div class="feature-icon">🌾</div><h3>Farm Loans</h3><p>Prepare questions about loan terms, fees, repayment and eligibility before applying.</p><button class="btn outline" data-sacco="loans">Loan checklist</button></article>
+        <article class="feature-card"><div class="feature-icon">📣</div><h3>Opportunities</h3><p>Find local farmer groups, training and agricultural opportunities to investigate.</p><button class="btn outline" data-sacco="opportunities">View checklist</button></article>
+      </div>
+      <div class="assist-answer hidden" id="saccoAnswer"></div>
+    </section>
+
+    <section class="section" id="messages">
+      <div class="section-heading"><div><h2><span class="heading-icon">💬</span>Messages & Support</h2><p>Connect with sellers and get help using MavunoBridge.</p></div></div>
+      <div class="feature-grid">
+        <article class="feature-card"><div class="feature-icon">📞</div><h3>Contact a Seller</h3><p>Use a product card's contact option to prepare a message to its seller.</p></article>
+        <article class="feature-card"><div class="feature-icon">🛡️</div><h3>Shop Safely</h3><p>Confirm product quality, quantities, delivery arrangements and payment terms before sending money.</p></article>
+        <article class="feature-card"><div class="feature-icon">❓</div><h3>Need Support?</h3><p>This demonstration has no live support team or account messaging service connected yet.</p><button class="btn outline" id="supportButton">View support tips</button></article>
+      </div>
+      <div class="assist-answer hidden" id="supportAnswer"></div>
+    </section>
+  </div>
 </main>
 
-<footer class="site-footer">
-  <div class="footer-content">
-    <a class="brand" href="index.html">🌿 MavunoBridge</a>
-    <p>Connecting Kenyan farmers and buyers.</p>
-    <p>© <span id="currentYear">2026</span> MavunoBridge</p>
+<footer>
+  <div class="container footer-inner">
+    <div><strong style="font-size:1.2rem">🌿 MavunoBridge</strong><div class="small">Fresh produce. Fair connections. Biashara opportunities.</div></div>
+    <div class="small">Demo marketplace · Verify prices and sellers before purchasing.</div>
+    <div class="small">© <span id="currentYear"></span> MavunoBridge</div>
   </div>
 </footer>
 
 <!-- Listing modal -->
-<div class="modal hidden" id="listingModal" role="dialog" aria-modal="true" aria-labelledby="listingModalTitle">
-  <div class="modal-content">
-    <div class="modal-header">
-      <div>
-        <h2 id="listingModalTitle">List your product</h2>
-        <p>Enter your product details below.</p>
-      </div>
-      <button class="modal-close" type="button" data-close-modal="listingModal" aria-label="Close">×</button>
-    </div>
-
+<div class="modal" id="listingModal" role="dialog" aria-modal="true" aria-labelledby="listingTitle">
+  <div class="modal-box">
+    <div class="modal-head"><h2 id="listingTitle">＋ List a product</h2><button class="close-modal" data-close="listingModal" aria-label="Close">×</button></div>
     <form id="listingForm">
       <div class="form-grid">
-        <div class="form-field">
-          <label for="listingName">Product name *</label>
-          <input id="listingName" name="name" required maxlength="100">
-        </div>
-        <div class="form-field">
-          <label for="listingType">Category *</label>
-          <select id="listingType" name="category" required>
-            <option value="">Choose category</option>
-            <option value="fruits">Fruits</option>
-            <option value="vegetables">Vegetables</option>
-            <option value="nuts">Nuts</option>
-            <option value="starchy">Starchy foods</option>
-            <option value="grains">Grains</option>
-            <option value="legumes">Legumes</option>
-            <option value="livestock">Livestock</option>
-            <option value="inputs">Farm inputs</option>
-            <option value="services">Farm services</option>
-            <option value="spices">Spices & herbs</option>
-          </select>
-        </div>
-        <div class="form-field">
-          <label for="listingLocation">County / town *</label>
-          <input id="listingLocation" name="location" required maxlength="100">
-        </div>
-        <div class="form-field">
-          <label for="listingSeller">Seller name *</label>
-          <input id="listingSeller" name="seller" required maxlength="100">
-        </div>
-        <div class="form-field">
-          <label for="listingPhone">Phone number *</label>
-          <input id="listingPhone" name="phone" type="tel" required maxlength="25">
-        </div>
-        <div class="form-field">
-          <label for="listingQuantity">Quantity available *</label>
-          <input id="listingQuantity" name="quantity" type="number" min="0.01" step="any" required>
-        </div>
-        <div class="form-field">
-          <label for="listingStockUnit">Quantity unit *</label>
-          <select id="listingStockUnit" name="stockUnit" required>
-            <option value="kg">kg</option><option value="bags">Bags</option>
-            <option value="tonnes">Tonnes</option><option value="pieces">Pieces</option>
-            <option value="crates">Crates</option><option value="litres">Litres</option>
-            <option value="animals">Animals</option><option value="trays">Trays</option>
-            <option value="service">Service</option>
-          </select>
-        </div>
-        <div class="form-field">
-          <label for="saleType">Sale type *</label>
-          <select id="saleType" name="saleType" required>
-            <option value="retail">Retail</option>
-            <option value="bulk">Bulk / wholesale</option>
-            <option value="both">Retail and bulk</option>
-          </select>
-        </div>
+        <label class="form-field">Product name<input id="listingName" class="field" required placeholder="e.g. Fresh tomatoes"></label>
+        <label class="form-field">Category<select id="listingType" class="field" required>
+          <option value="fruits">Fruits</option><option value="vegetables">Vegetables</option><option value="nuts">Nuts</option><option value="starchy">Starchy foods</option><option value="grains">Grains</option><option value="legumes">Legumes</option><option value="livestock">Livestock</option><option value="inputs">Farm inputs</option><option value="services">Farm services</option><option value="spices">Spices & herbs</option>
+        </select></label>
+        <label class="form-field">County<input id="listingLocation" class="field" required placeholder="e.g. Nakuru"></label>
+        <label class="form-field">Seller / farm name<input id="listingSeller" class="field" required placeholder="Your farm name"></label>
+        <label class="form-field">Contact phone<input id="listingPhone" class="field" placeholder="07xx xxx xxx"></label>
+        <label class="form-field">Quantity available<input id="listingQuantity" class="field" type="number" min="1" required placeholder="100"></label>
+        <label class="form-field">Stock unit<select id="listingStockUnit" class="field"><option value="kg">kg</option><option value="bag">bag</option><option value="crate">crate</option><option value="piece">piece</option><option value="litre">litre</option><option value="animal">animal</option></select></label>
+        <label class="form-field">Sale type<select id="saleType" class="field"><option value="retail">Retail</option><option value="bulk">Bulk</option><option value="both">Retail & bulk</option></select></label>
+        <label class="form-field">Price (KSh per unit)<input id="retailPrice" class="field" type="number" min="1" required placeholder="Price per unit"></label>
+        <label class="form-field">Bulk price (optional)<input id="bulkPrice" class="field" type="number" min="1" placeholder="Bulk price per unit"></label>
+        <label class="form-field full">Product photo URL (optional)<input id="listingImage" class="field" type="url" placeholder="https://..."></label>
+        <label class="form-field full">Description<textarea id="listingDescription" class="field" rows="3" placeholder="Quality, harvest date, delivery details..."></textarea></label>
       </div>
-
-      <div id="retailFields" class="price-fields">
-        <h3>Retail price</h3>
-        <div class="form-grid">
-          <div class="form-field">
-            <label for="retailPrice">Price in KSh *</label>
-            <input id="retailPrice" name="retailPrice" type="number" min="0" step="0.01">
-          </div>
-          <div class="form-field">
-            <label for="retailUnit">Price per</label>
-            <select id="retailUnit" name="retailUnit">
-              <option value="kg">kg</option><option value="bag">bag</option>
-              <option value="piece">piece</option><option value="crate">crate</option>
-              <option value="tray">tray</option><option value="animal">animal</option>
-              <option value="unit">unit</option><option value="service">service</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      <div id="bulkFields" class="price-fields hidden">
-        <h3>Bulk price</h3>
-        <div class="form-grid">
-          <div class="form-field">
-            <label for="bulkPrice">Price in KSh *</label>
-            <input id="bulkPrice" name="bulkPrice" type="number" min="0" step="0.01">
-          </div>
-          <div class="form-field">
-            <label for="bulkUnit">Price per</label>
-            <select id="bulkUnit" name="bulkUnit">
-              <option value="kg">kg</option><option value="bag">bag</option>
-              <option value="tonne">tonne</option><option value="crate">crate</option>
-              <option value="tray">tray</option><option value="unit">unit</option>
-              <option value="service">service</option>
-            </select>
-          </div>
-          <div class="form-field">
-            <label for="bulkMinimum">Minimum bulk quantity</label>
-            <input id="bulkMinimum" name="bulkMinimum" type="number" min="0" step="any">
-          </div>
-        </div>
-      </div>
-
-      <div class="form-field">
-        <label for="listingImage">Product image URL (optional)</label>
-        <input id="listingImage" name="image" type="url" placeholder="https://...">
-      </div>
-      <div class="form-field">
-        <label for="listingDescription">Description / condition</label>
-        <textarea id="listingDescription" name="description" rows="3" maxlength="1000"></textarea>
-      </div>
-
-      <p class="form-message" id="listingMessage" aria-live="polite"></p>
-      <div class="modal-actions">
-        <button class="btn btn-outline" type="button" data-close-modal="listingModal">Cancel</button>
-        <button class="btn btn-primary" type="submit">Publish listing</button>
-      </div>
+      <p class="muted small">This is a local demo listing saved in this browser only. It is not published to a real server.</p>
+      <button class="btn" style="width:100%" type="submit">Publish demo listing</button>
     </form>
   </div>
 </div>
 
 <!-- Cart modal -->
-<div class="modal hidden" id="cartModal" role="dialog" aria-modal="true" aria-labelledby="cartModalTitle">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h2 id="cartModalTitle">🛒 Your cart</h2>
-      <button class="modal-close" type="button" data-close-modal="cartModal" aria-label="Close">×</button>
-    </div>
+<div class="modal" id="cartModal" role="dialog" aria-modal="true" aria-labelledby="cartTitle">
+  <div class="modal-box">
+    <div class="modal-head"><h2 id="cartTitle">🛒 Your cart</h2><button class="close-modal" data-close="cartModal" aria-label="Close">×</button></div>
     <div id="cartItems"></div>
-    <div class="empty-state" id="cartEmpty">
-      <h3>Your cart is empty</h3>
-      <p>Add products from the marketplace.</p>
-    </div>
-    <div id="cartSummary" class="cart-summary hidden">
-      <p id="cartFairWarning">Confirm product availability, units and delivery arrangements with sellers.</p>
-      <div class="cart-total-row">
-        <span>Estimated subtotal</span>
-        <strong id="cartSubtotal">KSh 0</strong>
-      </div>
-      <p id="cartItemTotal"></p>
-      <button class="btn btn-primary btn-block" id="checkoutButton" type="button">Contact sellers to order</button>
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-outline" id="continueShopping" type="button">Continue shopping</button>
+    <div id="cartEmpty" class="empty-state">Your cart is empty. Add some produce to get started.</div>
+    <div id="cartSummary" class="hidden">
+      <hr style="border:0;border-top:1px solid var(--border)">
+      <p class="muted small">Demo estimate only. Prices and units may differ between products. No payment is taken.</p>
+      <h3>Estimated subtotal: <span id="cartSubtotal">KSh 0</span></h3>
+      <button class="btn" id="checkoutButton" style="width:100%">Prepare order message</button>
     </div>
   </div>
 </div>
 
-<!-- Demo login -->
-<div class="modal hidden" id="loginModal" role="dialog" aria-modal="true" aria-labelledby="loginModalTitle">
-  <div class="modal-content">
-    <div class="modal-header">
-      <div>
-        <h2 id="loginModalTitle">Welcome to MavunoBridge</h2>
-        <p>Demo login only — real authentication is not connected.</p>
-      </div>
-      <button class="modal-close" type="button" data-close-modal="loginModal" aria-label="Close">×</button>
-    </div>
+<!-- Product detail modal -->
+<div class="modal" id="productModal" role="dialog" aria-modal="true" aria-labelledby="productModalTitle">
+  <div class="modal-box">
+    <div class="modal-head"><h2 id="productModalTitle">Product details</h2><button class="close-modal" data-close="productModal" aria-label="Close">×</button></div>
+    <div id="productDetails"></div>
+  </div>
+</div>
+
+<!-- Login demo modal -->
+<div class="modal" id="loginModal" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+  <div class="modal-box">
+    <div class="modal-head"><h2 id="loginTitle">Welcome to MavunoBridge</h2><button class="close-modal" data-close="loginModal" aria-label="Close">×</button></div>
+    <p class="muted">Demo login only — real authentication has not been connected.</p>
     <form id="loginForm">
-      <div class="form-field">
-        <label for="loginEmail">Email</label>
-        <input id="loginEmail" name="email" type="email" required autocomplete="email">
-      </div>
-      <div class="form-field">
-        <label for="loginPassword">Password</label>
-        <input id="loginPassword" name="password" type="password" required autocomplete="current-password">
-      </div>
-      <p id="loginMessage" class="form-message" aria-live="polite">Your password will not be saved.</p>
-      <button class="btn btn-primary btn-block" type="submit">Continue demo</button>
+      <label class="form-field">Email<input class="field" id="loginEmail" type="email" required placeholder="you@example.com"></label>
+      <label class="form-field" style="margin-top:12px">Password<input class="field" id="loginPassword" type="password" required minlength="4" placeholder="Enter any demo password"></label>
+      <button class="btn" style="width:100%;margin-top:16px" type="submit">Continue demo</button>
+      <div id="loginMessage" class="assist-answer hidden"></div>
     </form>
   </div>
 </div>
 
 <div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
 
-<script src="chat.js" defer></script>
-<script src="app.js" defer></script>
+<script>
+(() => {
+  "use strict";
+
+  const $ = (selector, root = document) => root.querySelector(selector);
+  const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
+  const STORAGE = {
+    listings: "mavunobridge_listings_v2",
+    cart: "mavunobridge_cart_v2",
+    language: "mavunobridge_language_v2"
+  };
+
+  const DEMO_PRODUCTS = [
+    {id:"avocado-1",name:"Hass Avocados",category:"fruits",price:120,unit:"kg",reference:[90,180],county:"Kiambu",seller:"Green Valley Farm",rating:4.8,quantity:240,saleType:"both",description:"Fresh Hass avocados from a demo farm listing.",image:"https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?auto=format&fit=crop&w=700&q=80",created:8},
+    {id:"tomato-1",name:"Fresh Tomatoes",category:"vegetables",price:70,unit:"kg",reference:[60,110],county:"Nakuru",seller:"Nakuru Fresh Produce",rating:4.7,quantity:180,saleType:"both",description:"Fresh tomatoes. Check quality and delivery with seller.",image:"https://images.unsplash.com/photo-1546094096-0df4bcaaa337?auto=format&fit=crop&w=700&q=80",created:7},
+    {id:"maize-1",name:"Dry Maize",category:"grains",price:50,unit:"kg",reference:[45,80],county:"Uasin Gishu",seller:"Rift Valley Grain Farm",rating:4.9,quantity:500,saleType:"bulk",description:"Dry maize. Inspect quality and confirm moisture level before purchase.",image:"https://images.unsplash.com/photo-1551754655-cd27e38d2076?auto=format&fit=crop&w=700&q=80",created:6},
+    {id:"onion-1",name:"Red Onions",category:"vegetables",price:140,unit:"kg",reference:[70,140],county:"Nakuru",seller:"Nakuru Valley Farm",rating:4.5,quantity:100,saleType:"retail",description:"Red onions. Confirm size and freshness with the seller.",image:"https://images.unsplash.com/photo-1508747703725-719777637510?auto=format&fit=crop&w=700&q=80",created:5},
+    {id:"beans-1",name:"Dry Beans",category:"legumes",price:130,unit:"kg",reference:[100,170],county:"Meru",seller:"Meru Harvest Group",rating:4.6,quantity:150,saleType:"both",description:"Dry beans available in retail and bulk quantities.",image:"https://images.unsplash.com/photo-1551462147-ff29053bfc14?auto=format&fit=crop&w=700&q=80",created:4},
+    {id:"potato-1",name:"Irish Potatoes",category:"starchy",price:65,unit:"kg",reference:[45,75],county:"Nyandarua",seller:"Highland Potato Growers",rating:4.7,quantity:300,saleType:"bulk",description:"Potatoes from a demo listing. Confirm grading and bag size.",image:"https://images.unsplash.com/photo-1518977676601-b53f82aba655?auto=format&fit=crop&w=700&q=80",created:3},
+    {id:"nuts-1",name:"Groundnuts",category:"nuts",price:180,unit:"kg",reference:[150,230],county:"Machakos",seller:"Eastern Nut Farmers",rating:4.4,quantity:80,saleType:"retail",description:"Groundnuts. Ask about sorting and storage.",image:"https://images.unsplash.com/photo-1567892737950-30c4db37cd89?auto=format&fit=crop&w=700&q=80",created:2},
+    {id:"banana-1",name:"Fresh Bananas",category:"fruits",price:85,unit:"kg",reference:[60,100],county:"Kisumu",seller:"Lakeside Fruit Farm",rating:4.6,quantity:200,saleType:"both",description:"Bananas for household and business buyers.",image:"https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?auto=format&fit=crop&w=700&q=80",created:1}
+  ];
+
+  const CATEGORY_NAMES = {
+    all:"All", fruits:"Fruits", vegetables:"Vegetables", nuts:"Nuts",
+    starchy:"Starchy foods", grains:"Grains", legumes:"Legumes",
+    livestock:"Livestock", inputs:"Farm inputs", services:"Farm services", spices:"Spices & herbs"
+  };
+
+  const TEXT = {
+    en: {
+      explore:"Explore Marketplace →", list:"＋ List a Product",
+      added:"Added to cart.", saved:"Demo listing added to this browser.",
+      empty:"No matching products yet. Try another search or category."
+    },
+    sw: {
+      explore:"Angalia Soko →", list:"＋ Weka Bidhaa",
+      added:"Bidhaa imeongezwa kwa kikapu.", saved:"Bidhaa ya demo imehifadhiwa kwenye browser hii.",
+      empty:"Hakuna bidhaa zinazolingana. Jaribu kutafuta tena."
+    },
+    sheng: {
+      explore:"Cheki Soko →", list:"＋ Weka Product",
+      added:"Product imeingia kwa cart.", saved:"Demo listing imehifadhiwa kwa browser hii.",
+      empty:"Hakuna product imepatikana. Try search ingine."
+    }
+  };
+
+  let listings = readJSON(STORAGE.listings, null);
+  if (!Array.isArray(listings)) listings = [...DEMO_PRODUCTS];
+  let cart = readJSON(STORAGE.cart, []);
+  if (!Array.isArray(cart)) cart = [];
+  let activeCategory = "all";
+  let activeSale = "all";
+  let activeSort = "newest";
+  let fairOnly = false;
+  let searchTerm = "";
+  let slideIndex = 0;
+  let slideTimer = null;
+  let toastTimer = null;
+
+  function readJSON(key, fallback) {
+    try {
+      const value = localStorage.getItem(key);
+      return value ? JSON.parse(value) : fallback;
+    } catch { return fallback; }
+  }
+  function saveState() {
+    try {
+      localStorage.setItem(STORAGE.listings, JSON.stringify(listings));
+      localStorage.setItem(STORAGE.cart, JSON.stringify(cart));
+    } catch { showToast("Browser storage is unavailable. Changes may not persist."); }
+  }
+  function escapeHTML(value) {
+    return String(value ?? "").replace(/[&<>"']/g, ch => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+    })[ch]);
+  }
+  function money(value) {
+    return "KSh " + Number(value || 0).toLocaleString("en-KE");
+  }
+  function fairStatus(product) {
+    if (!Array.isArray(product.reference) || product.reference.length < 2) return "unknown";
+    if (product.price < product.reference[0]) return "below";
+    if (product.price > product.reference[1]) return "above";
+    return "within";
+  }
+  function fairLabel(status) {
+    return ({below:"Below reference",within:"Within reference",above:"Above reference",unknown:"No guide"})[status] || "No guide";
+  }
+  function showToast(message) {
+    const toast = $("#toast");
+    toast.textContent = message;
+    toast.classList.remove("hidden");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.add("hidden"), 2800);
+  }
+  function openModal(id) {
+    const modal = document.getElementById(id);
+    if (modal) {
+      modal.classList.add("open");
+      document.body.style.overflow = "hidden";
+      const focusable = $("input,button,select,textarea", modal);
+      if (focusable) setTimeout(() => focusable.focus(), 30);
+    }
+  }
+  function closeModal(id) {
+    const modal = document.getElementById(id);
+    if (modal) modal.classList.remove("open");
+    if (!$(".modal.open")) document.body.style.overflow = "";
+  }
+
+  // Slideshow with accessible dots and automatic rotation.
+  const slides = $$(".hero-slide");
+  const dots = $$(".slide-dot");
+  function showSlide(index) {
+    slideIndex = (index + slides.length) % slides.length;
+    slides.forEach((slide, i) => slide.classList.toggle("active", i === slideIndex));
+    dots.forEach((dot, i) => {
+      dot.classList.toggle("active", i === slideIndex);
+      dot.setAttribute("aria-pressed", String(i === slideIndex));
+    });
+  }
+  function restartSlideshow() {
+    clearInterval(slideTimer);
+    slideTimer = setInterval(() => showSlide(slideIndex + 1), 6000);
+  }
+  $("#prevSlide").addEventListener("click", () => { showSlide(slideIndex - 1); restartSlideshow(); });
+  $("#nextSlide").addEventListener("click", () => { showSlide(slideIndex + 1); restartSlideshow(); });
+  dots.forEach((dot, i) => dot.addEventListener("click", () => { showSlide(i); restartSlideshow(); }));
+  $("#farmerSlideshow").addEventListener("mouseenter", () => clearInterval(slideTimer));
+  $("#farmerSlideshow").addEventListener("mouseleave", restartSlideshow);
+  $("#farmerSlideshow").addEventListener("focusin", () => clearInterval(slideTimer));
+  $("#farmerSlideshow").addEventListener("focusout", restartSlideshow);
+  restartSlideshow();
+
+  // Modal and navigation controls.
+  $$("[data-open]").forEach(button => button.addEventListener("click", () => openModal(button.dataset.open)));
+  $$("[data-close]").forEach(button => button.addEventListener("click", () => closeModal(button.dataset.close)));
+  $$(".modal").forEach(modal => modal.addEventListener("click", event => {
+    if (event.target === modal) closeModal(modal.id);
+  }));
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape") $$(".modal.open").forEach(modal => closeModal(modal.id));
+  });
+  $("#menuToggle").addEventListener("click", () => {
+    const nav = $("#mobileNav");
+    const hidden = nav.classList.toggle("hidden");
+    $("#menuToggle").setAttribute("aria-expanded", String(!hidden));
+  });
+  $$("#mobileNav a").forEach(link => link.addEventListener("click", () => {
+    $("#mobileNav").classList.add("hidden");
+    $("#menuToggle").setAttribute("aria-expanded", "false");
+  }));
+  $("#cartButton").addEventListener("click", () => { renderCart(); openModal("cartModal"); });
+  $("#loginButton").addEventListener("click", () => openModal("loginModal"));
+
+  // Category and search filters.
+  function setCategory(category) {
+    activeCategory = category;
+    $$(".category-card").forEach(button => button.classList.toggle("active", button.dataset.category === category));
+    $("#searchCategory").value = category;
+    renderListings();
+  }
+  $$(".category-card").forEach(button => button.addEventListener("click", () => {
+    setCategory(button.dataset.category);
+    $("#marketplace").scrollIntoView({behavior:"smooth"});
+  }));
+  $("#resetCategories").addEventListener("click", () => setCategory("all"));
+  $("#searchForm").addEventListener("submit", event => {
+    event.preventDefault();
+    searchTerm = $("#searchInput").value.trim().toLowerCase();
+    setCategory($("#searchCategory").value || "all");
+    $("#marketplace").scrollIntoView({behavior:"smooth"});
+    renderListings();
+  });
+  $("#searchInput").addEventListener("input", () => {
+    searchTerm = $("#searchInput").value.trim().toLowerCase();
+    renderListings();
+  });
+  $("#searchCategory").addEventListener("change", event => setCategory(event.target.value));
+  $("#locationFilter").addEventListener("change", renderListings);
+  $$("[data-sale]").forEach(button => button.addEventListener("click", () => {
+    activeSale = button.dataset.sale;
+    $$("[data-sale]").forEach(chip => chip.classList.toggle("active", chip === button));
+    renderListings();
+  }));
+
+  // Sorting menu is a proper interactive GUI.
+  $("#sortButton").addEventListener("click", () => {
+    const menu = $("#sortOptions");
+    const isHidden = menu.classList.toggle("hidden");
+    $("#sortButton").setAttribute("aria-expanded", String(!isHidden));
+  });
+  $$("[data-sort]").forEach(button => button.addEventListener("click", () => {
+    activeSort = button.dataset.sort;
+    $$("[data-sort]").forEach(option => option.classList.toggle("selected", option === button));
+    $("#sortButton").textContent = "☷ " + button.textContent.trim() + " ▾";
+    $("#sortOptions").classList.add("hidden");
+    $("#sortButton").setAttribute("aria-expanded", "false");
+    renderListings();
+  }));
+  document.addEventListener("click", event => {
+    if (!event.target.closest(".sort-wrap")) {
+      $("#sortOptions").classList.add("hidden");
+      $("#sortButton").setAttribute("aria-expanded", "false");
+    }
+  });
+  $("#fairOnlyButton").addEventListener("click", () => {
+    fairOnly = !fairOnly;
+    $("#fairOnlyButton").classList.toggle("active", fairOnly);
+    $("#fairOnlyButton").setAttribute("aria-pressed", String(fairOnly));
+    if (fairOnly) activeSort = "fair";
+    renderListings();
+  });
+  $("#showAllButton").addEventListener("click", () => {
+    searchTerm = "";
+    $("#searchInput").value = "";
+    $("#locationFilter").value = "all";
+    activeSale = "all";
+    fairOnly = false;
+    $("#fairOnlyButton").classList.remove("active");
+    $$("[data-sale]").forEach(chip => chip.classList.toggle("active", chip.dataset.sale === "all"));
+    setCategory("all");
+  });
+
+  function filteredListings() {
+    let result = listings.filter(product => {
+      const matchesCategory = activeCategory === "all" || product.category === activeCategory;
+      const matchesSearch = !searchTerm || [product.name, product.seller, product.county, product.category, product.description]
+        .join(" ").toLowerCase().includes(searchTerm);
+      const matchesLocation = $("#locationFilter").value === "all" || product.county === $("#locationFilter").value;
+      const matchesSale = activeSale === "all" || product.saleType === "both" || product.saleType === activeSale;
+      const matchesFair = !fairOnly || fairStatus(product) === "within" || fairStatus(product) === "below";
+      return matchesCategory && matchesSearch && matchesLocation && matchesSale && matchesFair;
+    });
+    result.sort((a,b) => {
+      if (activeSort === "low") return a.price - b.price;
+      if (activeSort === "high") return b.price - a.price;
+      if (activeSort === "rated") return (b.rating || 0) - (a.rating || 0);
+      if (activeSort === "fair") {
+        const order = {below:0,within:1,above:2,unknown:3};
+        return order[fairStatus(a)] - order[fairStatus(b)] || a.price - b.price;
+      }
+      return (b.created || 0) - (a.created || 0);
+    });
+    return result;
+  }
+
+  function productCard(product) {
+    const status = fairStatus(product);
+    const reference = Array.isArray(product.reference)
+      ? `${money(product.reference[0])}–${money(product.reference[1])}/${escapeHTML(product.unit)}`
+      : "Reference price unavailable";
+    const photo = product.image || "";
+    const image = photo
+      ? `<img src="${escapeHTML(photo)}" alt="${escapeHTML(product.name)}" loading="lazy" onerror="this.style.display='none'">`
+      : `<div style="height:100%;display:grid;place-items:center;font-size:2rem">🌾</div>`;
+    return `
+      <article class="product-card">
+        <div class="product-photo">${image}<span class="price-badge ${status}">${escapeHTML(fairLabel(status))}</span></div>
+        <div class="product-body">
+          <h3>${escapeHTML(product.name)}</h3>
+          <div class="product-price">${money(product.price)}/${escapeHTML(product.unit)}</div>
+          <div class="reference">Guide: ${reference}</div>
+          <div class="product-meta">📍 ${escapeHTML(product.county)}</div>
+          <div class="product-meta">🏡 ${escapeHTML(product.seller)} ${product.rating ? `· ⭐ ${Number(product.rating).toFixed(1)}` : ""}</div>
+          <div class="product-meta">${escapeHTML(CATEGORY_NAMES[product.category] || product.category)} · ${Number(product.quantity || 0)} ${escapeHTML(product.unit)} available</div>
+          <div class="product-actions">
+            <button class="btn small-btn" data-add="${escapeHTML(product.id)}">🛒 Add to Cart</button>
+            <button class="btn outline small-btn" data-view="${escapeHTML(product.id)}">View</button>
+          </div>
+        </div>
+      </article>`;
+  }
+
+  function renderListings() {
+    const result = filteredListings();
+    $("#listingGrid").innerHTML = result.map(productCard).join("");
+    $("#resultsCount").textContent = `${result.length} product${result.length === 1 ? "" : "s"} · Browse listings from farmers across Kenya.`;
+    $("#emptyState").classList.toggle("hidden", result.length > 0);
+    $("#listingGrid").classList.toggle("hidden", result.length === 0);
+    $("#showAllButton").textContent = "Show all products";
+  }
+
+  $("#listingGrid").addEventListener("click", event => {
+    const add = event.target.closest("[data-add]");
+    const view = event.target.closest("[data-view]");
+    if (add) addToCart(add.dataset.add);
+    if (view) showProduct(view.dataset.view);
+  });
+
+  function addToCart(id) {
+    const product = listings.find(item => item.id === id);
+    if (!product) return;
+    const existing = cart.find(item => item.id === id);
+    if (existing) existing.quantity += 1;
+    else cart.push({id, quantity:1});
+    saveState();
+    renderCartCount();
+    showToast(TEXT[currentLanguage()].added);
+  }
+  function renderCartCount() {
+    $("#cartCount").textContent = cart.reduce((sum,item) => sum + item.quantity, 0);
+  }
+  function renderCart() {
+    const valid = cart.map(item => ({...item, product:listings.find(p => p.id === item.id)})).filter(item => item.product);
+    cart = valid.map(item => ({id:item.id,quantity:item.quantity}));
+    $("#cartItems").innerHTML = valid.map(item => `
+      <div class="cart-row">
+        <div><strong>${escapeHTML(item.product.name)}</strong><div class="muted small">${money(item.product.price)} / ${escapeHTML(item.product.unit)}</div>
+          <div class="cart-row-actions">
+            <button class="qty-btn" data-qty="${escapeHTML(item.id)}" data-change="-1" aria-label="Decrease quantity">−</button>
+            <span>${item.quantity}</span>
+            <button class="qty-btn" data-qty="${escapeHTML(item.id)}" data-change="1" aria-label="Increase quantity">+</button>
+            <button class="btn ghost small-btn" data-remove="${escapeHTML(item.id)}">Remove</button>
+          </div>
+        </div>
+        <strong>${money(item.product.price * item.quantity)}</strong>
+      </div>`).join("");
+    $("#cartEmpty").classList.toggle("hidden", valid.length > 0);
+    $("#cartSummary").classList.toggle("hidden", valid.length === 0);
+    const subtotal = valid.reduce((sum,item) => sum + item.product.price * item.quantity, 0);
+    $("#cartSubtotal").textContent = money(subtotal);
+    saveState();
+  }
+  $("#cartItems").addEventListener("click", event => {
+    const qty = event.target.closest("[data-qty]");
+    const remove = event.target.closest("[data-remove]");
+    if (qty) {
+      const item = cart.find(product => product.id === qty.dataset.qty);
+      if (item) item.quantity += Number(qty.dataset.change);
+      cart = cart.filter(product => product.quantity > 0);
+      renderCart(); renderCartCount();
+    }
+    if (remove) {
+      cart = cart.filter(product => product.id !== remove.dataset.remove);
+      renderCart(); renderCartCount();
+    }
+  });
+  $("#checkoutButton").addEventListener("click", () => {
+    const lines = cart.map(item => {
+      const product = listings.find(p => p.id === item.id);
+      return product ? `${product.name} x ${item.quantity} — ${money(product.price * item.quantity)}` : "";
+    }).filter(Boolean);
+    if (!lines.length) return showToast("Your cart is empty.");
+    const message = "Hello, I am interested in these MavunoBridge demo products:\n" + lines.join("\n") +
+      "\nEstimated subtotal: " + $("#cartSubtotal").textContent +
+      "\nPlease confirm availability, quality, delivery and final prices.";
+    $("#productDetails").innerHTML = `<p>Copy this order enquiry and send it to the relevant sellers. This demo does not process payments or place an actual order.</p><textarea class="field" rows="7" id="orderMessage">${escapeHTML(message)}</textarea><button class="btn" id="copyOrderMessage" style="margin-top:10px">Copy order enquiry</button>`;
+    openModal("productModal");
+    $("#productModalTitle").textContent = "Prepare order enquiry";
+    $("#copyOrderMessage").addEventListener("click", async () => {
+      try { await navigator.clipboard.writeText($("#orderMessage").value); showToast("Order enquiry copied."); }
+      catch { $("#orderMessage").select(); showToast("Select and copy the message."); }
+    });
+  });
+
+  function showProduct(id) {
+    const product = listings.find(item => item.id === id);
+    if (!product) return;
+    $("#productModalTitle").textContent = product.name;
+    const ref = Array.isArray(product.reference) ? `${money(product.reference[0])}–${money(product.reference[1])}/${escapeHTML(product.unit)}` : "No reference guide";
+    $("#productDetails").innerHTML = `
+      ${product.image ? `<img src="${escapeHTML(product.image)}" alt="${escapeHTML(product.name)}" style="width:100%;height:220px;object-fit:cover;border-radius:12px" onerror="this.style.display='none'">` : ""}
+      <h3>${escapeHTML(product.name)}</h3><div class="product-price">${money(product.price)}/${escapeHTML(product.unit)}</div>
+      <p><strong>Price guide:</strong> ${ref} · ${escapeHTML(fairLabel(fairStatus(product)))}</p>
+      <p><strong>County:</strong> ${escapeHTML(product.county)}<br><strong>Seller:</strong> ${escapeHTML(product.seller)}<br><strong>Rating:</strong> ${product.rating ? "⭐ " + Number(product.rating).toFixed(1) + " (demo)" : "Not rated"}<br><strong>Availability:</strong> ${Number(product.quantity || 0)} ${escapeHTML(product.unit)}</p>
+      <p>${escapeHTML(product.description || "Contact the seller to confirm product details.")}</p>
+      <p class="muted small">Demo listing. Verify the seller, quality, unit and delivery before paying.</p>
+      <button class="btn" id="detailAddButton">🛒 Add to cart</button>
+      ${product.phone ? `<a class="btn outline" href="https://wa.me/${encodeURIComponent(String(product.phone).replace(/[^0-9]/g,""))}?text=${encodeURIComponent("Hi, I found your " + product.name + " listing on MavunoBridge. Is it available?")}" target="_blank" rel="noopener">Message seller</a>` : ""}
+    `;
+    openModal("productModal");
+    $("#detailAddButton").addEventListener("click", () => { addToCart(id); closeModal("productModal"); });
+  }
+
+  // Create demo listing.
+  $("#listingForm").addEventListener("submit", event => {
+    event.preventDefault();
+    const name = $("#listingName").value.trim();
+    const price = Number($("#retailPrice").value);
+    const quantity = Number($("#listingQuantity").value);
+    if (!name || price <= 0 || quantity <= 0) return showToast("Enter a product name, valid price and quantity.");
+    const category = $("#listingType").value;
+    const unit = $("#listingStockUnit").value;
+    const ref = demoReference(category, name);
+    const item = {
+      id:"user-" + Date.now(), name, category, price, unit, reference:ref,
+      county:$("#listingLocation").value.trim(),
+      seller:$("#listingSeller").value.trim(),
+      phone:$("#listingPhone").value.trim(),
+      quantity, saleType:$("#saleType").value,
+      bulkPrice:Number($("#bulkPrice").value) || null,
+      description:$("#listingDescription").value.trim(),
+      image:$("#listingImage").value.trim(),
+      rating:0, created:Date.now()
+    };
+    listings.unshift(item);
+    saveState();
+    $("#listingForm").reset();
+    closeModal("listingModal");
+    searchTerm = "";
+    $("#searchInput").value = "";
+    $("#locationFilter").value = "all";
+    activeSale = "all";
+    fairOnly = false;
+    $("#fairOnlyButton").classList.remove("active");
+    $$("[data-sale]").forEach(chip => chip.classList.toggle("active", chip.dataset.sale === "all"));
+    setCategory("all");
+    $("#marketplace").scrollIntoView({behavior:"smooth"});
+    showToast(TEXT[currentLanguage()].saved);
+  });
+
+  function demoReference(category, name) {
+    const n = name.toLowerCase();
+    if (n.includes("tomato")) return [60,110];
+    if (n.includes("avocado")) return [90,180];
+    if (n.includes("maize")) return [45,80];
+    if (n.includes("onion")) return [70,140];
+    if (n.includes("bean")) return [100,170];
+    if (n.includes("potato")) return [45,75];
+    if (n.includes("banana")) return [60,100];
+    if (category === "fruits") return [60,180];
+    if (category === "vegetables") return [50,120];
+    if (category === "grains") return [40,90];
+    if (category === "legumes") return [80,180];
+    return null;
+  }
+
+  // Demo login: does not authenticate or create an account.
+  $("#loginForm").addEventListener("submit", event => {
+    event.preventDefault();
+    $("#loginMessage").textContent = "Demo mode only: your account has not been created and no password was sent to a server.";
+    $("#loginMessage").classList.remove("hidden");
+  });
+
+  // Smart Assist starter guidance: not a live AI or weather service.
+  const COUNTY_TIPS = {
+    "Kiambu":"Check local rainfall before planting. Consider crops suited to your altitude and market, such as vegetables, beans or potatoes. Confirm local recommendations with an agricultural extension officer.",
+    "Nakuru":"Compare local rainfall and soil conditions before planting maize, beans or potatoes. Plan drainage where heavy rain is expected.",
+    "Uasin Gishu":"Maize and beans may suit some farms, but seed variety, planting dates and soil fertility should follow local extension advice.",
+    "Meru":"Crop choices vary by altitude. Check local rainfall, soil and market demand before choosing maize, beans, vegetables or fruit crops.",
+    "Machakos":"For drier areas, check reliable rainfall forecasts and water availability. Ask an extension officer about drought-tolerant varieties and soil-moisture conservation.",
+    "Kisumu":"Check local rainfall and drainage. Choose varieties suited to your specific area and consult local extension advice for pest management."
+  };
+  $("#getInsightButton").addEventListener("click", () => {
+    const county = $("#countySelect").value;
+    $("#insightMessage").textContent = `Demo guidance for ${county} County:\n\n${COUNTY_TIPS[county]}\n\nThis is general guidance, not a live weather forecast. Check current Kenya Meteorological Department updates before making weather-dependent decisions.`;
+    $("#insightMessage").classList.remove("hidden");
+  });
+  $("#pestHelpButton").addEventListener("click", () => {
+    const question = $("#pestQuestion").value.trim();
+    if (!question) return showToast("Describe the crop problem first.");
+    $("#pestAnswer").textContent = "Starter guidance:\n• Check several plants and note which leaves or parts are affected.\n• Look for insects, spots, wilting, and recent changes in rain or watering.\n• Take clear photos and ask a local agricultural extension officer to confirm the cause before applying chemicals.\n\nYour description: " + question + "\n\nThis demo has no image diagnosis or connected AI service.";
+    $("#pestAnswer").classList.remove("hidden");
+  });
+  $("#assistantForm").addEventListener("submit", event => {
+    event.preventDefault();
+    const question = $("#assistantQuestion").value.trim();
+    if (!question) return;
+    $("#assistantAnswer").textContent = "Thanks for your question: “" + question + "”\n\nTry starting with these details: crop name, county, crop age, soil/water conditions, and symptoms. For pest or disease problems, confirm the cause with an agricultural extension officer before treatment.\n\nThis is starter demo guidance. Live AI answers are not connected yet.";
+    $("#assistantAnswer").classList.remove("hidden");
+  });
+
+  $$("[data-sacco]").forEach(button => button.addEventListener("click", () => {
+    const messages = {
+      savings:"SACCO checklist: check registration, membership fees, savings rules, withdrawal terms and how dividends are handled. Verify details with the SACCO directly.",
+      loans:"Loan checklist: compare the interest rate, all fees, repayment schedule, collateral, penalties and total repayment. Read the written terms before signing.",
+      opportunities:"Opportunity checklist: verify the organisation, eligibility, deadline, location and any fee through official channels. Be careful with requests for upfront payments."
+    };
+    $("#saccoAnswer").textContent = messages[button.dataset.sacco];
+    $("#saccoAnswer").classList.remove("hidden");
+  });
+  $("#supportButton").addEventListener("click", () => {
+    $("#supportAnswer").textContent = "Support tips: check that the listing has a clear unit and price; contact the seller to confirm stock; inspect produce when possible; agree on delivery and payment terms; never share your password or PIN.";
+    $("#supportAnswer").classList.toggle("hidden", false);
+  });
+  $("#learnFairButton").addEventListener("click", () => {
+    alert("Fair pricing compares a listing with an illustrative reference range for a similar product and unit. Below the range may be a good deal, within is inside the guide, and above means compare other listings. These are demo ranges, not live official prices. Quality, season, county, quantity and transport affect real prices.");
+  });
+
+  // Language selection updates main calls to action and saved preference.
+  function currentLanguage() {
+    return localStorage.getItem(STORAGE.language) || "en";
+  }
+  function applyLanguage(language) {
+    const lang = TEXT[language] ? language : "en";
+    try { localStorage.setItem(STORAGE.language, lang); } catch {}
+    $("#languageSelect").value = lang;
+    $$(".hero-buttons .btn").forEach(button => {
+      if (button.textContent.includes("Explore Marketplace") || button.textContent.includes("Angalia Soko") || button.textContent.includes("Cheki Soko")) button.textContent = TEXT[lang].explore;
+      if (button.textContent.includes("List a Product") || button.textContent.includes("Weka Bidhaa") || button.textContent.includes("Weka Product")) button.textContent = TEXT[lang].list;
+    });
+  }
+  $("#languageSelect").addEventListener("change", event => {
+    applyLanguage(event.target.value);
+    showToast("Language preference saved. Some demo content remains in English.");
+  });
+
+  $("#currentYear").textContent = new Date().getFullYear();
+  applyLanguage(currentLanguage());
+  renderListings();
+  renderCartCount();
+})();
+</script>
 </body>
 </html>
