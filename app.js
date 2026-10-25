@@ -128,7 +128,7 @@ const demoListings = [
     seller: "Meru Harvest",
     phone: "0745678901",
     description: "Clean, dry beans for cooking, resale and bulk purchase.",
-    image: "https://images.unsplash.com/photo-1551462147-ff29053bfc14?auto=format&fit=crop&w=620&q=70",
+ image: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/Rosecoco_beans.jpg/960px-Rosecoco_beans.jpg",
     createdAt: 1761000003000,
     demo: true
   },
