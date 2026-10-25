@@ -1,113 +1,94 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SACCO Hub | MavunoBridge</title>
   <link rel="stylesheet" href="style.css">
+  <script src="sacco.js" defer></script>
 </head>
 <body>
-  <header class="site-header">
-    <a class="brand" href="index.html">
-      <span class="brand-mark">M</span>
-      <span>Mavuno<span class="brand-accent">Bridge</span><small>FROM SHAMBA TO SOKO</small></span>
-    </a>
-    <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation">☰</button>
-    <nav id="mainNav">
-      <a href="index.html">Marketplace</a>
-      <a href="smart-assist.html">Smart Assist</a>
-      <a href="sacco.html">SACCO Hub</a>
-      <a href="messages.html">Buyer Requests</a>
-    </nav>
+  <header class="topbar">
+    <a class="brand" href="index.html"><span class="brand-mark">M</span><span>Mavuno<span class="brand-light">Bridge</span><small>FARMING. CONNECTED.</small></span></a>
+    <a href="index.html" class="text-link">← Marketplace</a>
   </header>
 
-  <section class="page-hero">
-    <span class="eyebrow">GROW TOGETHER</span>
-    <h1>SACCO & farmer groups hub.</h1>
-    <p>
-      Explore group-saving ideas, shared equipment and collective selling.
-      Verify every organisation before joining or sending money.
-    </p>
-  </section>
-
-  <main class="page-wrap">
-    <div class="notice">
-      Demo directory: these are example group concepts, not verified registered SACCOs.
-      No membership or financial transaction happens here.
-    </div>
-
-    <div class="sacco-cards" style="margin-top:22px">
-      <article class="sacco-card">
-        <span class="eyebrow">GROUP SAVING</span>
-        <h3>Local Farmers Savings Circle</h3>
-        <p>Discuss regular savings, emergency support and shared buying of farm inputs.</p>
-        <button class="btn btn-primary join" type="button" data-group="Local Farmers Savings Circle">
-          I'm interested
-        </button>
-      </article>
-
-      <article class="sacco-card">
-        <span class="eyebrow">SHARED EQUIPMENT</span>
-        <h3>Machinery Sharing Network</h3>
-        <p>Coordinate ploughing, shelling, irrigation or transport with nearby farmers.</p>
-        <button class="btn btn-primary join" type="button" data-group="Machinery Sharing Network">
-          I'm interested
-        </button>
-      </article>
-
-      <article class="sacco-card">
-        <span class="eyebrow">COLLECTIVE SELLING</span>
-        <h3>Harvest Aggregation Group</h3>
-        <p>Combine suitable quantities to approach bulk buyers and compare offers.</p>
-        <button class="btn btn-primary join" type="button" data-group="Harvest Aggregation Group">
-          I'm interested
-        </button>
-      </article>
-    </div>
-
-    <section class="panel" style="margin-top:25px">
-      <h2>Share a group opportunity</h2>
-      <form id="groupForm" class="panel-grid">
-        <label>
-          Group / opportunity name
-          <input id="groupName" required placeholder="Name of your group">
-        </label>
-
-        <label>
-          County
-          <select id="groupCounty" required>
-            <option value="">Choose county</option>
-          </select>
-        </label>
-
-        <label class="full">
-          What does the group offer?
-          <textarea id="groupDesc" rows="3" required placeholder="Savings, equipment hire, collective selling…"></textarea>
-        </label>
-
-        <div class="full">
-          <button class="btn btn-primary" type="submit">Save demo opportunity</button>
-        </div>
-      </form>
+  <main class="page-shell">
+    <section class="page-hero sacco-hero">
+      <p class="eyebrow">GROW TOGETHER</p>
+      <h1>Welcome to the<br>SACCO & Opportunities Hub.</h1>
+      <p>Explore sample agricultural group opportunities, farmer support programmes and cooperative ideas in one place.</p>
+      <span class="demo-label">DEMO OPPORTUNITIES · NOT VERIFIED OFFERS</span>
     </section>
 
-    <h2 style="margin-top:36px">Opportunities saved in this browser</h2>
-    <div id="groupsList" class="message-list"></div>
+    <section class="section page-section">
+      <div class="section-heading">
+        <div><p class="eyebrow">DISCOVER OPPORTUNITIES</p><h2>Find your next opportunity</h2><p class="muted">Browse examples and save the ones you would like to investigate.</p></div>
+      </div>
 
-    <p class="notice" style="margin-top:20px">
-      Safety tip: check registration, written rules, fees, withdrawal terms and official contacts.
-      Never share your PIN, password or one-time codes.
-    </p>
+      <div class="sacco-controls">
+        <input type="search" id="saccoSearch" placeholder="Search by county or opportunity..." aria-label="Search opportunities">
+        <select id="saccoType" aria-label="Filter opportunity type">
+          <option value="All">All types</option>
+          <option value="SACCO">SACCO / cooperative</option>
+          <option value="Group">Farmer group</option>
+          <option value="Programme">Support programme</option>
+        </select>
+      </div>
+
+      <div class="sacco-grid" id="saccoGrid">
+        <article class="sacco-card" data-type="SACCO">
+          <span class="opportunity-type">SACCO / COOPERATIVE</span>
+          <h3>Community Grain Growers</h3>
+          <p class="sacco-location">Sample opportunity · Uasin Gishu</p>
+          <p>A concept for grain growers interested in collective marketing, access to information and learning about cooperative finance.</p>
+          <button class="button button-green interest-button" data-opportunity="Community Grain Growers" type="button">Save interest</button>
+        </article>
+        <article class="sacco-card" data-type="Group">
+          <span class="opportunity-type">FARMER GROUP</span>
+          <h3>Smallholder Produce Circle</h3>
+          <p class="sacco-location">Sample opportunity · Nakuru</p>
+          <p>A sample group-buying concept for farmers who want to explore pooling produce and discussing shared transport.</p>
+          <button class="button button-green interest-button" data-opportunity="Smallholder Produce Circle" type="button">Save interest</button>
+        </article>
+        <article class="sacco-card" data-type="Programme">
+          <span class="opportunity-type">SUPPORT PROGRAMME</span>
+          <h3>Farm Skills & Digital Market Learning</h3>
+          <p class="sacco-location">Sample opportunity · All counties</p>
+          <p>A learning concept covering farm records, marketing, buyer communication and basic business planning.</p>
+          <button class="button button-green interest-button" data-opportunity="Farm Skills & Digital Market Learning" type="button">Save interest</button>
+        </article>
+        <article class="sacco-card" data-type="SACCO">
+          <span class="opportunity-type">SACCO / COOPERATIVE</span>
+          <h3>Fresh Produce Sellers Network</h3>
+          <p class="sacco-location">Sample opportunity · Kiambu</p>
+          <p>A cooperative concept for fresh produce sellers to learn about collective buying and reliable market connections.</p>
+          <button class="button button-green interest-button" data-opportunity="Fresh Produce Sellers Network" type="button">Save interest</button>
+        </article>
+        <article class="sacco-card" data-type="Group">
+          <span class="opportunity-type">FARMER GROUP</span>
+          <h3>Water-Smart Farming Circle</h3>
+          <p class="sacco-location">Sample opportunity · Machakos</p>
+          <p>A sample peer-learning group for discussing soil moisture, water conservation and suitable local farming practices.</p>
+          <button class="button button-green interest-button" data-opportunity="Water-Smart Farming Circle" type="button">Save interest</button>
+        </article>
+        <article class="sacco-card" data-type="Programme">
+          <span class="opportunity-type">SUPPORT PROGRAMME</span>
+          <h3>Youth Agribusiness Ideas Lab</h3>
+          <p class="sacco-location">Sample opportunity · All counties</p>
+          <p>A concept for exploring agribusiness ideas, customer needs, cost planning and responsible market research.</p>
+          <button class="button button-green interest-button" data-opportunity="Youth Agribusiness Ideas Lab" type="button">Save interest</button>
+        </article>
+      </div>
+
+      <div class="interest-panel">
+        <h2>Saved interests</h2>
+        <p class="muted">These are saved in this browser only. They do not submit an official SACCO application.</p>
+        <div id="savedInterests"><p class="muted">You haven't saved an opportunity yet.</p></div>
+      </div>
+    </section>
   </main>
-
-  <footer>
-    <a class="brand" href="index.html">
-      <span class="brand-mark">M</span>
-      <span>Mavuno<span class="brand-accent">Bridge</span><small>FROM SHAMBA TO SOKO</small></span>
-    </a>
-    <p>Community tools for a demo. MavunoBridge is not a financial institution.</p>
-  </footer>
-
-  <script src="sacco.js" defer></script>
+  <footer class="footer"><a href="index.html">MavunoBridge Marketplace</a><p>Confirm an organisation's registration, terms, charges and eligibility independently before making financial commitments.</p></footer>
 </body>
 </html>
