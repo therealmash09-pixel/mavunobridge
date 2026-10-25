@@ -1,7 +1,7 @@
 "use strict";
 
 /* =========================================================
-   SHAMBAMARKET CHAT STORE
+   MAVUNOMART CHAT STORE
    Demo version: data lives in localStorage (same browser).
    For real buyer<->seller messaging across devices, swap the
    read/write functions for Firebase / Supabase calls.
