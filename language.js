@@ -2,7 +2,8 @@
 "use strict";
 
 /* ==========================================
-   MAVUNOBRIDGE — LANGUAGE PREFERENCES
+   MAVUNOBRIDGE — SHARED LANGUAGE SYSTEM
+   English | Sheng + Kiswahili | Kiswahili
    ========================================== */
 
 const MAVUNO_LANGUAGE_KEY = "mavunobridge_language_v1";
@@ -37,7 +38,7 @@ const MAVUNO_TRANSLATIONS = {
     toolsLearning: "Tools and learning support",
     exploreMarketEyebrow: "EXPLORE THE MARKET",
     shopCategory: "Shop by category",
-    chooseCategory: "Chagua category uone bidhaa farmers wameweka.",
+    chooseCategory: "Choose a category to see listed products.",
     viewAllProducts: "View all products →",
     fruits: "Fruits",
     vegetables: "Vegetables",
@@ -54,11 +55,11 @@ const MAVUNO_TRANSLATIONS = {
     toolsEquipment: "Tools & equipment",
     farmerServices: "Farmer services",
     plantNext: "Not sure what to plant next?",
-    smartAssistDescription: "Explore Smart Assist for crop-planning ideas, pest guidance and farm management tips.",
+    smartAssistDescription: "Explore crop-planning ideas, pest guidance and farm management tips.",
     exploreSmartAssist: "Explore Smart Assist →",
     freshFarm: "FRESH FROM THE FARM",
     marketplaceListings: "Marketplace listings",
-    compareProducts: "Compare sample prices or find products listed by farmers.",
+    compareProducts: "Compare prices and find products listed by farmers.",
     createListing: "+ Create listing",
     category: "Category",
     county: "County",
@@ -92,10 +93,17 @@ const MAVUNO_TRANSLATIONS = {
     demoCheckout: "Continue to demo checkout",
     footerDescription: "Connecting Kenyan farmers, buyers and agricultural opportunities.",
     demoNotice: "Demo project • Listings and demo messages are stored in this browser.",
-    addToCart: "Add to cart",
+    noMessages: "No messages yet",
+    send: "Send",
+    writeMessage: "Write a message...",
+    chooseConversation: "Choose a conversation",
+    yourConversations: "Your conversations",
+    browseProducts: "Browse products",
+    backMarketplace: "← Marketplace",
     chatSeller: "Chat seller",
-    deleteListing: "Delete listing",
+    addToCart: "Add to cart",
     callSeller: "Call seller",
+    deleteListing: "Delete listing",
     retail: "Retail",
     bulk: "Bulk",
     bothSaleTypes: "Retail + Bulk",
@@ -150,11 +158,11 @@ const MAVUNO_TRANSLATIONS = {
     toolsEquipment: "Tools na equipment",
     farmerServices: "Huduma za farming",
     plantNext: "Hujui upande nini next?",
-    smartAssistDescription: "Tumia Smart Assist kupata crop ideas, pest tips na guidance ya farming.",
+    smartAssistDescription: "Pata crop ideas, pest tips na guidance ya farming kupitia Smart Assist.",
     exploreSmartAssist: "Fungua Smart Assist →",
     freshFarm: "FRESH FROM THE FARM",
     marketplaceListings: "Bidhaa sokoni",
-    compareProducts: "Compare sample prices au angalia bidhaa zilizowekwa na farmers.",
+    compareProducts: "Compare prices au angalia bidhaa farmers wameweka.",
     createListing: "+ Weka listing",
     category: "Category",
     county: "County",
@@ -188,10 +196,17 @@ const MAVUNO_TRANSLATIONS = {
     demoCheckout: "Endelea demo checkout",
     footerDescription: "Tunaunganisha farmers, buyers na opportunities za agriculture Kenya.",
     demoNotice: "Demo project • Listings na demo messages zinahifadhiwa kwa browser hii.",
-    addToCart: "Weka kwa cart",
+    noMessages: "Hakuna messages bado",
+    send: "Tuma",
+    writeMessage: "Andika message...",
+    chooseConversation: "Chagua chat",
+    yourConversations: "Chats zako",
+    browseProducts: "Angalia bidhaa",
+    backMarketplace: "← Rudi kwa soko",
     chatSeller: "Chat na seller",
-    deleteListing: "Futa listing",
+    addToCart: "Weka kwa cart",
     callSeller: "Piga seller",
+    deleteListing: "Futa listing",
     retail: "Retail",
     bulk: "Bulk",
     bothSaleTypes: "Retail + Bulk",
@@ -212,7 +227,7 @@ const MAVUNO_TRANSLATIONS = {
     saccoHub: "Kituo cha SACCO",
     messages: "Ujumbe",
     heroTitle: "Kutoka shambani<br>hadi kwa mteja wako.",
-    heroDescription: "Ungana moja kwa moja na wanunuzi, pata mazao mapya, linganisha bei na kukuza biashara yako ya kilimo.",
+    heroDescription: "Ungana na wanunuzi, pata mazao mapya, linganisha bei na kukuza biashara yako ya kilimo.",
     exploreMarket: "Angalia soko",
     listProduce: "Weka bidhaa yako",
     sampleListings: "Bidhaa za mfano",
@@ -250,7 +265,7 @@ const MAVUNO_TRANSLATIONS = {
     exploreSmartAssist: "Fungua msaidizi wa kilimo →",
     freshFarm: "MAZAO MAPYA SHAMBANI",
     marketplaceListings: "Bidhaa zilizowekwa sokoni",
-    compareProducts: "Linganisha bei za mfano au pata bidhaa zilizowekwa na wakulima.",
+    compareProducts: "Linganisha bei au pata bidhaa zilizowekwa na wakulima.",
     createListing: "+ Weka bidhaa",
     category: "Aina ya bidhaa",
     county: "Kaunti",
@@ -258,7 +273,7 @@ const MAVUNO_TRANSLATIONS = {
     sortBy: "Panga kwa",
     clearFilters: "Ondoa vichujio",
     noListings: "Hakuna bidhaa zilizopatikana",
-    noListingsHint: "Jaribu aina nyingine ya bidhaa au kaunti, au weka bidhaa mpya.",
+    noListingsHint: "Jaribu aina nyingine au kaunti nyingine, au weka bidhaa mpya.",
     forFarmers: "KWA WAKULIMA NA WAFANYABIASHARA",
     haveProduce: "Una mazao ya kuuza?",
     addProductDetails: "Weka maelezo ya bidhaa, chagua aina ya mauzo na uruhusu wanunuzi wakupate.",
@@ -269,12 +284,12 @@ const MAVUNO_TRANSLATIONS = {
     townArea: "Mji / eneo",
     quantityAvailable: "Kiasi kinachopatikana *",
     priceKsh: "Bei kwa KSh *",
-    saleTypeHint: "Zote inamaanisha wanunuzi wanaweza kuulizia rejareja au kwa wingi.",
+    saleTypeHint: "Zote inaruhusu wanunuzi kuulizia rejareja au kwa wingi.",
     condition: "Hali ya bidhaa",
     sellerName: "Jina lako / jina la shamba *",
     phoneNumber: "Nambari ya simu *",
     productPhoto: "Picha ya bidhaa",
-    photoHelp: "Si lazima. Picha hupunguzwa ukubwa ili kuokoa nafasi ya kivinjari.",
+    photoHelp: "Si lazima. Picha hupunguzwa ukubwa ili kuokoa nafasi.",
     description: "Maelezo",
     cancel: "Ghairi",
     publishListing: "Weka bidhaa sokoni",
@@ -284,10 +299,17 @@ const MAVUNO_TRANSLATIONS = {
     demoCheckout: "Endelea na malipo ya mfano",
     footerDescription: "Kuunganisha wakulima, wanunuzi na fursa za kilimo nchini Kenya.",
     demoNotice: "Mradi wa mfano • Bidhaa na ujumbe huhifadhiwa kwenye kivinjari hiki.",
-    addToCart: "Ongeza kikapuni",
+    noMessages: "Bado hakuna ujumbe",
+    send: "Tuma",
+    writeMessage: "Andika ujumbe...",
+    chooseConversation: "Chagua mazungumzo",
+    yourConversations: "Mazungumzo yako",
+    browseProducts: "Angalia bidhaa",
+    backMarketplace: "← Rudi sokoni",
     chatSeller: "Tuma ujumbe kwa muuzaji",
-    deleteListing: "Futa bidhaa",
+    addToCart: "Ongeza kikapuni",
     callSeller: "Piga simu kwa muuzaji",
+    deleteListing: "Futa bidhaa",
     retail: "Rejareja",
     bulk: "Kwa wingi",
     bothSaleTypes: "Rejareja + kwa wingi",
@@ -297,91 +319,138 @@ const MAVUNO_TRANSLATIONS = {
   }
 };
 
-/* Translations for text also used on separate pages. */
-const MAVUNO_PHRASES = [
-  ["Continue with Google", "Endelea na Google", "Endelea na Google"],
+/*
+  Exact text phrases for pages which don't use data-i18n.
+  Message bubbles and user-entered text are deliberately ignored.
+*/
+const MAVUNO_PAGE_PHRASES = [
+  ["← Marketplace", "← Rudi kwa soko", "← Rudi sokoni"],
+  ["← Back to marketplace", "← Rudi kwa soko", "← Rudi sokoni"],
+  ["Good things grow when we connect.", "Biashara hukua tukiconnect.", "Mambo mazuri hukua tunapoungana."],
   ["Welcome back", "Karibu tena", "Karibu tena"],
+  ["Sign in to continue to MavunoBridge.", "Ingia uendelee na MavunoBridge.", "Ingia ili kuendelea na MavunoBridge."],
+  ["Continue with Google", "Endelea na Google", "Endelea na Google"],
+  ["OR", "AMA", "AU"],
   ["Your name", "Jina lako", "Jina lako"],
   ["Email address", "Email yako", "Anwani ya barua pepe"],
+  ["I am joining as", "Najiunga kama", "Ninajiunga kama"],
+  ["Buyer", "Buyer", "Mnunuzi"],
+  ["Farmer / Seller", "Farmer / Seller", "Mkulima / Muuzaji"],
+  ["Both", "Both", "Wote"],
   ["Continue to marketplace", "Endelea kwa soko", "Endelea kwenye soko"],
   ["Continue browsing without signing in", "Endelea kuangalia bila kuingia", "Endelea kuvinjari bila kuingia"],
-  ["Back to marketplace", "Rudi kwa soko", "Rudi sokoni"],
-  ["Generate farm tips", "Pata farm tips", "Pata vidokezo vya kilimo"],
+  ["YOUR FARM. YOUR MARKET.", "SHAMBA YAKO. SOKO YAKO.", "SHAMBA LAKO. SOKO LAKO."],
+  ["MADE FOR KENYAN AGRICULTURE", "MADE FOR KENYAN AGRICULTURE", "IMEUNDWA KWA KILIMO CHA KENYA"],
+  ["YOUR DIGITAL FARMING COMPANION", "Msaidizi wako wa farming", "Msaidizi wako wa kilimo"],
+  ["Smarter decisions.", "Fanya maamuzi smart.", "Fanya maamuzi bora."],
+  ["Better harvests.", "Harvest nzuri zaidi.", "Mavuno bora zaidi."],
   ["Tell us about your farm", "Tuambie kuhusu shamba lako", "Tuambie kuhusu shamba lako"],
   ["Farm knowledge corner", "Farm tips", "Kona ya maarifa ya kilimo"],
-  ["Your conversations", "Chats zako", "Mazungumzo yako"],
-  ["Choose a conversation", "Chagua chat", "Chagua mazungumzo"],
-  ["Select a sample contact to begin.", "Chagua contact ya mfano uanze.", "Chagua mtu wa mfano kuanza."],
-  ["Write a message...", "Andika message...", "Andika ujumbe..."],
-  ["Send", "Tuma", "Tuma"],
+  ["Soil health", "Soil health", "Afya ya udongo"],
+  ["Pest scouting", "Ku-check pests", "Kuchunguza wadudu"],
+  ["Water management", "Water management", "Usimamizi wa maji"],
+  ["Generate farm tips →", "Pata farm tips →", "Pata vidokezo vya kilimo →"],
+  ["GROW TOGETHER", "Tukue pamoja", "Tukue pamoja"],
+  ["Discover opportunities", "Pata opportunities", "Gundua fursa"],
+  ["Find your next opportunity", "Pata opportunity yako next", "Pata fursa yako inayofuata"],
   ["Save interest", "Save interest", "Hifadhi nia"],
   ["Saved interests", "Opportunities ulizohifadhi", "Fursa ulizohifadhi"],
-  ["Add to cart", "Weka kwa cart", "Ongeza kikapuni"],
-  ["Chat seller", "Chat na seller", "Tuma ujumbe kwa muuzaji"],
-  ["Delete listing", "Futa listing", "Futa bidhaa"],
-  ["Call seller", "Piga seller", "Piga simu kwa muuzaji"],
-  ["Fresh farm eggs", "Mayai fresh ya shamba", "Mayai mapya ya shambani"],
-  ["Livestock Products", "Bidhaa za mifugo", "Bidhaa za mifugo"],
-  ["Live livestock", "Mifugo hai", "Mifugo hai"]
+  ["STAY CONNECTED", "Tuendelee kuconnect", "Endelea kuwasiliana"],
+  ["Your conversations", "Chats zako", "Mazungumzo yako"],
+  ["Choose a conversation", "Chagua chat", "Chagua mazungumzo"],
+  ["Select a sample contact to begin.", "Chagua contact ya demo uanze.", "Chagua mtu wa mfano kuanza."],
+  ["Browse products", "Angalia bidhaa", "Angalia bidhaa"],
+  ["Send", "Tuma", "Tuma"],
+  ["Write a message...", "Andika message...", "Andika ujumbe..."],
+  ["Demo contact is typing...", "Demo contact anaandika...", "Mtu wa mfano anaandika..."],
+  ["Demo seller", "Demo seller", "Muuzaji wa mfano"],
+  ["Automatic demo reply", "Jibu la demo", "Jibu la mfano"],
+  ["Demo conversations with buyers and farmers.", "Chats za demo na buyers na farmers.", "Mazungumzo ya mfano na wanunuzi na wakulima."],
+  ["DEMO MODE · NOT A LIVE WEATHER FORECAST", "DEMO MODE · SI LIVE WEATHER", "MFANO TU · SI UTabiri HALISI WA HALI YA HEWA"]
 ];
 
-function getSavedLanguage() {
+function getLanguage() {
   try {
-    const stored = localStorage.getItem(MAVUNO_LANGUAGE_KEY);
-    return ["en", "mix", "sw"].includes(stored) ? stored : "mix";
+    const saved = localStorage.getItem(MAVUNO_LANGUAGE_KEY);
+    return ["en", "mix", "sw"].includes(saved) ? saved : "mix";
   } catch (_) {
     return "mix";
   }
 }
 
-let currentLanguage = getSavedLanguage();
+let currentLanguage = getLanguage();
+
+function phraseIndex() {
+  const index = new Map();
+
+  MAVUNO_PAGE_PHRASES.forEach(([en, mix, sw]) => {
+    const entry = { en, mix, sw };
+    [en, mix, sw].forEach((phrase) => {
+      if (!index.has(phrase)) index.set(phrase, entry);
+    });
+  });
+
+  return index;
+}
 
 function translateStaticElements(language) {
   const dictionary = MAVUNO_TRANSLATIONS[language] || MAVUNO_TRANSLATIONS.mix;
 
   document.querySelectorAll("[data-i18n]").forEach((element) => {
     const key = element.dataset.i18n;
-    if (dictionary[key] !== undefined) {
+
+    if (
+      dictionary[key] !== undefined &&
+      element.innerHTML !== dictionary[key]
+    ) {
       element.innerHTML = dictionary[key];
     }
   });
 
   document.querySelectorAll("[data-i18n-placeholder]").forEach((element) => {
     const key = element.dataset.i18nPlaceholder;
-    if (dictionary[key] !== undefined) {
+
+    if (
+      dictionary[key] !== undefined &&
+      element.placeholder !== dictionary[key]
+    ) {
       element.placeholder = dictionary[key];
     }
   });
 }
 
-function translateTextNodes(language, root = document.body) {
-  const phraseIndex = new Map();
+function translateTextNodes(language) {
+  const index = phraseIndex();
+  const walker = document.createTreeWalker(
+    document.body,
+    NodeFilter.SHOW_TEXT
+  );
 
-  MAVUNO_PHRASES.forEach(([en, mix, sw]) => {
-    phraseIndex.set(en, { en, mix, sw });
-    phraseIndex.set(mix, { en, mix, sw });
-    phraseIndex.set(sw, { en, mix, sw });
-  });
-
-  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
   const nodes = [];
 
   while (walker.nextNode()) nodes.push(walker.currentNode);
 
   nodes.forEach((node) => {
     const parent = node.parentElement;
-
     if (!parent) return;
-    if (parent.closest("script, style, option, textarea, input, select, [data-i18n]")) return;
+
+    if (parent.closest(
+      "script, style, textarea, input, [contenteditable='true'], .message-bubble, [data-i18n]"
+    )) {
+      return;
+    }
 
     const original = node.nodeValue;
     const trimmed = original.trim();
-    const phrase = phraseIndex.get(trimmed);
+    const translation = index.get(trimmed);
 
-    if (!phrase) return;
+    if (!translation) return;
 
-    const replacement = phrase[language] || phrase.en;
-    node.nodeValue = original.replace(trimmed, replacement);
+    const next = translation[language] || translation.en;
+
+    if (next !== trimmed) {
+      node.nodeValue = original.replace(trimmed, next);
+    }
   });
 }
 
@@ -415,11 +484,13 @@ window.MavunoBridgeLanguage = {
   get current() {
     return currentLanguage;
   },
+
   t(key) {
     return (MAVUNO_TRANSLATIONS[currentLanguage] || MAVUNO_TRANSLATIONS.mix)[key]
       || MAVUNO_TRANSLATIONS.en[key]
       || key;
   },
+
   set: applyLanguage
 };
 
@@ -435,24 +506,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   applyLanguage(currentLanguage);
 
-  /*
-    Re-translate known text phrases inserted after rendering,
-    such as dynamically-created product cards.
-  */
-  const observer = new MutationObserver((mutations) => {
-    let hasNewContent = false;
-
-    for (const mutation of mutations) {
-      if (mutation.type === "childList" && mutation.addedNodes.length) {
-        hasNewContent = true;
-        break;
-      }
-    }
-
-    if (hasNewContent) {
-      translateStaticElements(currentLanguage);
-      translateTextNodes(currentLanguage);
-    }
+  // Translate interface labels that are created after page load.
+  const observer = new MutationObserver(() => {
+    translateStaticElements(currentLanguage);
+    translateTextNodes(currentLanguage);
   });
 
   observer.observe(document.body, {
