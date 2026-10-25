@@ -7,10 +7,12 @@
   <meta name="theme-color" content="#183522">
   <meta name="description" content="MavunoBridge connects Kenyan farmers, buyers and agricultural opportunities.">
   <title>MavunoBridge | Kenya's Farm Marketplace</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="app.js" defer></script>
-  <script src="language.js" defer></script>
+
+  <link rel="stylesheet" href="style.css?v=20261025-4">
+  <script src="app.js?v=20261025-4" defer></script>
+  <script src="language.js?v=20261025-4" defer></script>
 </head>
+
 <body>
 <header class="topbar" id="top">
   <a class="brand" href="index.html" aria-label="MavunoBridge home">
@@ -19,7 +21,10 @@
   </a>
 
   <form class="searchbar" id="searchForm" role="search">
-    <input id="searchInput" type="search" placeholder="Search maize, eggs, meat, avocados..." data-i18n-placeholder="searchPlaceholder" aria-label="Search products">
+    <input id="searchInput" type="search"
+      placeholder="Search maize, eggs, meat, avocados..."
+      data-i18n-placeholder="searchPlaceholder"
+      aria-label="Search products">
     <button type="submit" data-i18n="search">Search</button>
   </form>
 
@@ -32,9 +37,16 @@
         <option value="sw">Kiswahili</option>
       </select>
     </label>
+
     <a class="text-link" href="login.html" id="accountLink" data-i18n="signIn">Sign in</a>
-    <button class="cart-button" id="cartButton" type="button"><span data-i18n="cart">Cart</span><span id="cartCount">0</span></button>
-    <button class="menu-toggle" id="menuToggle" type="button" aria-label="Open menu" aria-expanded="false">☰</button>
+
+    <button class="cart-button" id="cartButton" type="button">
+      <span data-i18n="cart">Cart</span>
+      <span id="cartCount">0</span>
+    </button>
+
+    <button class="menu-toggle" id="menuToggle" type="button"
+      aria-label="Open menu" aria-expanded="false">☰</button>
   </div>
 </header>
 
@@ -51,26 +63,59 @@
   <section class="hero">
     <div class="hero-content">
       <p class="eyebrow">MADE FOR KENYAN AGRICULTURE</p>
+
       <h1 data-i18n="heroTitle">From your farm<br>to your next customer.</h1>
-      <p data-i18n="heroDescription">Connect directly with buyers, discover fresh produce, compare prices and grow your farming business — yote in one place.</p>
+
+      <p data-i18n="heroDescription">
+        Connect directly with buyers, discover fresh produce, compare prices
+        and grow your farming business — yote in one place.
+      </p>
+
       <div class="hero-buttons">
-        <a class="button button-light" href="#marketplace" data-i18n="exploreMarket">Explore marketplace</a>
-        <button class="button button-outline" id="heroSellButton" type="button" data-i18n="listProduce">List your produce</button>
+        <a class="button button-light" href="#marketplace" data-i18n="exploreMarket">
+          Explore marketplace
+        </a>
+        <button class="button button-outline" id="heroSellButton" type="button" data-i18n="listProduce">
+          List your produce
+        </button>
       </div>
+
       <div class="hero-stats">
-        <div><strong id="listingTotal">19+</strong><span data-i18n="sampleListings">Sample listings</span></div>
-        <div><strong>47</strong><span data-i18n="countiesKenya">Counties in Kenya</span></div>
-        <div><strong data-i18n="direct">Direct</strong><span data-i18n="farmerConnections">Farmer connections</span></div>
+        <div>
+          <strong id="listingTotal">19+</strong>
+          <span data-i18n="sampleListings">Sample listings</span>
+        </div>
+        <div>
+          <strong>47</strong>
+          <span data-i18n="countiesKenya">Counties in Kenya</span>
+        </div>
+        <div>
+          <strong data-i18n="direct">Direct</strong>
+          <span data-i18n="farmerConnections">Farmer connections</span>
+        </div>
       </div>
     </div>
+
     <div class="hero-photo" role="img" aria-label="Green farmland"></div>
   </section>
 
   <section class="benefit-strip" aria-label="Marketplace benefits">
-    <div><strong data-i18n="directConnections">Direct connections</strong><span data-i18n="connectFarmersBuyers">Connect buyers and farmers</span></div>
-    <div><strong data-i18n="priceAwareness">Price awareness</strong><span data-i18n="compareListedPrices">Compare listed prices</span></div>
-    <div><strong data-i18n="localFirst">Local first</strong><span data-i18n="kenyanCounties">Kenyan counties and produce</span></div>
-    <div><strong data-i18n="smartFarming">Smart farming</strong><span data-i18n="toolsLearning">Tools and learning support</span></div>
+    <div>
+      <strong data-i18n="directConnections">Direct connections</strong>
+      <span data-i18n="connectFarmersBuyers">Connect buyers and farmers</span>
+    </div>
+    <div>
+      <strong data-i18n="priceAwareness">Price awareness</strong>
+      <span data-i18n="compareListedPrices">Compare listed prices</span>
+    </div>
+    <div>
+      <strong data-i18n="localFirst">Local first</strong>
+      <span data-i18n="kenyanCounties">Kenyan counties and produce</span>
+    </div>
+    <div>
+      <strong data-i18n="smartFarming">Smart farming</strong>
+      <span data-i18n="toolsLearning">Tools and learning support</span>
+    </div>
   </section>
 
   <section class="section" id="categories">
@@ -78,26 +123,86 @@
       <div>
         <p class="eyebrow" data-i18n="exploreMarketEyebrow">EXPLORE THE MARKET</p>
         <h2 data-i18n="shopCategory">Shop by category</h2>
-        <p class="muted" data-i18n="chooseCategory">Chagua category uone bidhaa farmers wameweka.</p>
+        <p class="muted" data-i18n="chooseCategory">
+          Chagua category uone bidhaa farmers wameweka.
+        </p>
       </div>
-      <button class="plain-button" id="showAllButton" type="button" data-i18n="viewAllProducts">View all products →</button>
+
+      <button class="plain-button" id="showAllButton" type="button" data-i18n="viewAllProducts">
+        View all products →
+      </button>
     </div>
 
     <div class="category-grid" id="categoryGrid">
-      <button class="category-card" data-category="Fruits" type="button"><span class="category-photo photo-fruits" data-photo="fruits"></span><span class="category-label" data-i18n="fruits">Fruits</span></button>
-      <button class="category-card" data-category="Vegetables" type="button"><span class="category-photo photo-vegetables" data-photo="vegetables"></span><span class="category-label" data-i18n="vegetables">Vegetables</span></button>
-      <button class="category-card" data-category="Nuts" type="button"><span class="category-photo photo-nuts" data-photo="nuts"></span><span class="category-label" data-i18n="nuts">Nuts</span></button>
-      <button class="category-card" data-category="Starchy Foods" type="button"><span class="category-photo photo-starchy" data-photo="starchy"></span><span class="category-label" data-i18n="starchyFoods">Starchy foods</span></button>
-      <button class="category-card" data-category="Grains" type="button"><span class="category-photo photo-grains" data-photo="grains"></span><span class="category-label" data-i18n="grains">Grains</span></button>
-      <button class="category-card" data-category="Cereals" type="button"><span class="category-photo photo-cereals" data-photo="cereals"></span><span class="category-label" data-i18n="cereals">Cereals</span></button>
-      <button class="category-card" data-category="Legumes" type="button"><span class="category-photo photo-legumes" data-photo="legumes"></span><span class="category-label" data-i18n="legumes">Legumes</span></button>
-      <button class="category-card" data-category="Spices" type="button"><span class="category-photo photo-spices" data-photo="spices"></span><span class="category-label" data-i18n="spices">Spices</span></button>
-      <button class="category-card" data-category="Herbal Products" type="button"><span class="category-photo photo-herbs" data-photo="herbs"></span><span class="category-label" data-i18n="herbalProducts">Herbal products</span></button>
-      <button class="category-card" data-category="Livestock" type="button"><span class="category-photo photo-livestock" data-photo="livestock"></span><span class="category-label" data-i18n="livestock">Live livestock</span></button>
-      <button class="category-card" data-category="Livestock Products" type="button"><span class="category-photo photo-livestock-products" data-photo="livestockProducts"></span><span class="category-label" data-i18n="livestockProducts">Livestock products</span></button>
-      <button class="category-card" data-category="Farm Inputs" type="button"><span class="category-photo photo-inputs" data-photo="inputs"></span><span class="category-label" data-i18n="farmInputs">Farm inputs</span></button>
-      <button class="category-card" data-category="Tools & Equipment" type="button"><span class="category-photo photo-tools" data-photo="tools"></span><span class="category-label" data-i18n="toolsEquipment">Tools &amp; equipment</span></button>
-      <button class="category-card" data-category="Farmer Services" type="button"><span class="category-photo photo-services" data-photo="services"></span><span class="category-label" data-i18n="farmerServices">Farmer services</span></button>
+      <button class="category-card" data-category="Fruits" type="button">
+        <span class="category-photo photo-fruits" data-photo="fruits"></span>
+        <span class="category-label" data-i18n="fruits">Fruits</span>
+      </button>
+
+      <button class="category-card" data-category="Vegetables" type="button">
+        <span class="category-photo photo-vegetables" data-photo="vegetables"></span>
+        <span class="category-label" data-i18n="vegetables">Vegetables</span>
+      </button>
+
+      <button class="category-card" data-category="Nuts" type="button">
+        <span class="category-photo photo-nuts" data-photo="nuts"></span>
+        <span class="category-label" data-i18n="nuts">Nuts</span>
+      </button>
+
+      <button class="category-card" data-category="Starchy Foods" type="button">
+        <span class="category-photo photo-starchy" data-photo="starchy"></span>
+        <span class="category-label" data-i18n="starchyFoods">Starchy foods</span>
+      </button>
+
+      <button class="category-card" data-category="Grains" type="button">
+        <span class="category-photo photo-grains" data-photo="grains"></span>
+        <span class="category-label" data-i18n="grains">Grains</span>
+      </button>
+
+      <button class="category-card" data-category="Cereals" type="button">
+        <span class="category-photo photo-cereals" data-photo="cereals"></span>
+        <span class="category-label" data-i18n="cereals">Cereals</span>
+      </button>
+
+      <button class="category-card" data-category="Legumes" type="button">
+        <span class="category-photo photo-legumes" data-photo="legumes"></span>
+        <span class="category-label" data-i18n="legumes">Legumes</span>
+      </button>
+
+      <button class="category-card" data-category="Spices" type="button">
+        <span class="category-photo photo-spices" data-photo="spices"></span>
+        <span class="category-label" data-i18n="spices">Spices</span>
+      </button>
+
+      <button class="category-card" data-category="Herbal Products" type="button">
+        <span class="category-photo photo-herbs" data-photo="herbs"></span>
+        <span class="category-label" data-i18n="herbalProducts">Herbal products</span>
+      </button>
+
+      <button class="category-card" data-category="Livestock" type="button">
+        <span class="category-photo photo-livestock" data-photo="livestock"></span>
+        <span class="category-label" data-i18n="livestock">Live livestock</span>
+      </button>
+
+      <button class="category-card" data-category="Livestock Products" type="button">
+        <span class="category-photo photo-livestock-products" data-photo="livestockProducts"></span>
+        <span class="category-label" data-i18n="livestockProducts">Livestock products</span>
+      </button>
+
+      <button class="category-card" data-category="Farm Inputs" type="button">
+        <span class="category-photo photo-inputs" data-photo="inputs"></span>
+        <span class="category-label" data-i18n="farmInputs">Farm inputs</span>
+      </button>
+
+      <button class="category-card" data-category="Tools & Equipment" type="button">
+        <span class="category-photo photo-tools" data-photo="tools"></span>
+        <span class="category-label" data-i18n="toolsEquipment">Tools &amp; equipment</span>
+      </button>
+
+      <button class="category-card" data-category="Farmer Services" type="button">
+        <span class="category-photo photo-services" data-photo="services"></span>
+        <span class="category-label" data-i18n="farmerServices">Farmer services</span>
+      </button>
     </div>
   </section>
 
@@ -105,9 +210,13 @@
     <div>
       <p class="eyebrow">YOUR FARMING SIDEKICK</p>
       <h2 data-i18n="plantNext">Not sure what to plant next?</h2>
-      <p data-i18n="smartAssistDescription">Explore Smart Assist for crop-planning ideas, pest guidance and farm management tips.</p>
+      <p data-i18n="smartAssistDescription">
+        Explore Smart Assist for crop-planning ideas, pest guidance and farm management tips.
+      </p>
     </div>
-    <a class="button button-green" href="smart-assist.html" data-i18n="exploreSmartAssist">Explore Smart Assist →</a>
+    <a class="button button-green" href="smart-assist.html" data-i18n="exploreSmartAssist">
+      Explore Smart Assist →
+    </a>
   </section>
 
   <section class="section marketplace-section" id="marketplace">
@@ -115,34 +224,81 @@
       <div>
         <p class="eyebrow" data-i18n="freshFarm">FRESH FROM THE FARM</p>
         <h2 id="marketTitle" data-i18n="marketplaceListings">Marketplace listings</h2>
-        <p class="muted" data-i18n="compareProducts">Compare sample prices or find products listed by farmers.</p>
+        <p class="muted" data-i18n="compareProducts">
+          Compare sample prices or find products listed by farmers.
+        </p>
       </div>
-      <button class="button button-green" id="sellButton" type="button" data-i18n="createListing">+ Create listing</button>
+      <button class="button button-green" id="sellButton" type="button" data-i18n="createListing">
+        + Create listing
+      </button>
     </div>
 
     <div class="filters">
-      <label><span data-i18n="category">Category</span>
+      <label>
+        <span data-i18n="category">Category</span>
         <select id="categoryFilter">
           <option value="All">All categories</option>
-          <option>Fruits</option><option>Vegetables</option><option>Nuts</option><option>Starchy Foods</option><option>Grains</option><option>Cereals</option><option>Legumes</option><option>Spices</option><option>Herbal Products</option><option>Livestock</option><option>Livestock Products</option><option>Farm Inputs</option><option>Tools &amp; Equipment</option><option>Farmer Services</option>
+          <option>Fruits</option>
+          <option>Vegetables</option>
+          <option>Nuts</option>
+          <option>Starchy Foods</option>
+          <option>Grains</option>
+          <option>Cereals</option>
+          <option>Legumes</option>
+          <option>Spices</option>
+          <option>Herbal Products</option>
+          <option>Livestock</option>
+          <option>Livestock Products</option>
+          <option>Farm Inputs</option>
+          <option>Tools &amp; Equipment</option>
+          <option>Farmer Services</option>
         </select>
       </label>
-      <label><span data-i18n="county">County</span><select id="locationFilter"><option value="All">All counties</option></select></label>
-      <label><span data-i18n="saleType">Sale type</span>
-        <select id="saleFilter"><option value="All">Retail and bulk</option><option value="Retail">Retail</option><option value="Bulk">Bulk</option></select>
+
+      <label>
+        <span data-i18n="county">County</span>
+        <select id="locationFilter">
+          <option value="All">All counties</option>
+        </select>
       </label>
-      <label><span data-i18n="sortBy">Sort by</span>
-        <select id="sortFilter"><option value="recommended">Recommended</option><option value="price-low">Price: low to high</option><option value="price-high">Price: high to low</option><option value="newest">Newest first</option></select>
+
+      <label>
+        <span data-i18n="saleType">Sale type</span>
+        <select id="saleFilter">
+          <option value="All">Retail and bulk</option>
+          <option value="Retail">Retail</option>
+          <option value="Bulk">Bulk</option>
+        </select>
+      </label>
+
+      <label>
+        <span data-i18n="sortBy">Sort by</span>
+        <select id="sortFilter">
+          <option value="recommended">Recommended</option>
+          <option value="price-low">Price: low to high</option>
+          <option value="price-high">Price: high to low</option>
+          <option value="newest">Newest first</option>
+        </select>
       </label>
     </div>
 
-    <div class="active-filter-row"><span id="resultCount" aria-live="polite">Loading listings...</span><button class="plain-button" id="clearFiltersButton" type="button" data-i18n="clearFilters">Clear filters</button></div>
+    <div class="active-filter-row">
+      <span id="resultCount" aria-live="polite">Loading listings...</span>
+      <button class="plain-button" id="clearFiltersButton" type="button" data-i18n="clearFilters">
+        Clear filters
+      </button>
+    </div>
+
     <div class="product-grid" id="listingGrid" aria-live="polite"></div>
 
     <div class="empty-state hidden" id="emptyState">
       <h3 data-i18n="noListings">No listings found</h3>
-      <p data-i18n="noListingsHint">Try another category or county, or create a new listing.</p>
-      <button class="button button-green" id="emptySellButton" type="button" data-i18n="createListing">Create listing</button>
+      <p data-i18n="noListingsHint">
+        Try another category or county, or create a new listing.
+      </p>
+      <button class="button button-green" id="emptySellButton" type="button" data-i18n="createListing">
+        Create listing
+      </button>
     </div>
   </section>
 
@@ -150,51 +306,190 @@
     <div>
       <p class="eyebrow" data-i18n="forFarmers">FOR FARMERS &amp; SELLERS</p>
       <h2 data-i18n="haveProduce">Have produce to sell?</h2>
-      <p class="muted" data-i18n="addProductDetails">Add your product details, choose your sale type and let buyers contact you.</p>
+      <p class="muted" data-i18n="addProductDetails">
+        Add your product details, choose your sale type and let buyers contact you.
+      </p>
     </div>
-    <button class="button button-green" id="sellSectionButton" type="button" data-i18n="startListing">Start a listing →</button>
+    <button class="button button-green" id="sellSectionButton" type="button" data-i18n="startListing">
+      Start a listing →
+    </button>
   </section>
 </main>
 
 <footer class="footer">
-  <a class="brand brand-footer" href="index.html"><span class="brand-mark">M</span><span>Mavuno<span class="brand-light">Bridge</span><small>FARMING. CONNECTED.</small></span></a>
-  <p data-i18n="footerDescription">Connecting Kenyan farmers, buyers and agricultural opportunities.</p>
-  <div class="footer-links"><a href="smart-assist.html" data-i18n="smartAssist">Smart Assist</a><a href="sacco.html" data-i18n="saccoHub">SACCO Hub</a><a href="messages.html" data-i18n="messages">Messages</a><a href="login.html" data-i18n="signIn">Sign in</a></div>
-  <small data-i18n="demoNotice">Demo project • Listings and demo messages are stored in this browser.</small>
+  <a class="brand brand-footer" href="index.html">
+    <span class="brand-mark">M</span>
+    <span>Mavuno<span class="brand-light">Bridge</span><small>FARMING. CONNECTED.</small></span>
+  </a>
+  <p data-i18n="footerDescription">
+    Connecting Kenyan farmers, buyers and agricultural opportunities.
+  </p>
+  <div class="footer-links">
+    <a href="smart-assist.html" data-i18n="smartAssist">Smart Assist</a>
+    <a href="sacco.html" data-i18n="saccoHub">SACCO Hub</a>
+    <a href="messages.html" data-i18n="messages">Messages</a>
+    <a href="login.html" data-i18n="signIn">Sign in</a>
+  </div>
+  <small data-i18n="demoNotice">
+    Demo project • Listings and demo messages are stored in this browser.
+  </small>
 </footer>
 
 <!-- CREATE LISTING DIALOG -->
-<div class="modal-backdrop hidden" id="listingModal" role="dialog" aria-modal="true" aria-labelledby="listingModalTitle">
+<div class="modal-backdrop hidden" id="listingModal" role="dialog"
+  aria-modal="true" aria-labelledby="listingModalTitle">
   <div class="modal modal-wide">
-    <div class="modal-heading"><div><p class="eyebrow">SELL ON MAVUNOBRIDGE</p><h2 id="listingModalTitle" data-i18n="createListingTitle">Create a listing</h2></div><button class="close-button" type="button" data-close="listingModal" aria-label="Close">×</button></div>
-    <p class="muted" data-i18n="listingHelp">Complete the details. Select Both if you sell to retail and bulk buyers.</p>
+    <div class="modal-heading">
+      <div>
+        <p class="eyebrow">SELL ON MAVUNOBRIDGE</p>
+        <h2 id="listingModalTitle" data-i18n="createListingTitle">Create a listing</h2>
+      </div>
+      <button class="close-button" type="button" data-close="listingModal" aria-label="Close">×</button>
+    </div>
+
+    <p class="muted" data-i18n="listingHelp">
+      Complete the details. Select Both if you sell to retail and bulk buyers.
+    </p>
+
     <form id="listingForm">
       <div class="form-grid">
-        <label><span data-i18n="productName">Product or service name *</span><input id="productName" name="productName" required maxlength="80" placeholder="e.g. Fresh Hass avocados"></label>
-        <label><span data-i18n="category">Category *</span><select id="productCategory" name="productCategory" required><option value="">Choose a category</option><option>Fruits</option><option>Vegetables</option><option>Nuts</option><option>Starchy Foods</option><option>Grains</option><option>Cereals</option><option>Legumes</option><option>Spices</option><option>Herbal Products</option><option>Livestock</option><option>Livestock Products</option><option>Farm Inputs</option><option>Tools &amp; Equipment</option><option>Farmer Services</option></select></label>
-        <label><span data-i18n="county">County *</span><select id="productCounty" name="productCounty" required><option value="">Select county</option></select></label>
-        <label><span data-i18n="townArea">Town / area</span><input id="productTown" name="productTown" maxlength="80" placeholder="e.g. Limuru"></label>
-        <label><span data-i18n="quantityAvailable">Quantity available *</span><input id="productQuantity" name="productQuantity" required maxlength="80" placeholder="e.g. 200 kg"></label>
-        <label><span data-i18n="priceKsh">Price in KSh *</span><input id="productPrice" name="productPrice" type="number" min="0" step="0.01" required placeholder="e.g. 80"></label>
-        <label><span data-i18n="saleType">Sale type *</span><select id="productSaleType" name="productSaleType" required><option value="Retail">Retail only</option><option value="Bulk">Bulk only</option><option value="Both">Both retail and bulk</option></select><small class="field-note" data-i18n="saleTypeHint">Both means buyers can enquire about retail or bulk quantities.</small></label>
-        <label><span data-i18n="condition">Condition</span><select id="productCondition" name="productCondition"><option>Fresh / good condition</option><option>Dry</option><option>Chilled / frozen</option><option>Processed</option><option>Used</option><option>Service</option><option>Other</option></select></label>
-        <label><span data-i18n="sellerName">Your name / farm name *</span><input id="sellerName" name="sellerName" required maxlength="80" placeholder="Seller or farm name"></label>
-        <label><span data-i18n="phoneNumber">Phone number *</span><input id="sellerPhone" name="sellerPhone" type="tel" required maxlength="30" placeholder="e.g. 0712345678"></label>
-        <label class="full-width"><span data-i18n="productPhoto">Product photo</span><input id="productImage" name="productImage" type="file" accept="image/*"><small class="field-note" data-i18n="photoHelp">Optional. Photos are resized to save browser storage.</small></label>
-        <label class="full-width"><span data-i18n="description">Description</span><textarea id="productDescription" name="productDescription" rows="3" maxlength="500" placeholder="Add product details, harvest date, storage or delivery information."></textarea></label>
+        <label>
+          <span data-i18n="productName">Product or service name *</span>
+          <input id="productName" name="productName" required maxlength="80" placeholder="e.g. Fresh Hass avocados">
+        </label>
+
+        <label>
+          <span data-i18n="category">Category *</span>
+          <select id="productCategory" name="productCategory" required>
+            <option value="">Choose a category</option>
+            <option>Fruits</option>
+            <option>Vegetables</option>
+            <option>Nuts</option>
+            <option>Starchy Foods</option>
+            <option>Grains</option>
+            <option>Cereals</option>
+            <option>Legumes</option>
+            <option>Spices</option>
+            <option>Herbal Products</option>
+            <option>Livestock</option>
+            <option>Livestock Products</option>
+            <option>Farm Inputs</option>
+            <option>Tools &amp; Equipment</option>
+            <option>Farmer Services</option>
+          </select>
+        </label>
+
+        <label>
+          <span data-i18n="county">County *</span>
+          <select id="productCounty" name="productCounty" required>
+            <option value="">Select county</option>
+          </select>
+        </label>
+
+        <label>
+          <span data-i18n="townArea">Town / area</span>
+          <input id="productTown" name="productTown" maxlength="80" placeholder="e.g. Limuru">
+        </label>
+
+        <label>
+          <span data-i18n="quantityAvailable">Quantity available *</span>
+          <input id="productQuantity" name="productQuantity" required maxlength="80" placeholder="e.g. 200 kg">
+        </label>
+
+        <label>
+          <span data-i18n="priceKsh">Price in KSh *</span>
+          <input id="productPrice" name="productPrice" type="number" min="0" step="0.01" required placeholder="e.g. 80">
+        </label>
+
+        <label>
+          <span data-i18n="saleType">Sale type *</span>
+          <select id="productSaleType" name="productSaleType" required>
+            <option value="Retail">Retail only</option>
+            <option value="Bulk">Bulk only</option>
+            <option value="Both">Both retail and bulk</option>
+          </select>
+          <small class="field-note" data-i18n="saleTypeHint">
+            Both means buyers can enquire about retail or bulk quantities.
+          </small>
+        </label>
+
+        <label>
+          <span data-i18n="condition">Condition</span>
+          <select id="productCondition" name="productCondition">
+            <option>Fresh / good condition</option>
+            <option>Dry</option>
+            <option>Chilled / frozen</option>
+            <option>Processed</option>
+            <option>Used</option>
+            <option>Service</option>
+            <option>Other</option>
+          </select>
+        </label>
+
+        <label>
+          <span data-i18n="sellerName">Your name / farm name *</span>
+          <input id="sellerName" name="sellerName" required maxlength="80" placeholder="Seller or farm name">
+        </label>
+
+        <label>
+          <span data-i18n="phoneNumber">Phone number *</span>
+          <input id="sellerPhone" name="sellerPhone" type="tel" required maxlength="30" placeholder="e.g. 0712345678">
+        </label>
+
+        <label class="full-width">
+          <span data-i18n="productPhoto">Product photo</span>
+          <input id="productImage" name="productImage" type="file" accept="image/*">
+          <small class="field-note" data-i18n="photoHelp">
+            Optional. Photos are resized to save browser storage.
+          </small>
+        </label>
+
+        <label class="full-width">
+          <span data-i18n="description">Description</span>
+          <textarea id="productDescription" name="productDescription" rows="3" maxlength="500" placeholder="Add product details, harvest date, storage or delivery information."></textarea>
+        </label>
       </div>
+
       <p class="form-error hidden" id="listingError" role="alert"></p>
-      <div class="modal-actions"><button class="button button-muted" type="button" data-close="listingModal" data-i18n="cancel">Cancel</button><button class="button button-green" id="submitListingButton" type="submit" data-i18n="publishListing">Publish listing</button></div>
+
+      <div class="modal-actions">
+        <button class="button button-muted" type="button" data-close="listingModal" data-i18n="cancel">
+          Cancel
+        </button>
+        <button class="button button-green" id="submitListingButton" type="submit" data-i18n="publishListing">
+          Publish listing
+        </button>
+      </div>
     </form>
   </div>
 </div>
 
 <!-- CART DIALOG -->
-<div class="modal-backdrop hidden" id="cartModal" role="dialog" aria-modal="true" aria-labelledby="cartTitle">
-  <div class="modal cart-modal"><div class="modal-heading"><h2 id="cartTitle" data-i18n="yourCart">Your cart</h2><button class="close-button" data-close="cartModal" type="button" aria-label="Close">×</button></div><p class="muted" data-i18n="demoCart">Demo cart only. No payment is taken.</p><div id="cartItems"></div><div class="cart-total"><span data-i18n="estimatedTotal">Estimated total</span><strong id="cartTotal">KSh 0</strong></div><button class="button button-green full-button" id="checkoutButton" type="button" data-i18n="demoCheckout">Continue to demo checkout</button></div>
+<div class="modal-backdrop hidden" id="cartModal" role="dialog"
+  aria-modal="true" aria-labelledby="cartTitle">
+  <div class="modal cart-modal">
+    <div class="modal-heading">
+      <h2 id="cartTitle" data-i18n="yourCart">Your cart</h2>
+      <button class="close-button" data-close="cartModal" type="button" aria-label="Close">×</button>
+    </div>
+    <p class="muted" data-i18n="demoCart">Demo cart only. No payment is taken.</p>
+    <div id="cartItems"></div>
+    <div class="cart-total">
+      <span data-i18n="estimatedTotal">Estimated total</span>
+      <strong id="cartTotal">KSh 0</strong>
+    </div>
+    <button class="button button-green full-button" id="checkoutButton" type="button" data-i18n="demoCheckout">
+      Continue to demo checkout
+    </button>
+  </div>
 </div>
 
 <div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
-<button id="backToTop" class="back-to-top" type="button" aria-label="Back to top" title="Back to top">↑<span>Top</span></button>
+
+<!-- FLOATING BACK TO TOP -->
+<button id="backToTop" class="back-to-top" type="button"
+  aria-label="Back to top" title="Back to top">
+  ↑<span>Top</span>
+</button>
 </body>
 </html>
