@@ -207,7 +207,7 @@
     pane.querySelectorAll("[data-offer]").forEach(b =>
       b.addEventListener("click", () => {
         const state = b.dataset.offer;
-        ChatStore.update?.(c.id, x => { x.messages[b.dataset.idx].offer.state = state; });
+        ChatStore.update(c.id, x => { x.messages[b.dataset.idx].offer.state = state; });
         const amt = c.messages[b.dataset.idx].offer.amount;
         if (state === "accepted")
           ChatStore.setStatus(c.id, "agreed", `Offer of KSh ${ChatStore.money(amt)} accepted. Agree on pickup or delivery to finish.`);
