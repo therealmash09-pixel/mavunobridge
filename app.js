@@ -1,4 +1,3 @@
-
 (() => {
   "use strict";
 
@@ -374,8 +373,17 @@
         <span class="cat-name">${escapeHTML(category)}</span>
       `;
 
-      button.querySelector(".cat-image").style.backgroundImage =
-        `url("${image}")`;
+      const imageEl = button.querySelector(".cat-image");
+      imageEl.style.backgroundImage = `url("${image}")`;
+
+      // If the photo is dead or blocked, show a green tile so the card
+      // still looks right (it keeps working as a filter button either way).
+      const probe = new Image();
+      probe.onerror = () => {
+        imageEl.style.backgroundImage =
+          "linear-gradient(135deg, #edf4e7, #cfe0c3)";
+      };
+      probe.src = image;
 
       grid.appendChild(button);
     });
@@ -538,6 +546,9 @@
 
       image.addEventListener("error", () => setImageFallback(image), { once: true });
       imageWrap.appendChild(image);
+
+      // No photo at all: show the fallback tile straight away.
+      if (!item.image) setImageFallback(image);
 
       const saleBadge = document.createElement("span");
       saleBadge.className = "sale-badge";
@@ -846,15 +857,24 @@
         createdAt: Date.now()
       };
 
-      // Save before claiming that the listing was published.
-      const previousListings = listings.slice();
       listings = [...listings, newListing];
 
+      // Try to save. If storage is full, retry without the photo.
+      // If the browser blocks storage completely, keep the listing for
+      // this visit only and say so, instead of failing with an error.
+      let storageWorked = true;
+      let photoDropped = false;
+
       if (!saveUserListings()) {
-        listings = previousListings;
-        throw new Error(
-          "The listing could not be saved in this browser. Storage may be full. Try removing the photo or choosing a smaller one."
-        );
+        const photo = newListing.image;
+        newListing.image = "";
+
+        if (photo && saveUserListings()) {
+          photoDropped = true;
+        } else {
+          newListing.image = photo;
+          storageWorked = false;
+        }
       }
 
       // Clear search and filters so the new item is immediately visible.
@@ -873,7 +893,14 @@
       form.reset();
       closeModal("listingModal");
 
-      showToast("Listing published! Iko live kwenye marketplace hii browser.");
+      if (!storageWorked) {
+        showToast("Listing added, but your browser blocked saving. It will disappear when you refresh.");
+      } else if (photoDropped) {
+        showToast("Listing published without the photo (it was too big to save).");
+      } else {
+        showToast("Listing published! Iko live kwenye marketplace hii browser.");
+      }
+
       $("#marketplace")?.scrollIntoView({ behavior: "smooth", block: "start" });
     } catch (error) {
       console.error("Listing publish error:", error);
@@ -1192,19 +1219,29 @@
 
   /* STARTUP */
 
+  // Runs one startup step; if it throws, the error is logged and the
+  // remaining steps (especially the buttons) still get set up.
+  function safely(label, step) {
+    try {
+      step();
+    } catch (error) {
+      console.error(`MavunoBridge: "${label}" failed`, error);
+    }
+  }
+
   function init() {
     if (!$("#listingGrid")) {
       console.warn("Marketplace listing grid not found on this page.");
       return;
     }
 
-    loadData();
-    populateSelects();
-    bindEvents();
-    renderCategories();
-    renderListings();
-    updateCartCount();
-    restoreLanguage();
+    safely("load data", loadData);
+    safely("fill dropdowns", populateSelects);
+    safely("connect buttons", bindEvents);
+    safely("draw categories", renderCategories);
+    safely("draw listings", renderListings);
+    safely("cart count", updateCartCount);
+    safely("restore language", restoreLanguage);
 
     const year = $("#currentYear");
     if (year) year.textContent = String(new Date().getFullYear());
