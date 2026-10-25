@@ -4,44 +4,94 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#183522">
   <title>Messages | MavunoBridge</title>
   <link rel="stylesheet" href="style.css">
+  <script src="language.js" defer></script>
   <script src="messages.js" defer></script>
 </head>
 <body>
   <header class="topbar">
-    <a class="brand" href="index.html"><span class="brand-mark">M</span><span>Mavuno<span class="brand-light">Bridge</span><small>FARMING. CONNECTED.</small></span></a>
-    <a href="index.html" class="text-link">← Marketplace</a>
+    <a class="brand" href="index.html">
+      <span class="brand-mark">M</span>
+      <span>Mavuno<span class="brand-light">Bridge</span><small>FARMING. CONNECTED.</small></span>
+    </a>
+
+    <div class="top-actions">
+      <label class="language-picker">
+        <span class="sr-only">Choose language</span>
+        <select id="languageSelect" aria-label="Choose language">
+          <option value="mix">Sheng + Kiswahili</option>
+          <option value="en">English</option>
+          <option value="sw">Kiswahili</option>
+        </select>
+      </label>
+      <a href="index.html" class="text-link">← Marketplace</a>
+    </div>
   </header>
 
   <main class="section message-page">
     <div class="section-heading">
-      <div><p class="eyebrow">STAY CONNECTED</p><h2>Messages</h2><p class="muted">Demo conversations with buyers and farmers.</p></div>
+      <div>
+        <p class="eyebrow">STAY CONNECTED</p>
+        <h2>Messages</h2>
+        <p class="muted">Chat with demo farmers and ask about their products.</p>
+      </div>
       <a class="button button-green" href="index.html#marketplace">Browse products</a>
     </div>
 
-    <div class="messages-notice">Demo mode: messages stay in this browser only. They are not sent to another user or end-to-end encrypted.</div>
+    <div class="messages-notice">
+      Demo mode: sample contacts respond automatically based on your message.
+      Messages stay in this browser and are not delivered to real sellers.
+    </div>
 
     <section class="messenger">
       <aside class="conversation-sidebar">
         <h3>Your conversations</h3>
         <div id="conversationList"></div>
       </aside>
+
       <section class="conversation-panel">
         <div class="conversation-header">
-          <div><h3 id="conversationTitle">Choose a conversation</h3><p id="conversationSubtitle">Select a sample contact to begin.</p></div>
+          <div>
+            <h3 id="conversationTitle">Choose a conversation</h3>
+            <p id="conversationSubtitle">Select a sample contact to begin.</p>
+          </div>
         </div>
-        <div id="messageList" class="message-list">
+
+        <div id="messageList" class="message-list" aria-live="polite">
           <div class="message-empty">Select a conversation on the left.</div>
         </div>
+
+        <div id="typingIndicator" class="typing-indicator hidden" aria-live="polite">
+          Demo contact is typing...
+        </div>
+
         <form id="messageForm" class="message-compose">
-          <textarea id="messageInput" rows="2" maxlength="1000" placeholder="Write a message..." required disabled></textarea>
-          <button class="button button-green" type="submit" disabled id="sendMessageButton">Send</button>
+          <textarea
+            id="messageInput"
+            rows="2"
+            maxlength="1000"
+            placeholder="Write a message..."
+            aria-label="Write your message"
+            required
+            disabled
+          ></textarea>
+          <button
+            class="button button-green"
+            type="submit"
+            disabled
+            id="sendMessageButton"
+          >Send</button>
         </form>
+        <p class="chat-disclaimer">Automatic replies are simulated for this website demo.</p>
       </section>
     </section>
   </main>
 
-  <footer class="footer"><a href="index.html">MavunoBridge Marketplace</a><p>Sample messaging only. Real-time communication requires a connected backend.</p></footer>
+  <footer class="footer">
+    <a href="index.html">MavunoBridge Marketplace</a>
+    <p>Demo chat only. Live buyer-to-farmer messaging requires a shared backend.</p>
+  </footer>
 </body>
 </html>
