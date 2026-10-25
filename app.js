@@ -545,3 +545,967 @@ function initialiseMarketplace() {
 }
 
 document.addEventListener("DOMContentLoaded", initialiseMarketplace);
+
+/* =========================================================
+   MAVUNOBRIDGE — PART 2
+   Selling form, photos, fair-price guide and service rates
+   ========================================================= */
+
+const FAIR_PRICE_GUIDE = {
+  "hass avocados": { min: 90, max: 180, unit: "kg" },
+  "tomatoes": { min: 60, max: 110, unit: "kg" },
+  "red tomatoes": { min: 60, max: 110, unit: "kg" },
+  "dry maize": { min: 45, max: 80, unit: "kg" },
+  "maize": { min: 45, max: 80, unit: "kg" },
+  "irish potatoes": { min: 35, max: 90, unit: "kg" },
+  "dry beans": { min: 100, max: 220, unit: "kg" },
+  "green grams": { min: 100, max: 230, unit: "kg" }
+};
+
+function checkFairPrice(name, price) {
+  const normalised = String(name || "").trim().toLowerCase();
+  const guide = FAIR_PRICE_GUIDE[normalised];
+
+  if (!guide) {
+    return {
+      status: "unknown",
+      message: "No demo guide is available for this product yet."
+    };
+  }
+
+  const amount = Number(price);
+
+  if (!Number.isFinite(amount) || amount <= 0) {
+    return {
+      status: "invalid",
+      message: "Enter a valid price to check it."
+    };
+  }
+
+  if (amount < guide.min) {
+    return {
+      status: "low",
+      message: `Below the illustrative guide of KES ${guide.min}–${guide.max} per ${guide.unit}. Check product quality and quantity.`
+    };
+  }
+
+  if (amount > guide.max) {
+    return {
+      status: "high",
+      message: `Above the illustrative guide of KES ${guide.min}–${guide.max} per ${guide.unit}. Consider checking local prices.`
+    };
+  }
+
+  return {
+    status: "fair",
+    message: "Within the illustrative demo price range. Actual prices may differ by county, season and quality."
+  };
+}
+
+function setupPriceCheck() {
+  const nameInput = $("#productName");
+  const priceInput = $("#productPrice");
+  const result = $("#priceCheck");
+
+  if (!result) return;
+
+  const update = () => {
+    if (!nameInput || !priceInput) return;
+
+    const check = checkFairPrice(nameInput.value, priceInput.value);
+
+    result.textContent = check.message;
+    result.dataset.status = check.status;
+  };
+
+  nameInput?.addEventListener("input", update);
+  priceInput?.addEventListener("input", update);
+}
+
+function setupPhotoPreview() {
+  const input = $("#photoInput");
+  const preview = $("#photoPreview");
+
+  if (!input || !preview) return;
+
+  input.addEventListener("change", () => {
+    const file = input.files?.[0];
+
+    if (!file) {
+      preview.innerHTML = "";
+      return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+      notify("Please choose an image file.");
+      input.value = "";
+      preview.innerHTML = "";
+      return;
+    }
+
+    // Keep demo photos reasonably small for browser storage.
+    if (file.size > 2 * 1024 * 1024) {
+      notify("Choose a photo smaller than 2 MB for this demo.");
+      input.value = "";
+      preview.innerHTML = "";
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      preview.innerHTML = `
+        <img src="${reader.result}"
+          alt="Product photo preview"
+          style="width:140px;height:110px;object-fit:cover;border-radius:12px;">
+      `;
+    };
+
+    reader.readAsDataURL(file);
+  });
+}
+
+function setupListingForm() {
+  const form = $("#listingForm");
+  const modal = $("#listingModal");
+
+  if (!form) return;
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const value = (selector) => form.querySelector(selector)?.value?.trim() || "";
+
+    const name = value('[name="name"], #productName');
+    const category = value('[name="category"], #formCategory');
+    const county = value('[name="county"], #formCounty');
+    const town = value('[name="town"], #formTown');
+    const seller = value('[name="seller"], #sellerName');
+    const phone = value('[name="phone"], #sellerPhone');
+    const price = Number(value('[name="price"], #productPrice'));
+    const quantity = Number(value('[name="quantity"], #productQuantity'));
+    const unit = value('[name="unit"], #productUnit') || "kg";
+    const saleType = value('[name="saleType"], #saleType') || "retail";
+    const condition = value('[name="condition"], #productCondition') || "Good";
+    const description = value('[name="description"], #productDescription');
+    const harvestDate = value('[name="harvestDate"], #harvestDate');
+
+    if (!name || !category || !county || !seller || !phone) {
+      notify("Please complete the required product and seller details.");
+      return;
+    }
+
+    if (!Number.isFinite(price) || price <= 0 ||
+        !Number.isFinite(quantity) || quantity <= 0) {
+      notify("Enter a valid price and quantity.");
+      return;
+    }
+
+    const photoFile = $("#photoInput")?.files?.[0];
+    let image = "";
+
+    if (photoFile) {
+      if (!photoFile.type.startsWith("image/") ||
+          photoFile.size > 2 * 1024 * 1024) {
+        notify("Use an image smaller than 2 MB.");
+        return;
+      }
+
+      image = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result));
+        reader.onerror = reject;
+        reader.readAsDataURL(photoFile);
+      }).catch(() => "");
+
+      if (!image) {
+        notify("The photo couldn't be read. Please try again.");
+        return;
+      }
+    }
+
+    const listing = {
+      id: makeId(),
+      name,
+      category,
+      county,
+      town,
+      seller,
+      phone,
+      price,
+      quantity,
+      unit,
+      saleType,
+      condition,
+      description,
+      harvestDate,
+      image,
+      createdAt: new Date().toISOString(),
+      demo: true
+    };
+
+    listings.unshift(listing);
+
+    if (!saveData(KEYS.listings, listings)) {
+      listings.shift();
+      return;
+    }
+
+    activeCategory = "all";
+    activeSearch = "";
+    activeLocation = "";
+    activeSaleFilter = "all";
+    activeSort = "newest";
+
+    if ($("#searchInput")) $("#searchInput").value = "";
+    if ($("#countyFilter")) $("#countyFilter").value = "";
+    if ($("#saleFilter")) $("#saleFilter").value = "all";
+    if ($("#sortFilter")) $("#sortFilter").value = "newest";
+
+    renderCategories();
+    renderListings();
+
+    form.reset();
+
+    if ($("#photoPreview")) $("#photoPreview").innerHTML = "";
+
+    if (modal) modal.hidden = true;
+
+    notify("Your demo listing has been published!");
+
+    $("#listingGrid")?.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
+  });
+}
+
+function setupListingModal() {
+  const modal = $("#listingModal");
+
+  const openButtons = [
+    $("#sellButton"),
+    $("#heroSellButton")
+  ].filter(Boolean);
+
+  openButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      if (modal) modal.hidden = false;
+    });
+  });
+
+  modal?.querySelectorAll("[data-close-modal]").forEach((button) => {
+    button.addEventListener("click", () => {
+      modal.hidden = true;
+    });
+  });
+
+  modal?.addEventListener("click", (event) => {
+    if (event.target === modal) modal.hidden = true;
+  });
+}
+
+function setupCountyOptions() {
+  const countySelect = $("#formCounty");
+
+  if (!countySelect) return;
+
+  const selected = countySelect.value;
+
+  countySelect.innerHTML =
+    '<option value="">Choose county</option>' +
+    COUNTIES.map((county) =>
+      `<option value="${escapeHTML(county)}">${escapeHTML(county)}</option>`
+    ).join("");
+
+  countySelect.value = selected;
+}
+
+function setupCategoryOptions() {
+  const categorySelect = $("#formCategory");
+
+  if (!categorySelect) return;
+
+  categorySelect.innerHTML =
+    '<option value="">Choose category</option>' +
+    CATEGORIES.map((category) =>
+      `<option value="${escapeHTML(category.id)}">${escapeHTML(category.name)}</option>`
+    ).join("");
+}
+
+// Demo service pricing examples.
+// These are example rates, not verified quotations.
+const SERVICE_RATE_EXAMPLES = [
+  { service: "Tractor ploughing", unit: "acre", exampleRate: 3500 },
+  { service: "Rotavation", unit: "acre", exampleRate: 4500 },
+  { service: "Farm equipment hire", unit: "day", exampleRate: 2500 },
+  { service: "Water pump hire", unit: "day", exampleRate: 1500 }
+];
+
+function getServiceRateExamples() {
+  return SERVICE_RATE_EXAMPLES.map((item) => ({
+    ...item,
+    displayRate: `${money(item.exampleRate)} / ${item.unit}`,
+    note: "Illustrative demo rate. Confirm the final cost with the provider."
+  }));
+}
+
+// Connect this section after Part 4's main initialisation function.
+function initialiseSellingFeatures() {
+  setupPriceCheck();
+  setupPhotoPreview();
+  setupListingForm();
+  setupListingModal();
+  setupCountyOptions();
+  setupCategoryOptions();
+}
+
+/* =========================================================
+   MAVUNOBRIDGE — PART 3
+   Cart, checkout demo, favourites and buyer requests
+   ========================================================= */
+
+function getCart() {
+  return Array.isArray(cart) ? cart : [];
+}
+
+function saveCart() {
+  return saveData(KEYS.cart, cart);
+}
+
+function addToCart(listingId) {
+  const product = listings.find((item) => item.id === listingId);
+
+  if (!product) {
+    notify("This listing is no longer available.");
+    return;
+  }
+
+  const existing = cart.find((item) => item.id === listingId);
+
+  if (existing) {
+    const nextQuantity = Number(existing.quantity || 1) + 1;
+
+    if (nextQuantity > Number(product.quantity || 0)) {
+      notify("That quantity is not available.");
+      return;
+    }
+
+    existing.quantity = nextQuantity;
+  } else {
+    if (Number(product.quantity || 0) < 1) {
+      notify("This product is currently out of stock.");
+      return;
+    }
+
+    cart.push({
+      id: product.id,
+      quantity: 1
+    });
+  }
+
+  if (saveCart()) {
+    renderCart();
+    notify(`${product.name} added to your cart.`);
+  }
+}
+
+function updateCartQuantity(listingId, change) {
+  const item = cart.find((entry) => entry.id === listingId);
+  const product = listings.find((entry) => entry.id === listingId);
+
+  if (!item || !product) return;
+
+  const newQuantity = Number(item.quantity || 1) + change;
+
+  if (newQuantity <= 0) {
+    cart = cart.filter((entry) => entry.id !== listingId);
+  } else if (newQuantity > Number(product.quantity || 0)) {
+    notify("You've reached the available quantity.");
+    return;
+  } else {
+    item.quantity = newQuantity;
+  }
+
+  saveCart();
+  renderCart();
+}
+
+function removeFromCart(listingId) {
+  cart = cart.filter((item) => item.id !== listingId);
+  saveCart();
+  renderCart();
+  notify("Item removed from your cart.");
+}
+
+function renderCart() {
+  const container = $("#cartItems");
+  const totalElement = $("#cartTotal");
+  const countElement = $("#cartCount");
+
+  let total = 0;
+  let itemCount = 0;
+
+  const cartProducts = getCart().map((entry) => {
+    const product = listings.find((item) => item.id === entry.id);
+
+    if (!product) return null;
+
+    const quantity = Math.max(1, Number(entry.quantity || 1));
+    const subtotal = Number(product.price || 0) * quantity;
+
+    total += subtotal;
+    itemCount += quantity;
+
+    return { product, quantity, subtotal };
+  }).filter(Boolean);
+
+  if (container) {
+    container.innerHTML = cartProducts.length
+      ? cartProducts.map(({ product, quantity, subtotal }) => `
+        <article class="cart-item">
+          <div class="cart-item-info">
+            <strong>${escapeHTML(product.name)}</strong>
+            <p>${money(product.price)} / ${escapeHTML(product.unit || "item")}</p>
+            <small>${escapeHTML(product.county || "")}</small>
+          </div>
+
+          <div class="cart-item-controls">
+            <button type="button"
+              data-cart-minus="${escapeHTML(product.id)}"
+              aria-label="Decrease quantity">−</button>
+
+            <span>${quantity}</span>
+
+            <button type="button"
+              data-cart-plus="${escapeHTML(product.id)}"
+              aria-label="Increase quantity">+</button>
+          </div>
+
+          <strong>${money(subtotal)}</strong>
+
+          <button type="button"
+            data-cart-remove="${escapeHTML(product.id)}"
+            aria-label="Remove ${escapeHTML(product.name)}">Remove</button>
+        </article>
+      `).join("")
+      : "<p>Your cart is empty. Add products from the marketplace.</p>";
+
+    container.querySelectorAll("[data-cart-minus]").forEach((button) => {
+      button.addEventListener("click", () =>
+        updateCartQuantity(button.dataset.cartMinus, -1)
+      );
+    });
+
+    container.querySelectorAll("[data-cart-plus]").forEach((button) => {
+      button.addEventListener("click", () =>
+        updateCartQuantity(button.dataset.cartPlus, 1)
+      );
+    });
+
+    container.querySelectorAll("[data-cart-remove]").forEach((button) => {
+      button.addEventListener("click", () =>
+        removeFromCart(button.dataset.cartRemove)
+      );
+    });
+  }
+
+  if (totalElement) totalElement.textContent = money(total);
+  if (countElement) countElement.textContent = String(itemCount);
+
+  const checkout = $("#checkoutButton");
+
+  if (checkout) {
+    checkout.disabled = cartProducts.length === 0;
+  }
+}
+
+function setupCartModal() {
+  const modal = $("#cartModal");
+  const openButton = $("#openCart");
+
+  openButton?.addEventListener("click", () => {
+    renderCart();
+    if (modal) modal.hidden = false;
+  });
+
+  modal?.querySelectorAll("[data-close-modal]").forEach((button) => {
+    button.addEventListener("click", () => {
+      modal.hidden = true;
+    });
+  });
+
+  modal?.addEventListener("click", (event) => {
+    if (event.target === modal) modal.hidden = true;
+  });
+}
+
+function setupDemoCheckout() {
+  const button = $("#checkoutButton");
+
+  button?.addEventListener("click", () => {
+    if (!cart.length) {
+      notify("Add a product to your cart first.");
+      return;
+    }
+
+    const fulfilment = $("#fulfilment")?.value || "collection";
+
+    const items = cart.map((entry) => {
+      const product = listings.find((item) => item.id === entry.id);
+
+      if (!product) return null;
+
+      const quantity = Number(entry.quantity || 1);
+
+      return {
+        listingId: product.id,
+        name: product.name,
+        quantity,
+        unit: product.unit || "item",
+        unitPrice: Number(product.price || 0),
+        subtotal: Number(product.price || 0) * quantity,
+        seller: product.seller,
+        phone: product.phone
+      };
+    }).filter(Boolean);
+
+    if (!items.length) {
+      notify("Your cart contains unavailable products.");
+      return;
+    }
+
+    const order = {
+      id: makeId(),
+      items,
+      fulfilment,
+      total: items.reduce((sum, item) => sum + item.subtotal, 0),
+      status: "Demo order — not paid",
+      createdAt: new Date().toISOString()
+    };
+
+    const orders = readData(KEYS.orders, []);
+    orders.unshift(order);
+
+    if (!saveData(KEYS.orders, orders)) return;
+
+    cart = [];
+    saveCart();
+    renderCart();
+
+    const modal = $("#cartModal");
+    if (modal) modal.hidden = true;
+
+    notify("Demo order recorded! No payment was taken.");
+
+    console.log("MavunoBridge demo order:", order);
+  });
+}
+
+/* -------------------- FAVOURITES -------------------- */
+
+let favourites = readData(KEYS.favourites, []);
+
+if (!Array.isArray(favourites)) favourites = [];
+
+function toggleFavourite(listingId) {
+  if (favourites.includes(listingId)) {
+    favourites = favourites.filter((id) => id !== listingId);
+    notify("Removed from favourites.");
+  } else {
+    favourites.push(listingId);
+    notify("Added to favourites.");
+  }
+
+  saveData(KEYS.favourites, favourites);
+  renderListings();
+}
+
+function getFavouriteListings() {
+  return listings.filter((item) => favourites.includes(item.id));
+}
+
+/* -------------------- BUYER REQUESTS -------------------- */
+
+function getBuyerRequests() {
+  const requests = readData(KEYS.requests, []);
+  return Array.isArray(requests) ? requests : [];
+}
+
+function createBuyerRequest(details) {
+  const request = {
+    id: makeId(),
+    product: String(details.product || "").trim(),
+    category: String(details.category || "").trim(),
+    county: String(details.county || "").trim(),
+    quantity: Number(details.quantity || 0),
+    unit: String(details.unit || "kg").trim(),
+    budget: Number(details.budget || 0),
+    buyerName: String(details.buyerName || "").trim(),
+    phone: String(details.phone || "").trim(),
+    notes: String(details.notes || "").trim(),
+    createdAt: new Date().toISOString(),
+    status: "Open — demo request"
+  };
+
+  if (!request.product || !request.county ||
+      !request.buyerName || !request.phone ||
+      request.quantity <= 0) {
+    notify("Add the product, county, buyer contact and quantity.");
+    return false;
+  }
+
+  const requests = getBuyerRequests();
+  requests.unshift(request);
+
+  if (!saveData(KEYS.requests, requests)) return false;
+
+  notify("Buyer request saved on this device.");
+  return request;
+}
+
+function renderBuyerRequests(container) {
+  if (!container) return;
+
+  const requests = getBuyerRequests();
+
+  container.innerHTML = requests.length
+    ? requests.map((request) => `
+      <article class="buyer-request-card">
+        <h3>${escapeHTML(request.product)}</h3>
+        <p>${escapeHTML(request.quantity)} ${escapeHTML(request.unit)} needed</p>
+        <p>📍 ${escapeHTML(request.county)}</p>
+        ${request.budget > 0
+          ? `<p>Budget: ${money(request.budget)}</p>`
+          : ""}
+        <p>${escapeHTML(request.notes || "Buyer has not added extra details.")}</p>
+        <small>${escapeHTML(request.status)}</small>
+      </article>
+    `).join("")
+    : "<p>No buyer requests yet.</p>";
+}
+
+/* -------------------- MACHINERY / SERVICE ENQUIRY -------------------- */
+
+function createServiceEnquiry(details) {
+  const enquiry = {
+    id: makeId(),
+    service: String(details.service || "").trim(),
+    county: String(details.county || "").trim(),
+    date: String(details.date || "").trim(),
+    area: Number(details.area || 0),
+    unit: String(details.unit || "acre").trim(),
+    customerName: String(details.customerName || "").trim(),
+    phone: String(details.phone || "").trim(),
+    notes: String(details.notes || "").trim(),
+    createdAt: new Date().toISOString(),
+    status: "Enquiry only — not booked"
+  };
+
+  if (!enquiry.service || !enquiry.county ||
+      !enquiry.customerName || !enquiry.phone) {
+    notify("Enter the service, county and your contact details.");
+    return false;
+  }
+
+  const enquiries = readData("mavunobridge_service_enquiries_v1", []);
+  enquiries.unshift(enquiry);
+
+  if (!saveData("mavunobridge_service_enquiries_v1", enquiries)) {
+    return false;
+  }
+
+  notify("Service enquiry saved on this device. Contact the provider to confirm.");
+  return enquiry;
+}
+
+/* Part 3 initialisation */
+function initialiseShoppingFeatures() {
+  renderCart();
+  setupCartModal();
+  setupDemoCheckout();
+}
+
+/* =========================================================
+   MAVUNOBRIDGE — PART 4
+   Language, navigation, slideshow, favourites and startup
+   ========================================================= */
+
+/* -------------------- LANGUAGE -------------------- */
+
+const UI_TEXT = {
+  en: {
+    search: "Search products, farmers or counties...",
+    sell: "Sell your produce",
+    cart: "Your cart",
+    empty: "No products match your search.",
+    addCart: "Add to cart",
+    all: "All Products"
+  },
+  sw: {
+    search: "Tafuta bidhaa, wakulima au kaunti...",
+    sell: "Uza mazao yako",
+    cart: "Kikapu chako",
+    empty: "Hakuna bidhaa zinazolingana na utafutaji wako.",
+    addCart: "Weka kikapuni",
+    all: "Bidhaa zote"
+  },
+  sheng: {
+    search: "Tafuta mazao, mkulima ama county...",
+    sell: "Uza mazao yako",
+    cart: "Shopping cart yako",
+    empty: "Hakuna bidhaa ime-match search yako.",
+    addCart: "Weka kwa cart",
+    all: "Bidhaa zote"
+  }
+};
+
+function getLanguage() {
+  const stored = readData(KEYS.language, "en");
+  return UI_TEXT[stored] ? stored : "en";
+}
+
+function applyLanguage(language) {
+  const selected = UI_TEXT[language] ? language : "en";
+
+  saveData(KEYS.language, selected);
+
+  const selector = $("#languageSelect");
+  if (selector) selector.value = selected;
+
+  const text = UI_TEXT[selected];
+
+  if ($("#searchInput")) {
+    $("#searchInput").placeholder = text.search;
+  }
+
+  $$("[data-i18n]").forEach((element) => {
+    const key = element.dataset.i18n;
+    if (text[key]) element.textContent = text[key];
+  });
+
+  renderCategories();
+  renderListings();
+  renderCart();
+
+  notify(
+    selected === "sw" ? "Lugha imebadilishwa." :
+    selected === "sheng" ? "Language imebadilishwa." :
+    "Language changed."
+  );
+}
+
+function setupLanguage() {
+  const selector = $("#languageSelect");
+  if (!selector) return;
+
+  selector.addEventListener("change", () => {
+    applyLanguage(selector.value);
+  });
+
+  selector.value = getLanguage();
+}
+
+/* -------------------- MOBILE NAVIGATION -------------------- */
+
+function setupMobileNavigation() {
+  const button = $("#menuToggle");
+  const nav = $("#mainNav");
+
+  if (!button || !nav) return;
+
+  button.setAttribute("aria-expanded", "false");
+
+  button.addEventListener("click", () => {
+    const isOpen = nav.classList.toggle("open");
+
+    button.setAttribute("aria-expanded", String(isOpen));
+    button.setAttribute(
+      "aria-label",
+      isOpen ? "Close navigation menu" : "Open navigation menu"
+    );
+  });
+
+  nav.querySelectorAll("a").forEach((link) => {
+    link.addEventListener("click", () => {
+      nav.classList.remove("open");
+      button.setAttribute("aria-expanded", "false");
+    });
+  });
+
+  document.addEventListener("click", (event) => {
+    if (!nav.contains(event.target) && !button.contains(event.target)) {
+      nav.classList.remove("open");
+      button.setAttribute("aria-expanded", "false");
+    }
+  });
+}
+
+/* -------------------- HERO SLIDESHOW -------------------- */
+
+function setupHeroSlideshow() {
+  const heroImage = $("#heroImage");
+  const previous = $("#slidePrev");
+  const next = $("#slideNext");
+  const dots = $("#slideDots");
+
+  if (!heroImage) return;
+
+  const slides = [
+    {
+      image: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1600&q=85",
+      alt: "Agricultural farmland in Kenya"
+    },
+    {
+      image: "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=1600&q=85",
+      alt: "Green agricultural fields"
+    },
+    {
+      image: "https://images.unsplash.com/photo-1499529112087-3cb3b73cec95?auto=format&fit=crop&w=1600&q=85",
+      alt: "Fresh agricultural produce"
+    }
+  ];
+
+  let index = 0;
+
+  function showSlide(nextIndex) {
+    index = (nextIndex + slides.length) % slides.length;
+
+    heroImage.src = slides[index].image;
+    heroImage.alt = slides[index].alt;
+
+    if (dots) {
+      dots.innerHTML = slides.map((slide, i) => `
+        <button type="button"
+          class="${i === index ? "active" : ""}"
+          aria-label="Show slide ${i + 1}"
+          aria-current="${i === index ? "true" : "false"}"
+          data-slide="${i}"></button>
+      `).join("");
+
+      dots.querySelectorAll("[data-slide]").forEach((button) => {
+        button.addEventListener("click", () => {
+          showSlide(Number(button.dataset.slide));
+        });
+      });
+    }
+  }
+
+  previous?.addEventListener("click", () => showSlide(index - 1));
+  next?.addEventListener("click", () => showSlide(index + 1));
+
+  showSlide(0);
+}
+
+/* -------------------- FAVOURITE BUTTONS -------------------- */
+
+function addFavouriteButtons() {
+  const grid = $("#listingGrid");
+  if (!grid) return;
+
+  grid.querySelectorAll(".product-card").forEach((card) => {
+    const id = card.dataset.id;
+    if (!id || card.querySelector("[data-favourite]")) return;
+
+    const button = document.createElement("button");
+    button.type = "button";
+    button.dataset.favourite = id;
+    button.className = "favourite-button";
+
+    const updateLabel = () => {
+      const isFavourite = favourites.includes(id);
+      button.textContent = isFavourite ? "♥ Saved" : "♡ Save";
+      button.setAttribute("aria-pressed", String(isFavourite));
+      button.setAttribute(
+        "aria-label",
+        isFavourite ? "Remove from favourites" : "Add to favourites"
+      );
+    };
+
+    updateLabel();
+
+    button.addEventListener("click", () => {
+      toggleFavourite(id);
+    });
+
+    card.querySelector(".product-image-wrap")?.appendChild(button);
+  });
+}
+
+/* -------------------- ACCESSIBILITY -------------------- */
+
+function setupEscapeKey() {
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape") return;
+
+    ["listingModal", "cartModal"].forEach((id) => {
+      const modal = document.getElementById(id);
+      if (modal) modal.hidden = true;
+    });
+  });
+}
+
+/* -------------------- SUPPORT -------------------- */
+
+function setupSupportLinks() {
+  $$("[data-support]").forEach((element) => {
+    element.addEventListener("click", () => {
+      notify(
+        "Demo support: contact the seller directly for product enquiries. " +
+        "Online support messaging is not connected yet."
+      );
+    });
+  });
+}
+
+/* -------------------- FINAL STARTUP -------------------- */
+
+function startMavunoBridge() {
+  // Marketplace and filters
+  initialiseMarketplace();
+
+  // Selling features
+  initialiseSellingFeatures();
+
+  // Cart and demo checkout
+  initialiseShoppingFeatures();
+
+  // Navigation and interface
+  setupLanguage();
+  setupMobileNavigation();
+  setupHeroSlideshow();
+  setupEscapeKey();
+  setupSupportLinks();
+
+  // Add save buttons to the rendered cards.
+  addFavouriteButtons();
+
+  // Re-add favourite buttons after every product render.
+  const listingGrid = $("#listingGrid");
+
+  if (listingGrid) {
+    const observer = new MutationObserver(() => {
+      addFavouriteButtons();
+    });
+
+    observer.observe(listingGrid, {
+      childList: true,
+      subtree: true
+    });
+  }
+
+  console.log(
+    "MavunoBridge demo started.",
+    listings.length,
+    "listings loaded."
+  );
+}
+
+// Avoid starting the app twice.
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", startMavunoBridge, {
+    once: true
+  });
+} else {
+  startMavunoBridge();
+}
