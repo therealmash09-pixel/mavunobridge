@@ -1,8 +1,11 @@
+
 /*
-  ONE place to switch on the real AI for both assistants.
-  Leave empty to use the built-in offline helpers.
-  After you deploy the Worker (section 5), paste its URL here, e.g.
-  window.MAVUNO_AI_ENDPOINT = "https://mavuno-ai.yourname.workers.dev";
-  NEVER put an API key in this file.
+  MAVUNOBRIDGE AI CONFIGURATION
+
+  Deploy mavuno-ai-worker.js as a Cloudflare Worker first.
+  Replace the URL below with your actual deployed Worker URL.
+  NEVER put the OpenAI API key in this file.
 */
-window.MAVUNO_AI_ENDPOINT = "";
+
+window.MAVUNO_AI_ENDPOINT =
+  "https://YOUR-WORKER-NAME.YOUR-SUBDOMAIN.workers.dev";
