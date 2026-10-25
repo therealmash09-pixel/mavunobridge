@@ -1,55 +1,69 @@
 
 "use strict";
 
-/* =========================================
-   MAVUNOBRIDGE — MARKETPLACE APPLICATION
-   Demo storage: this browser only
-   ========================================= */
+/* ==========================================
+   MAVUNOBRIDGE MARKETPLACE
+   Demo version — browser storage
+   ========================================== */
 
 const LISTINGS_KEY = "mavunobridge_listings_v1";
 const CART_KEY = "mavunobridge_cart_v1";
 const USER_KEY = "mavunobridge_demo_user_v1";
+const PENDING_CHAT_KEY = "mavunobridge_pending_chat_v1";
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => Array.from(document.querySelectorAll(selector));
 
+const COUNTIES = [
+  "Baringo", "Bomet", "Bungoma", "Busia", "Elgeyo-Marakwet",
+  "Embu", "Garissa", "Homa Bay", "Isiolo", "Kajiado",
+  "Kakamega", "Kericho", "Kiambu", "Kilifi", "Kirinyaga",
+  "Kisii", "Kisumu", "Kitui", "Kwale", "Laikipia",
+  "Lamu", "Machakos", "Makueni", "Mandera", "Marsabit",
+  "Meru", "Migori", "Mombasa", "Murang'a", "Nairobi City",
+  "Nakuru", "Nandi", "Narok", "Nyamira", "Nyandarua",
+  "Nyeri", "Samburu", "Siaya", "Taita-Taveta", "Tana River",
+  "Tharaka-Nithi", "Trans Nzoia", "Turkana", "Uasin Gishu",
+  "Vihiga", "Wajir", "West Pokot"
+];
+
 const demoListings = [
   {
-    id: "demo-1",
+    id: "demo-avocados",
     name: "Fresh Hass Avocados",
     category: "Fruits",
     county: "Kiambu",
     town: "Limuru",
     price: 120,
     quantity: "150 kg",
-    saleType: "Retail",
+    saleType: "Both",
     condition: "Fresh / good condition",
     seller: "Green Valley Farm",
     phone: "0712345678",
-    description: "Freshly harvested Hass avocados. Bulk orders can be discussed directly with the farmer.",
+    description: "Freshly harvested Hass avocados. Retail and bulk enquiries welcome.",
     image: "https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?auto=format&fit=crop&w=700&q=80",
-    createdAt: Date.now() - 70000,
+    createdAt: 1761000000000,
     demo: true
   },
   {
-    id: "demo-2",
-    name: "Ripe Red Tomatoes",
+    id: "demo-tomatoes",
+    name: "Fresh Red Tomatoes",
     category: "Vegetables",
     county: "Nakuru",
     town: "Molo",
     price: 75,
     quantity: "100 kg",
-    saleType: "Retail",
+    saleType: "Both",
     condition: "Fresh / good condition",
     seller: "Nakuru Fresh Produce",
     phone: "0723456789",
-    description: "Fresh tomatoes for homes, shops and food businesses.",
+    description: "Fresh tomatoes for households, shops, hotels and food businesses.",
     image: "https://images.unsplash.com/photo-1546094096-0df4bcaaa337?auto=format&fit=crop&w=700&q=80",
-    createdAt: Date.now() - 60000,
+    createdAt: 1761000001000,
     demo: true
   },
   {
-    id: "demo-3",
+    id: "demo-maize",
     name: "Dry Yellow Maize",
     category: "Grains",
     county: "Uasin Gishu",
@@ -60,30 +74,30 @@ const demoListings = [
     condition: "Dry",
     seller: "Uasin Gishu Grain Farm",
     phone: "0734567890",
-    description: "Dry maize stored properly. Suitable for bulk buyers and millers.",
+    description: "Dry maize for retailers, wholesalers and millers.",
     image: "https://images.unsplash.com/photo-1551754655-cd27e38d2076?auto=format&fit=crop&w=700&q=80",
-    createdAt: Date.now() - 50000,
+    createdAt: 1761000002000,
     demo: true
   },
   {
-    id: "demo-4",
-    name: "Pinto and Rosecoco Beans",
+    id: "demo-beans",
+    name: "Rosecoco Beans",
     category: "Legumes",
     county: "Meru",
     town: "Meru Town",
     price: 145,
     quantity: "80 kg",
-    saleType: "Retail",
+    saleType: "Both",
     condition: "Dry",
     seller: "Meru Harvest",
     phone: "0745678901",
-    description: "Clean, dry beans ready for cooking or resale.",
+    description: "Clean, dry beans for cooking, resale and bulk purchase.",
     image: "https://images.unsplash.com/photo-1551462147-ff29053bfc14?auto=format&fit=crop&w=700&q=80",
-    createdAt: Date.now() - 40000,
+    createdAt: 1761000003000,
     demo: true
   },
   {
-    id: "demo-5",
+    id: "demo-potatoes",
     name: "Irish Potatoes",
     category: "Starchy Foods",
     county: "Nyandarua",
@@ -94,30 +108,30 @@ const demoListings = [
     condition: "Fresh / good condition",
     seller: "Nyandarua Potato Growers",
     phone: "0756789012",
-    description: "Fresh potatoes available for traders, hotels and households.",
+    description: "Fresh potatoes for traders, hotels and households.",
     image: "https://images.unsplash.com/photo-1518977676601-b53f82aba655?auto=format&fit=crop&w=700&q=80",
-    createdAt: Date.now() - 30000,
+    createdAt: 1761000004000,
     demo: true
   },
   {
-    id: "demo-6",
+    id: "demo-ndengu",
     name: "Green Grams (Ndengu)",
     category: "Legumes",
     county: "Machakos",
     town: "Kangundo",
     price: 135,
     quantity: "120 kg",
-    saleType: "Bulk",
+    saleType: "Both",
     condition: "Dry",
     seller: "Eastern Harvest Farm",
     phone: "0767890123",
     description: "Clean green grams for retailers, wholesalers and households.",
     image: "https://images.unsplash.com/photo-1515543904379-3d757afe72e4?auto=format&fit=crop&w=700&q=80",
-    createdAt: Date.now() - 20000,
+    createdAt: 1761000005000,
     demo: true
   },
   {
-    id: "demo-7",
+    id: "demo-bananas",
     name: "Sweet Bananas",
     category: "Fruits",
     county: "Kisumu",
@@ -128,83 +142,107 @@ const demoListings = [
     condition: "Fresh / good condition",
     seller: "Lake Region Produce",
     phone: "0778901234",
-    description: "Ripe and semi-ripe bananas. Buyers can agree on quantities directly.",
+    description: "Ripe and semi-ripe bananas. Contact the seller about quantities.",
     image: "https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?auto=format&fit=crop&w=700&q=80",
-    createdAt: Date.now() - 10000,
+    createdAt: 1761000006000,
     demo: true
   },
   {
-    id: "demo-8",
+    id: "demo-onions",
     name: "Red Onions",
     category: "Vegetables",
     county: "Nakuru",
     town: "Naivasha",
     price: 90,
     quantity: "200 kg",
-    saleType: "Bulk",
+    saleType: "Both",
     condition: "Dry",
     seller: "Rift Valley Farm",
     phone: "0789012345",
-    description: "Onions for groceries, hotels and produce traders.",
+    description: "Onions for groceries, hotels, home use and produce traders.",
     image: "https://images.unsplash.com/photo-1508747703725-719777637510?auto=format&fit=crop&w=700&q=80",
-    createdAt: Date.now() - 5000,
+    createdAt: 1761000007000,
+    demo: true
+  },
+  {
+    id: "demo-eggs",
+    name: "Fresh Farm Eggs",
+    category: "Livestock Products",
+    county: "Kiambu",
+    town: "Thika",
+    price: 450,
+    quantity: "10 trays",
+    saleType: "Both",
+    condition: "Fresh",
+    seller: "Sunrise Poultry Farm",
+    phone: "0711122233",
+    description: "Fresh table eggs. Price shown per tray. Retail and bulk orders accepted.",
+    image: "https://images.unsplash.com/photo-1506976785307-8732e854ad03?auto=format&fit=crop&w=700&q=80",
+    createdAt: 1761000008000,
+    demo: true
+  },
+  {
+    id: "demo-milk",
+    name: "Fresh Cow Milk",
+    category: "Livestock Products",
+    county: "Nyeri",
+    town: "Karatina",
+    price: 70,
+    quantity: "50 litres",
+    saleType: "Both",
+    condition: "Fresh",
+    seller: "Highland Dairy Farm",
+    phone: "0722233344",
+    description: "Fresh cow milk. Price shown per litre. Buyers should agree on safe handling and collection.",
+    image: "https://images.unsplash.com/photo-1550583724-b2692b85b150?auto=format&fit=crop&w=700&q=80",
+    createdAt: 1761000009000,
+    demo: true
+  },
+  {
+    id: "demo-honey",
+    name: "Pure Harvest Honey",
+    category: "Livestock Products",
+    county: "Baringo",
+    town: "Marigat",
+    price: 600,
+    quantity: "10 jars",
+    saleType: "Both",
+    condition: "Processed",
+    seller: "Baringo Beekeepers",
+    phone: "0733344455",
+    description: "Honey from local beekeepers. Price shown per jar. Ask the seller about jar sizes.",
+    image: "https://images.unsplash.com/photo-1587049352851-8d4e89133924?auto=format&fit=crop&w=700&q=80",
+    createdAt: 1761000010000,
+    demo: true
+  },
+  {
+    id: "demo-chicken",
+    name: "Dressed Chicken",
+    category: "Livestock Products",
+    county: "Machakos",
+    town: "Machakos Town",
+    price: 850,
+    quantity: "12 birds",
+    saleType: "Retail",
+    condition: "Chilled / frozen",
+    seller: "Eastern Poultry Supplies",
+    phone: "0744455566",
+    description: "Sample dressed chicken listing. Confirm weight, storage, handling and collection arrangements with the seller.",
+    image: "https://images.unsplash.com/photo-1587593810167-a84920ea0781?auto=format&fit=crop&w=700&q=80",
+    createdAt: 1761000011000,
     demo: true
   }
 ];
 
-let listings = loadListings();
-let cart = loadCart();
-let toastTimer = null;
-let activeSearch = "";
-
-/* ---------- STORAGE HELPERS ---------- */
-
 function readJSON(key, fallback) {
   try {
-    const saved = localStorage.getItem(key);
-    return saved ? JSON.parse(saved) : fallback;
+    const value = localStorage.getItem(key);
+    return value ? JSON.parse(value) : fallback;
   } catch (error) {
-    console.warn("Could not read browser data:", error);
+    console.warn("Could not read saved data:", error);
     return fallback;
   }
 }
-
-function loadListings() {
-  const saved = readJSON(LISTINGS_KEY, null);
-
-  if (Array.isArray(saved) && saved.length > 0) {
-    return saved;
-  }
-
-  return [...demoListings];
-}
-
-function saveListings() {
-  try {
-    localStorage.setItem(LISTINGS_KEY, JSON.stringify(listings));
-    return true;
-  } catch (error) {
-    console.error("Could not save listings:", error);
-    return false;
-  }
-}
-
-function loadCart() {
-  const saved = readJSON(CART_KEY, []);
-  return Array.isArray(saved) ? saved : [];
-}
-
-function saveCart() {
-  try {
-    localStorage.setItem(CART_KEY, JSON.stringify(cart));
-    return true;
-  } catch (error) {
-    console.error("Could not save cart:", error);
-    return false;
-  }
-}
-
-/* ---------- GENERAL HELPERS ---------- */
 
 function escapeHTML(value) {
   return String(value ?? "").replace(/[&<>"']/g, (character) => ({
@@ -222,23 +260,148 @@ function money(value) {
   });
 }
 
+function normaliseSaleType(value) {
+  const known = String(value || "").trim().toLowerCase();
+
+  if (known === "both" || known === "retail and bulk" || known === "retail & bulk") {
+    return "Both";
+  }
+  if (known === "bulk") return "Bulk";
+  return "Retail";
+}
+
+function normaliseListing(item) {
+  const source = item && typeof item === "object" ? item : {};
+  const fallback = demoListings.find((demo) => demo.id === source.id) || {};
+
+  function getText(value, defaultValue) {
+    return value !== undefined &&
+      value !== null &&
+      String(value).trim() !== ""
+      ? value
+      : defaultValue;
+  }
+
+  const oldName = source.name || source.product || source.title;
+  const rawCategory = getText(source.category, fallback.category || "Vegetables");
+  const categoryAliases = {
+    "Starchy": "Starchy Foods",
+    "Herbal": "Herbal Products",
+    "Tools": "Tools & Equipment",
+    "Animal Products": "Livestock Products",
+    "Animal Products / Livestock Products": "Livestock Products",
+    "Livestock product": "Livestock Products"
+  };
+
+  const category = categoryAliases[rawCategory] || rawCategory;
+
+  const candidateCounty = getText(
+    source.county,
+    fallback.county || "Nairobi City"
+  );
+
+  const county = COUNTIES.includes(candidateCounty)
+    ? candidateCounty
+    : (fallback.county || "Nairobi City");
+
+  const rawPrice = source.price;
+  const priceIsValid =
+    rawPrice !== undefined &&
+    rawPrice !== null &&
+    String(rawPrice).trim() !== "" &&
+    Number.isFinite(Number(rawPrice));
+
+  return {
+    ...fallback,
+    ...source,
+    id: getText(source.id, fallback.id || `saved-${Date.now()}-${Math.random()}`),
+    name: getText(oldName, fallback.name || "Farm product"),
+    category,
+    county,
+    town: getText(source.town, fallback.town || ""),
+    price: priceIsValid ? Number(rawPrice) : Number(fallback.price ?? 0),
+    quantity: getText(source.quantity, fallback.quantity || "Ask seller"),
+    saleType: normaliseSaleType(source.saleType || fallback.saleType),
+    condition: getText(source.condition, fallback.condition || "Good condition"),
+    seller: getText(source.seller || source.farmerName, fallback.seller || "Local seller"),
+    phone: getText(source.phone, fallback.phone || ""),
+    description: getText(
+      source.description,
+      fallback.description || "Contact the seller for more information."
+    ),
+    image: getText(source.image || source.photo_url, fallback.image || ""),
+    createdAt: Number(source.createdAt || source.created_at) || fallback.createdAt || Date.now(),
+    ownerEmail: source.ownerEmail || source.owner_email || "",
+    demo: source.demo ?? fallback.demo ?? false
+  };
+}
+
+function saveListings() {
+  try {
+    localStorage.setItem(LISTINGS_KEY, JSON.stringify(listings));
+    return true;
+  } catch (error) {
+    console.error("Could not save listings:", error);
+    return false;
+  }
+}
+
+function loadListings() {
+  const saved = readJSON(LISTINGS_KEY, null);
+
+  if (!Array.isArray(saved) || saved.length === 0) {
+    return demoListings.map((item) => ({ ...item }));
+  }
+
+  const repaired = saved.map(normaliseListing);
+  const savedIds = new Set(repaired.map((item) => item.id));
+
+  const missingSamples = demoListings.filter(
+    (item) => !savedIds.has(item.id)
+  );
+
+  return [
+    ...repaired,
+    ...missingSamples.map((item) => ({ ...item }))
+  ];
+}
+
+let listings = loadListings();
+
+function loadCart() {
+  const saved = readJSON(CART_KEY, []);
+  return Array.isArray(saved) ? saved : [];
+}
+
+let cart = loadCart();
+let activeSearch = "";
+let toastTimer = null;
+
+function saveCart() {
+  try {
+    localStorage.setItem(CART_KEY, JSON.stringify(cart));
+    return true;
+  } catch (error) {
+    console.error("Could not save cart:", error);
+    return false;
+  }
+}
+
 function showToast(message) {
   const toast = $("#toast");
   if (!toast) return;
 
   toast.textContent = message;
   toast.classList.remove("hidden");
-
   clearTimeout(toastTimer);
 
   toastTimer = setTimeout(() => {
     toast.classList.add("hidden");
-  }, 3200);
+  }, 3500);
 }
 
 function openModal(id) {
   const modal = document.getElementById(id);
-
   if (!modal) return;
 
   modal.classList.remove("hidden");
@@ -247,36 +410,51 @@ function openModal(id) {
 
 function closeModal(id) {
   const modal = document.getElementById(id);
-
-  if (modal) {
-    modal.classList.add("hidden");
-  }
+  if (modal) modal.classList.add("hidden");
 
   if (!document.querySelector(".modal-backdrop:not(.hidden)")) {
     document.body.style.overflow = "";
   }
 }
 
-/* ---------- CREATE LISTING ---------- */
+/* Populate county filters and listing form with all 47 counties. */
+function populateCountySelects() {
+  const filter = $("#locationFilter");
+  const formCounty = $("#productCounty");
+
+  if (filter) {
+    const current = filter.value || "All";
+    filter.innerHTML =
+      '<option value="All">All counties</option>' +
+      COUNTIES.map((county) =>
+        `<option value="${escapeHTML(county)}">${escapeHTML(county)}</option>`
+      ).join("");
+    filter.value = COUNTIES.includes(current) ? current : "All";
+  }
+
+  if (formCounty) {
+    formCounty.innerHTML =
+      '<option value="">Select county</option>' +
+      COUNTIES.map((county) =>
+        `<option value="${escapeHTML(county)}">${escapeHTML(county)}</option>`
+      ).join("");
+  }
+}
 
 function openListingModal() {
-  const form = $("#listingForm");
+  $("#listingForm")?.reset();
+
   const error = $("#listingError");
-
-  if (form) form.reset();
-
   if (error) {
     error.textContent = "";
     error.classList.add("hidden");
   }
 
+  populateCountySelects();
   openModal("listingModal");
 }
 
-/*
-  Resize uploaded photos before saving them.
-  Smaller photos reduce browser storage usage.
-*/
+/* Resize images before saving to reduce storage usage. */
 function compressImage(file) {
   return new Promise((resolve, reject) => {
     if (!file) {
@@ -291,29 +469,19 @@ function compressImage(file) {
 
     const reader = new FileReader();
 
-    reader.onerror = () => {
-      reject(new Error("Could not read the photo. Try another image."));
-    };
+    reader.onerror = () => reject(new Error("Could not read the photo."));
 
     reader.onload = () => {
       const image = new Image();
 
-      image.onerror = () => {
-        reject(new Error("Could not open that photo."));
-      };
+      image.onerror = () => reject(new Error("Could not open the photo."));
 
       image.onload = () => {
         const maxWidth = 700;
         const maxHeight = 550;
-
-        const scale = Math.min(
-          1,
-          maxWidth / image.width,
-          maxHeight / image.height
-        );
+        const scale = Math.min(1, maxWidth / image.width, maxHeight / image.height);
 
         const canvas = document.createElement("canvas");
-
         canvas.width = Math.max(1, Math.round(image.width * scale));
         canvas.height = Math.max(1, Math.round(image.height * scale));
 
@@ -324,14 +492,7 @@ function compressImage(file) {
           return;
         }
 
-        context.drawImage(
-          image,
-          0,
-          0,
-          canvas.width,
-          canvas.height
-        );
-
+        context.drawImage(image, 0, 0, canvas.width, canvas.height);
         resolve(canvas.toDataURL("image/jpeg", 0.52));
       };
 
@@ -353,35 +514,43 @@ async function handleListingSubmit(event) {
 
   error.textContent = "";
   error.classList.add("hidden");
-
   submitButton.disabled = true;
   submitButton.textContent = "Publishing...";
-
-  let newListing = null;
 
   try {
     const photo = $("#productImage")?.files?.[0] || null;
 
     if (photo && photo.size > 12 * 1024 * 1024) {
-      throw new Error("That image is over 12 MB. Choose a smaller photo.");
+      throw new Error("Photo is over 12 MB. Please choose a smaller image.");
     }
 
-    const imageData = await compressImage(photo);
+    const county = $("#productCounty").value;
+    const saleType = $("#productSaleType").value;
+    const category = $("#productCategory").value;
+
+    if (!COUNTIES.includes(county)) {
+      throw new Error("Please choose one of Kenya's 47 counties.");
+    }
+
+    if (!["Retail", "Bulk", "Both"].includes(saleType)) {
+      throw new Error("Select Retail, Bulk or Both.");
+    }
+
     const currentUser = readJSON(USER_KEY, null);
 
-    newListing = {
-      id: "item-" + Date.now() + "-" + Math.random().toString(36).slice(2, 7),
+    const newListing = {
+      id: `item-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
       name: $("#productName").value.trim(),
-      category: $("#productCategory").value,
-      county: $("#productCounty").value,
+      category,
+      county,
       town: $("#productTown").value.trim(),
       quantity: $("#productQuantity").value.trim(),
       price: Number($("#productPrice").value),
-      saleType: $("#productSaleType").value,
+      saleType,
       condition: $("#productCondition").value,
       seller: $("#sellerName").value.trim(),
       phone: $("#sellerPhone").value.trim(),
-      image: imageData,
+      image: await compressImage(photo),
       description: $("#productDescription").value.trim(),
       createdAt: Date.now(),
       ownerEmail: currentUser?.email || "",
@@ -391,12 +560,11 @@ async function handleListingSubmit(event) {
     if (
       !newListing.name ||
       !newListing.category ||
-      !newListing.county ||
       !newListing.quantity ||
       !newListing.seller ||
       !newListing.phone
     ) {
-      throw new Error("Please complete all required fields.");
+      throw new Error("Please complete the required fields.");
     }
 
     if (!Number.isFinite(newListing.price) || newListing.price < 0) {
@@ -405,56 +573,45 @@ async function handleListingSubmit(event) {
 
     listings.unshift(newListing);
 
-    let publishedWithoutPhoto = false;
+    let savedWithoutPhoto = false;
 
     if (!saveListings()) {
-      // Remove the photo and retry if storage space is limited.
       if (newListing.image) {
         newListing.image = "";
-        publishedWithoutPhoto = saveListings();
+        savedWithoutPhoto = saveListings();
       }
 
-      if (!publishedWithoutPhoto) {
+      if (!savedWithoutPhoto) {
         listings.shift();
-
-        throw new Error(
-          "Could not save this listing. Browser storage may be full. Try again without a photo."
-        );
+        throw new Error("Could not save listing. Browser storage may be full.");
       }
     }
 
-    // Reset filters so the newly published listing is visible.
-    if ($("#categoryFilter")) $("#categoryFilter").value = "All";
-    if ($("#locationFilter")) $("#locationFilter").value = "All";
-    if ($("#saleFilter")) $("#saleFilter").value = "All";
-    if ($("#sortFilter")) $("#sortFilter").value = "newest";
-    if ($("#searchInput")) $("#searchInput").value = "";
-
+    $("#categoryFilter").value = "All";
+    $("#locationFilter").value = "All";
+    $("#saleFilter").value = "All";
+    $("#sortFilter").value = "newest";
+    $("#searchInput").value = "";
     activeSearch = "";
 
-    $$(".category-card").forEach((card) => {
-      card.classList.remove("selected");
-    });
+    $$(".category-card").forEach((card) => card.classList.remove("selected"));
 
-    if ($("#marketTitle")) {
-      $("#marketTitle").textContent = "Marketplace listings";
-    }
+    $("#marketTitle").textContent = "Marketplace listings";
 
     renderListings();
     renderCart();
-
     closeModal("listingModal");
     form.reset();
 
-    $("#marketplace")?.scrollIntoView({ behavior: "smooth" });
+    $("#marketplace").scrollIntoView({ behavior: "smooth" });
 
     showToast(
-      publishedWithoutPhoto
-        ? "Listing published, but its photo could not be saved. Try a smaller photo."
+      savedWithoutPhoto
+        ? "Listing saved without the photo because storage was limited."
         : "Listing published! It is now visible in the marketplace."
     );
   } catch (err) {
-    error.textContent = err.message || "Could not publish the listing. Please try again.";
+    error.textContent = err.message || "Could not publish listing.";
     error.classList.remove("hidden");
   } finally {
     submitButton.disabled = false;
@@ -462,8 +619,7 @@ async function handleListingSubmit(event) {
   }
 }
 
-/* ---------- MARKETPLACE FILTERS ---------- */
-
+/* Both listings appear under Retail and Bulk filters. */
 function getFilteredListings() {
   const category = $("#categoryFilter")?.value || "All";
   const county = $("#locationFilter")?.value || "All";
@@ -472,231 +628,192 @@ function getFilteredListings() {
   const search = activeSearch.trim().toLowerCase();
 
   const result = listings.filter((item) => {
-    const matchesCategory =
-      category === "All" || item.category === category;
-
-    const matchesCounty =
-      county === "All" || item.county === county;
-
+    const matchesCategory = category === "All" || item.category === category;
+    const matchesCounty = county === "All" || item.county === county;
     const matchesSale =
-      saleType === "All" || item.saleType === saleType;
+      saleType === "All" ||
+      item.saleType === "Both" ||
+      item.saleType === saleType;
 
-    const searchText = [
-      item.name,
-      item.category,
-      item.county,
-      item.town,
-      item.seller,
-      item.description,
-      item.saleType
+    const text = [
+      item.name, item.category, item.county,
+      item.town, item.seller, item.description, item.saleType
     ].join(" ").toLowerCase();
 
-    return (
-      matchesCategory &&
-      matchesCounty &&
-      matchesSale &&
-      (!search || searchText.includes(search))
-    );
+    return matchesCategory && matchesCounty && matchesSale &&
+      (!search || text.includes(search));
   });
 
   if (sortBy === "price-low") {
-    result.sort((a, b) => Number(a.price) - Number(b.price));
-  }
-
-  if (sortBy === "price-high") {
-    result.sort((a, b) => Number(b.price) - Number(a.price));
-  }
-
-  if (sortBy === "newest") {
-    result.sort((a, b) => Number(b.createdAt) - Number(a.createdAt));
+    result.sort((a, b) => a.price - b.price);
+  } else if (sortBy === "price-high") {
+    result.sort((a, b) => b.price - a.price);
+  } else if (sortBy === "newest") {
+    result.sort((a, b) => b.createdAt - a.createdAt);
   }
 
   return result;
 }
 
-/* ---------- RENDER PRODUCT CARDS ---------- */
-
 function renderListings() {
   const grid = $("#listingGrid");
-  const emptyState = $("#emptyState");
-  const resultCount = $("#resultCount");
-
   if (!grid) return;
 
   const items = getFilteredListings();
 
   grid.innerHTML = items.map((item) => {
-    const image = item.image
-      ? `<img
-          class="product-photo"
-          src="${escapeHTML(item.image)}"
-          alt="${escapeHTML(item.name)}"
-          loading="lazy"
-          onerror="this.style.display='none';this.nextElementSibling.classList.remove('hidden')"
-        >`
+    const photo = item.image
+      ? `<img class="product-photo" src="${escapeHTML(item.image)}" alt="${escapeHTML(item.name)}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.classList.remove('hidden')">`
       : "";
 
     const placeholder = `
       <div class="product-placeholder ${item.image ? "hidden" : ""}">
         ${escapeHTML(item.name)}
-      </div>
-    `;
+      </div>`;
 
-    const location = [item.town, item.county]
-      .filter(Boolean)
-      .join(", ");
+    const location = [item.town, item.county].filter(Boolean).join(", ");
+    const saleLabel = item.saleType === "Both"
+      ? "Retail + Bulk"
+      : item.saleType === "Bulk" ? "Bulk offer" : "Retail";
 
-    const description = escapeHTML(
-      item.description || "Contact the seller for more information."
+    const user = readJSON(USER_KEY, null);
+    const isOwner = Boolean(
+      user && item.ownerEmail && user.email === item.ownerEmail
     );
+
+    const actionButton = isOwner
+      ? `<button class="small-button" type="button" data-delete="${escapeHTML(item.id)}">Delete</button>`
+      : `<button class="small-button" type="button" data-chat="${escapeHTML(item.id)}">Chat seller</button>`;
 
     const safePhone = String(item.phone || "").replace(/[^0-9+]/g, "");
-    const badge = item.saleType === "Bulk" ? "Bulk offer" : "Retail";
-    const user = readJSON(USER_KEY, null);
-
-    const ownListing = Boolean(
-      user &&
-      item.ownerEmail &&
-      user.email === item.ownerEmail
-    );
-
-    const secondButton = ownListing
-      ? `<button class="small-button" data-delete="${escapeHTML(item.id)}" type="button">Delete</button>`
-      : `<button class="small-button" data-contact="${escapeHTML(item.id)}" type="button">Contact</button>`;
 
     return `
       <article class="product-card">
         <div class="product-photo-wrap">
-          ${image}
+          ${photo}
           ${placeholder}
-          <span class="product-tag">${escapeHTML(badge)}</span>
+          <span class="product-tag">${escapeHTML(saleLabel)}</span>
         </div>
-
         <div class="product-info">
           <p class="product-category">${escapeHTML(item.category)}</p>
           <h3>${escapeHTML(item.name)}</h3>
           <p class="product-location">${escapeHTML(location || "Kenya")}</p>
-
           <div class="product-price">
             ${money(item.price)}
-            <span style="font-size:10px;font-weight:500;color:#6c766c">/ unit</span>
+            <span class="price-unit">/ unit</span>
           </div>
-
           <p class="product-quantity">
             ${escapeHTML(item.quantity || "Ask seller")} available ·
             ${escapeHTML(item.condition || "Good condition")}
           </p>
-
           <p class="product-seller">
             <strong>${escapeHTML(item.seller || "Local seller")}</strong>
-            ${description}
+            ${escapeHTML(item.description || "Contact seller for more details.")}
           </p>
-
           <div class="product-actions">
-            <button class="small-button primary" data-add="${escapeHTML(item.id)}" type="button">
-              Add to cart
-            </button>
-            ${secondButton}
+            <button class="small-button primary" type="button" data-add="${escapeHTML(item.id)}">Add to cart</button>
+            ${actionButton}
           </div>
-
           ${safePhone
-            ? `<a class="plain-button" style="display:inline-block;margin-top:8px" href="tel:${escapeHTML(safePhone)}">Call seller</a>`
+            ? `<a class="plain-button call-link" href="tel:${escapeHTML(safePhone)}">Call seller</a>`
             : ""}
         </div>
-      </article>
-    `;
+      </article>`;
   }).join("");
 
-  if (emptyState) {
-    emptyState.classList.toggle("hidden", items.length > 0);
-  }
+  $("#emptyState")?.classList.toggle("hidden", items.length > 0);
 
-  if (resultCount) {
-    resultCount.textContent =
+  if ($("#resultCount")) {
+    $("#resultCount").textContent =
       `Showing ${items.length} listing${items.length === 1 ? "" : "s"}`;
   }
 
-  const total = $("#listingTotal");
-
-  if (total) {
-    total.textContent = listings.length + "+";
+  if ($("#listingTotal")) {
+    $("#listingTotal").textContent = `${listings.length}+`;
   }
 }
 
-/* ---------- SHOPPING CART ---------- */
+/* Start a product-specific demo chat. */
+function openChatForListing(id) {
+  const item = listings.find((listing) => listing.id === id);
+
+  if (!item) {
+    showToast("Listing not found.");
+    return;
+  }
+
+  const pendingChat = {
+    productId: item.id,
+    productName: item.name,
+    seller: item.seller || "Farm seller",
+    phone: item.phone || "",
+    county: item.county || "",
+    price: item.price,
+    message: `Hi ${item.seller || "there"}, I'm interested in ${item.name}. Is it available?`
+  };
+
+  try {
+    localStorage.setItem(PENDING_CHAT_KEY, JSON.stringify(pendingChat));
+    window.location.href = "messages.html";
+  } catch (error) {
+    showToast("Could not open the chat in this browser.");
+  }
+}
+
+/* ---------- CART ---------- */
 
 function renderCart() {
-  const count = $("#cartCount");
+  const cartCount = $("#cartCount");
   const cartItems = $("#cartItems");
-  const totalDisplay = $("#cartTotal");
+  const cartTotal = $("#cartTotal");
 
-  if (count) {
-    count.textContent = cart.reduce(
-      (sum, item) => sum + Number(item.quantity || 0),
-      0
-    );
+  if (cartCount) {
+    cartCount.textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
   }
 
   if (cartItems) {
     cartItems.innerHTML = cart.length
-      ? cart.map((cartItem) => {
-          const item = listings.find(
-            (product) => product.id === cartItem.id
-          );
-
+      ? cart.map((entry) => {
+          const item = listings.find((product) => product.id === entry.id);
           if (!item) return "";
 
           return `
             <div class="cart-item">
               <div>
                 <strong>${escapeHTML(item.name)}</strong>
-                <p>${cartItem.quantity} × ${money(item.price)}</p>
+                <p>${entry.quantity} × ${money(item.price)}</p>
               </div>
-              <div style="text-align:right">
-                <strong>${money(Number(item.price) * cartItem.quantity)}</strong>
-                <br>
-                <button type="button" data-remove-cart="${escapeHTML(item.id)}">
-                  Remove
-                </button>
+              <div>
+                <strong>${money(item.price * entry.quantity)}</strong><br>
+                <button type="button" data-remove-cart="${escapeHTML(item.id)}">Remove</button>
               </div>
-            </div>
-          `;
+            </div>`;
         }).join("")
-      : "<p class='muted'>Your cart is empty. Add something from the marketplace.</p>";
+      : "<p class='muted'>Your cart is empty.</p>";
   }
 
-  const total = cart.reduce((sum, cartItem) => {
-    const item = listings.find(
-      (product) => product.id === cartItem.id
-    );
-
-    return sum + (
-      item ? Number(item.price) * cartItem.quantity : 0
-    );
+  const total = cart.reduce((sum, entry) => {
+    const item = listings.find((product) => product.id === entry.id);
+    return sum + (item ? item.price * entry.quantity : 0);
   }, 0);
 
-  if (totalDisplay) {
-    totalDisplay.textContent = money(total);
-  }
+  if (cartTotal) cartTotal.textContent = money(total);
 }
 
 function addToCart(id) {
   const product = listings.find((item) => item.id === id);
-
   if (!product) return;
 
+  const previousCart = cart.map((item) => ({ ...item }));
   const existing = cart.find((item) => item.id === id);
 
-  if (existing) {
-    existing.quantity += 1;
-  } else {
-    cart.push({ id, quantity: 1 });
-  }
+  if (existing) existing.quantity += 1;
+  else cart.push({ id, quantity: 1 });
 
   if (!saveCart()) {
-    cart = cart.filter((item) => item.id !== id);
+    cart = previousCart;
+    showToast("Could not save cart. Try again.");
     renderCart();
-    showToast("Cart could not be saved in this browser.");
     return;
   }
 
@@ -704,38 +821,33 @@ function addToCart(id) {
   showToast(`${product.name} added to your cart.`);
 }
 
-function showCheckoutMessage() {
-  if (!cart.length) {
-    showToast("Your cart is empty.");
+function removeFromCart(id) {
+  const previousCart = cart.map((item) => ({ ...item }));
+  cart = cart.filter((item) => item.id !== id);
+
+  if (!saveCart()) {
+    cart = previousCart;
+    showToast("Could not update your cart.");
     return;
   }
 
-  showToast("Demo checkout only. No payments or orders are processed.");
+  renderCart();
+  showToast("Item removed from cart.");
 }
 
-/* ---------- CATEGORY SELECTING ---------- */
+/* ---------- PAGE CONTROLS ---------- */
 
 function setCategory(category) {
-  const select = $("#categoryFilter");
-
-  if (select) {
-    select.value = category;
-  }
+  if ($("#categoryFilter")) $("#categoryFilter").value = category;
 
   $$(".category-card").forEach((card) => {
-    card.classList.toggle(
-      "selected",
-      card.dataset.category === category
-    );
+    card.classList.toggle("selected", card.dataset.category === category);
   });
 
-  const title = $("#marketTitle");
-
-  if (title) {
-    title.textContent =
-      category === "All"
-        ? "Marketplace listings"
-        : category + " listings";
+  if ($("#marketTitle")) {
+    $("#marketTitle").textContent = category === "All"
+      ? "Marketplace listings"
+      : `${category} listings`;
   }
 
   renderListings();
@@ -743,225 +855,146 @@ function setCategory(category) {
 }
 
 function clearFilters() {
-  if ($("#categoryFilter")) $("#categoryFilter").value = "All";
-  if ($("#locationFilter")) $("#locationFilter").value = "All";
-  if ($("#saleFilter")) $("#saleFilter").value = "All";
-  if ($("#sortFilter")) $("#sortFilter").value = "recommended";
-  if ($("#searchInput")) $("#searchInput").value = "";
-
+  $("#categoryFilter").value = "All";
+  $("#locationFilter").value = "All";
+  $("#saleFilter").value = "All";
+  $("#sortFilter").value = "recommended";
+  $("#searchInput").value = "";
   activeSearch = "";
 
-  $$(".category-card").forEach((card) => {
-    card.classList.remove("selected");
-  });
-
-  if ($("#marketTitle")) {
-    $("#marketTitle").textContent = "Marketplace listings";
-  }
+  $$(".category-card").forEach((card) => card.classList.remove("selected"));
+  $("#marketTitle").textContent = "Marketplace listings";
 
   renderListings();
 }
-
-/* ---------- ACCOUNT LINK ---------- */
 
 function updateAccountLink() {
   const link = $("#accountLink");
   const user = readJSON(USER_KEY, null);
 
-  if (!link || !user) return;
-
-  link.textContent = user.name ? `Hi, ${user.name}` : "My account";
-  link.title = "Open demo account";
+  if (link && user) {
+    link.textContent = user.name ? `Hi, ${user.name}` : "My account";
+  }
 }
 
-/* ---------- EVENT LISTENERS ---------- */
-
 function init() {
-  // Listing form open buttons.
+  populateCountySelects();
+
   [
-    "sellButton",
-    "heroSellButton",
-    "sellSectionButton",
-    "emptySellButton"
+    "sellButton", "heroSellButton",
+    "sellSectionButton", "emptySellButton"
   ].forEach((id) => {
-    document.getElementById(id)?.addEventListener(
-      "click",
-      openListingModal
-    );
+    document.getElementById(id)?.addEventListener("click", openListingModal);
   });
 
-  $("#listingForm")?.addEventListener(
-    "submit",
-    handleListingSubmit
-  );
+  $("#listingForm")?.addEventListener("submit", handleListingSubmit);
 
-  // Modal close buttons.
   $$("[data-close]").forEach((button) => {
-    button.addEventListener("click", () => {
-      closeModal(button.dataset.close);
+    button.addEventListener("click", () => closeModal(button.dataset.close));
+  });
+
+  $$(".modal-backdrop").forEach((modal) => {
+    modal.addEventListener("click", (event) => {
+      if (event.target === modal) closeModal(modal.id);
     });
   });
 
-  // Click outside a modal to close it.
-  $$(".modal-backdrop").forEach((backdrop) => {
-    backdrop.addEventListener("click", (event) => {
-      if (event.target === backdrop) {
-        closeModal(backdrop.id);
-      }
-    });
-  });
-
-  // Escape key closes open modals.
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
-      $$(".modal-backdrop:not(.hidden)").forEach((modal) => {
-        closeModal(modal.id);
-      });
+      $$(".modal-backdrop:not(.hidden)").forEach((modal) => closeModal(modal.id));
     }
   });
 
-  // Category image cards.
   $$(".category-card").forEach((card) => {
-    card.addEventListener("click", () => {
-      setCategory(card.dataset.category);
-    });
+    card.addEventListener("click", () => setCategory(card.dataset.category));
   });
 
-  $("#showAllButton")?.addEventListener("click", () => {
-    setCategory("All");
-  });
-
-  $("#categoryFilter")?.addEventListener("change", () => {
-    setCategory($("#categoryFilter").value);
-  });
-
+  $("#showAllButton")?.addEventListener("click", () => setCategory("All"));
+  $("#categoryFilter")?.addEventListener("change", () => setCategory($("#categoryFilter").value));
   $("#locationFilter")?.addEventListener("change", renderListings);
   $("#saleFilter")?.addEventListener("change", renderListings);
   $("#sortFilter")?.addEventListener("change", renderListings);
-
   $("#clearFiltersButton")?.addEventListener("click", clearFilters);
 
-  // Marketplace search.
   $("#searchForm")?.addEventListener("submit", (event) => {
     event.preventDefault();
-
     activeSearch = $("#searchInput").value;
-
     renderListings();
-
     $("#marketplace")?.scrollIntoView({ behavior: "smooth" });
   });
 
-  // Shopping cart modal.
   $("#cartButton")?.addEventListener("click", () => {
     renderCart();
     openModal("cartModal");
   });
 
-  $("#checkoutButton")?.addEventListener(
-    "click",
-    showCheckoutMessage
-  );
+  $("#checkoutButton")?.addEventListener("click", () => {
+    showToast(cart.length
+      ? "Demo checkout only. No payment is processed."
+      : "Your cart is empty.");
+  });
 
-  // Product buttons are delegated because cards are rendered dynamically.
   $("#listingGrid")?.addEventListener("click", (event) => {
-    const addButton = event.target.closest("[data-add]");
-
-    if (addButton) {
-      addToCart(addButton.dataset.add);
+    const add = event.target.closest("[data-add]");
+    if (add) {
+      addToCart(add.dataset.add);
       return;
     }
 
-    const contactButton = event.target.closest("[data-contact]");
-
-    if (contactButton) {
-      const product = listings.find(
-        (item) => item.id === contactButton.dataset.contact
-      );
-
-      if (product) {
-        const phone = String(product.phone || "").replace(/[^0-9+]/g, "");
-
-        if (phone) {
-          window.location.href = "tel:" + phone;
-        } else {
-          showToast("Seller has not added a phone number.");
-        }
-      }
-
+    const chat = event.target.closest("[data-chat]");
+    if (chat) {
+      openChatForListing(chat.dataset.chat);
       return;
     }
 
     const deleteButton = event.target.closest("[data-delete]");
-
     if (deleteButton) {
-      const id = deleteButton.dataset.delete;
       const user = readJSON(USER_KEY, null);
-
       const index = listings.findIndex((item) =>
-        item.id === id &&
+        item.id === deleteButton.dataset.delete &&
         user &&
         item.ownerEmail &&
         item.ownerEmail === user.email
       );
 
-      if (index < 0) return;
+      if (index === -1) return;
 
       if (window.confirm("Delete your listing?")) {
         const removed = listings.splice(index, 1)[0];
 
         if (saveListings()) {
-          cart = cart.filter((item) => item.id !== id);
+          cart = cart.filter((entry) => entry.id !== removed.id);
           saveCart();
-
           renderListings();
           renderCart();
-
-          showToast("Your listing was deleted.");
+          showToast("Listing deleted.");
         } else {
           listings.splice(index, 0, removed);
-          showToast("Could not delete this listing. Try again.");
+          showToast("Could not delete listing.");
         }
       }
     }
   });
 
-  // Remove items from the cart.
   $("#cartItems")?.addEventListener("click", (event) => {
-    const button = event.target.closest("[data-remove-cart]");
-
-    if (!button) return;
-
-    const oldCart = [...cart];
-
-    cart = cart.filter(
-      (item) => item.id !== button.dataset.removeCart
-    );
-
-    if (!saveCart()) {
-      cart = oldCart;
-      showToast("Could not update the cart.");
-      return;
-    }
-
-    renderCart();
-    showToast("Item removed from cart.");
+    const removeButton = event.target.closest("[data-remove-cart]");
+    if (removeButton) removeFromCart(removeButton.dataset.removeCart);
   });
 
-  // Mobile menu.
   $("#menuToggle")?.addEventListener("click", () => {
     $("#mainNav")?.classList.toggle("open");
   });
 
   $$("#mainNav a").forEach((link) => {
-    link.addEventListener("click", () => {
-      $("#mainNav")?.classList.remove("open");
-    });
+    link.addEventListener("click", () => $("#mainNav")?.classList.remove("open"));
   });
 
   renderListings();
   renderCart();
   updateAccountLink();
+
+  // Persist repaired listings and add the new animal-product samples.
+  saveListings();
 }
 
 document.addEventListener("DOMContentLoaded", init);
