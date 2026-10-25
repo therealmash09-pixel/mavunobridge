@@ -1,10 +1,11 @@
-
 /* =========================================================
    MAVUNOBRIDGE — AGRICULTURAL MARKETPLACE
    DEMO VERSION — localStorage, no Supabase
    ========================================================= */
 
 "use strict";
+
+/* -------------------- STORAGE -------------------- */
 
 const KEYS = {
   listings: "mavunobridge_listings_v2",
@@ -16,6 +17,8 @@ const KEYS = {
 };
 
 const $ = (selector) => document.querySelector(selector);
+const $$ = (selector, root = document) =>
+  Array.from(root.querySelectorAll(selector));
 
 const escapeHTML = (value = "") =>
   String(value).replace(/[&<>"']/g, (char) => ({
@@ -68,6 +71,8 @@ function notify(message) {
   }
 }
 
+/* -------------------- CATEGORIES -------------------- */
+
 const CATEGORIES = [
   { id: "fruits", name: "Fruits", icon: "🍌" },
   { id: "vegetables", name: "Vegetables", icon: "🥬" },
@@ -99,8 +104,11 @@ const COUNTIES = [
   "Uasin Gishu", "Vihiga", "Wajir", "West Pokot"
 ];
 
-// Sample listings are illustrative demo data.
-// Prices are not live market quotations.
+/* -------------------- DEMO LISTINGS -------------------- */
+
+// These sample prices are illustrative demo data,
+// not live market quotations.
+
 const DEMO_PRODUCTS = [
   {
     name: "Hass Avocados",
@@ -359,13 +367,18 @@ const DEMO_PRODUCTS = [
   }
 ];
 
+/* -------------------- MARKET STATE -------------------- */
+
 let activeCategory = "all";
 let activeSearch = "";
 let activeLocation = "";
 let activeSaleFilter = "all";
 let activeSort = "recommended";
+let activeFairOnly = false;
+
 let listings = readData(KEYS.listings, null);
 let cart = readData(KEYS.cart, []);
+let favourites = readData(KEYS.favourites, []);
 
 if (!Array.isArray(listings) || listings.length === 0) {
   listings = DEMO_PRODUCTS.map((product) => ({
@@ -374,10 +387,14 @@ if (!Array.isArray(listings) || listings.length === 0) {
     createdAt: new Date().toISOString(),
     demo: true
   }));
+
   saveData(KEYS.listings, listings);
 }
 
 if (!Array.isArray(cart)) cart = [];
+if (!Array.isArray(favourites)) favourites = [];
+
+/* -------------------- CATEGORY DISPLAY -------------------- */
 
 function getCategoryName(id) {
   return CATEGORIES.find((category) => category.id === id)?.name || id;
@@ -399,6 +416,7 @@ function renderCategories() {
       <b>All Products</b>
       <small>${listings.length} listings</small>
     </button>
+
     ${CATEGORIES.map((category) => `
       <button class="category-card ${activeCategory === category.id ? "active" : ""}"
         data-category="${escapeHTML(category.id)}" type="button">
@@ -414,143 +432,18 @@ function renderCategories() {
       activeCategory = button.dataset.category;
       renderCategories();
       renderListings();
+
+      $("#listingGrid")?.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
     });
   });
 }
 
-function getFilteredListings() {
-  let result = listings.filter((item) => {
-    const searchText = [
-      item.name, item.category, item.county,
-      item.town, item.seller, item.description
-    ].join(" ").toLowerCase();
+/* -------------------- FAIR PRICE GUIDE -------------------- */
 
-    const matchesSearch = !activeSearch ||
-      searchText.includes(activeSearch.toLowerCase());
-
-    const matchesCategory = activeCategory === "all" ||
-      item.category === activeCategory;
-
-    const matchesCounty = !activeLocation ||
-      item.county === activeLocation;
-
-    const matchesSale = activeSaleFilter === "all" ||
-      item.saleType === activeSaleFilter;
-
-    return matchesSearch && matchesCategory &&
-      matchesCounty && matchesSale;
-  });
-
-  if (activeSort === "price-low") {
-    result.sort((a, b) => Number(a.price) - Number(b.price));
-  } else if (activeSort === "price-high") {
-    result.sort((a, b) => Number(b.price) - Number(a.price));
-  } else if (activeSort === "newest") {
-    result.sort((a, b) =>
-      new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
-    );
-  }
-
-  return result;
-}
-
-function renderListings() {
-  const grid = $("#listingGrid");
-  const emptyState = $("#emptyState");
-  const count = $("#listingCount");
-
-  if (!grid) return;
-
-  const results = getFilteredListings();
-
-  if (count) {
-    count.textContent = `${results.length} product${results.length === 1 ? "" : "s"}`;
-  }
-
-  if (emptyState) {
-    emptyState.hidden = results.length > 0;
-  }
-
-  grid.innerHTML = results.map((item) => `
-    <article class="product-card" data-id="${escapeHTML(item.id)}">
-      <div class="product-image-wrap">
-        <img class="product-image"
-          src="${escapeHTML(item.image || "")}"
-          alt="${escapeHTML(item.name)}"
-          loading="lazy"
-          onerror="this.style.display='none'">
-        <span class="product-badge">${escapeHTML(item.saleType || "retail")}</span>
-      </div>
-      <div class="product-info">
-        <p class="product-location">📍 ${escapeHTML(item.county)}${item.town ? ", " + escapeHTML(item.town) : ""}</p>
-        <h3>${escapeHTML(item.name)}</h3>
-        <p class="product-description">${escapeHTML(item.description || "")}</p>
-        <p class="product-price">${money(item.price)} <small>/ ${escapeHTML(item.unit || "item")}</small></p>
-        <p class="product-quantity">Available: ${escapeHTML(item.quantity)} ${escapeHTML(item.unit || "items")}</p>
-        <p class="product-seller">Seller: ${escapeHTML(item.seller || "Local farmer")}</p>
-        <div class="product-actions">
-          <button class="add-cart-btn" data-cart="${escapeHTML(item.id)}" type="button">Add to cart</button>
-          ${item.phone ? `<a class="contact-seller" href="tel:${escapeHTML(item.phone)}">Call seller</a>` : ""}
-        </div>
-      </div>
-    </article>
-  `).join("");
-
-  grid.querySelectorAll("[data-cart]").forEach((button) => {
-    button.addEventListener("click", () => addToCart(button.dataset.cart));
-  });
-}
-
-function setupFilters() {
-  $("#searchInput")?.addEventListener("input", (event) => {
-    activeSearch = event.target.value.trim();
-    renderListings();
-  });
-
-  $("#countyFilter")?.addEventListener("change", (event) => {
-    activeLocation = event.target.value;
-    renderListings();
-  });
-
-  $("#saleFilter")?.addEventListener("change", (event) => {
-    activeSaleFilter = event.target.value;
-    renderListings();
-  });
-
-  $("#sortFilter")?.addEventListener("change", (event) => {
-    activeSort = event.target.value;
-    renderListings();
-  });
-
-  $("#fairOnly")?.addEventListener("change", () => {
-    notify("Fair-price checking will be connected in Part 2.");
-  });
-}
-
-function populateCountyFilter() {
-  const select = $("#countyFilter");
-  if (!select) return;
-
-  select.innerHTML = `<option value="">All counties</option>` +
-    COUNTIES.map((county) =>
-      `<option value="${escapeHTML(county)}">${escapeHTML(county)}</option>`
-    ).join("");
-}
-
-function initialiseMarketplace() {
-  populateCountyFilter();
-  setupFilters();
-  renderCategories();
-  renderListings();
-}
-
-document.addEventListener("DOMContentLoaded", initialiseMarketplace);
-
-/* =========================================================
-   MAVUNOBRIDGE — PART 2
-   Selling form, photos, fair-price guide and service rates
-   ========================================================= */
-
+// These are illustrative demo ranges, not live market prices.
 const FAIR_PRICE_GUIDE = {
   "hass avocados": { min: 90, max: 180, unit: "kg" },
   "tomatoes": { min: 60, max: 110, unit: "kg" },
@@ -602,6 +495,199 @@ function checkFairPrice(name, price) {
   };
 }
 
+/* -------------------- MARKET FILTERING -------------------- */
+
+function getFilteredListings() {
+  let result = listings.filter((item) => {
+    const searchText = [
+      item.name,
+      item.category,
+      getCategoryName(item.category),
+      item.county,
+      item.town,
+      item.seller,
+      item.description
+    ].join(" ").toLowerCase();
+
+    const matchesSearch = !activeSearch ||
+      searchText.includes(activeSearch.toLowerCase());
+
+    const matchesCategory = activeCategory === "all" ||
+      item.category === activeCategory;
+
+    const matchesCounty = !activeLocation ||
+      item.county === activeLocation;
+
+    const matchesSale = activeSaleFilter === "all" ||
+      item.saleType === activeSaleFilter;
+
+    const matchesFairPrice = !activeFairOnly ||
+      checkFairPrice(item.name, item.price).status === "fair";
+
+    return matchesSearch &&
+      matchesCategory &&
+      matchesCounty &&
+      matchesSale &&
+      matchesFairPrice;
+  });
+
+  if (activeSort === "price-low") {
+    result.sort((a, b) => Number(a.price) - Number(b.price));
+  } else if (activeSort === "price-high") {
+    result.sort((a, b) => Number(b.price) - Number(a.price));
+  } else if (activeSort === "newest") {
+    result.sort((a, b) =>
+      new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
+    );
+  }
+
+  return result;
+}
+
+function renderListings() {
+  const grid = $("#listingGrid");
+  const emptyState = $("#emptyState");
+  const count = $("#listingCount");
+
+  if (!grid) return;
+
+  const results = getFilteredListings();
+
+  if (count) {
+    count.textContent =
+      `${results.length} product${results.length === 1 ? "" : "s"}`;
+  }
+
+  if (emptyState) {
+    emptyState.hidden = results.length > 0;
+  }
+
+  grid.innerHTML = results.map((item) => `
+    <article class="product-card" data-id="${escapeHTML(item.id)}">
+      <div class="product-image-wrap">
+        <img class="product-image"
+          src="${escapeHTML(item.image || "")}"
+          alt="${escapeHTML(item.name)}"
+          loading="lazy"
+          onerror="this.style.display='none'">
+
+        <span class="product-badge">
+          ${escapeHTML(item.saleType || "retail")}
+        </span>
+      </div>
+
+      <div class="product-info">
+        <p class="product-location">
+          📍 ${escapeHTML(item.county)}
+          ${item.town ? ", " + escapeHTML(item.town) : ""}
+        </p>
+
+        <h3>${escapeHTML(item.name)}</h3>
+
+        <p class="product-description">
+          ${escapeHTML(item.description || "")}
+        </p>
+
+        <p class="product-price">
+          ${money(item.price)}
+          <small>/ ${escapeHTML(item.unit || "item")}</small>
+        </p>
+
+        <p class="product-quantity">
+          Available: ${escapeHTML(item.quantity)}
+          ${escapeHTML(item.unit || "items")}
+        </p>
+
+        <p class="product-seller">
+          Seller: ${escapeHTML(item.seller || "Local farmer")}
+        </p>
+
+        <div class="product-actions">
+          <button class="add-cart-btn"
+            data-cart="${escapeHTML(item.id)}"
+            type="button">
+            Add to cart
+          </button>
+
+          ${item.phone ? `
+            <a class="contact-seller"
+              href="tel:${escapeHTML(item.phone)}">
+              Call seller
+            </a>
+          ` : ""}
+        </div>
+      </div>
+    </article>
+  `).join("");
+
+  grid.querySelectorAll("[data-cart]").forEach((button) => {
+    button.addEventListener("click", () => {
+      addToCart(button.dataset.cart);
+    });
+  });
+
+  addFavouriteButtons();
+}
+
+/* -------------------- MARKET FILTER CONTROLS -------------------- */
+
+function setupFilters() {
+  $("#searchInput")?.addEventListener("input", (event) => {
+    activeSearch = event.target.value.trim();
+    renderListings();
+  });
+
+  $("#countyFilter")?.addEventListener("change", (event) => {
+    activeLocation = event.target.value;
+    renderListings();
+  });
+
+  $("#saleFilter")?.addEventListener("change", (event) => {
+    activeSaleFilter = event.target.value;
+    renderListings();
+  });
+
+  $("#sortFilter")?.addEventListener("change", (event) => {
+    activeSort = event.target.value;
+    renderListings();
+  });
+
+  $("#fairOnly")?.addEventListener("change", (event) => {
+    activeFairOnly = event.target.checked;
+    renderListings();
+
+    notify(
+      activeFairOnly
+        ? "Showing products within the illustrative demo price guide."
+        : "Fair-price filter cleared."
+    );
+  });
+}
+
+function populateCountyFilter() {
+  const select = $("#countyFilter");
+  if (!select) return;
+
+  select.innerHTML =
+    `<option value="">All counties</option>` +
+    COUNTIES.map((county) => `
+      <option value="${escapeHTML(county)}">
+        ${escapeHTML(county)}
+      </option>
+    `).join("");
+}
+
+function initialiseMarketplace() {
+  populateCountyFilter();
+  setupFilters();
+  renderCategories();
+  renderListings();
+}
+
+/* =========================================================
+   PART 2 — SELLING FORM, PRICE CHECK AND PHOTO PREVIEW
+   ========================================================= */
+
 function setupPriceCheck() {
   const nameInput = $("#productName");
   const priceInput = $("#productPrice");
@@ -613,13 +699,13 @@ function setupPriceCheck() {
     if (!nameInput || !priceInput) return;
 
     const check = checkFairPrice(nameInput.value, priceInput.value);
-
     result.textContent = check.message;
     result.dataset.status = check.status;
   };
 
   nameInput?.addEventListener("input", update);
   priceInput?.addEventListener("input", update);
+  update();
 }
 
 function setupPhotoPreview() {
@@ -628,37 +714,61 @@ function setupPhotoPreview() {
 
   if (!input || !preview) return;
 
+  const clearPreview = () => {
+    if (preview instanceof HTMLImageElement) {
+      preview.removeAttribute("src");
+      preview.hidden = true;
+    } else {
+      preview.innerHTML = "";
+    }
+  };
+
+  clearPreview();
+
   input.addEventListener("change", () => {
     const file = input.files?.[0];
 
     if (!file) {
-      preview.innerHTML = "";
+      clearPreview();
       return;
     }
 
     if (!file.type.startsWith("image/")) {
       notify("Please choose an image file.");
       input.value = "";
-      preview.innerHTML = "";
+      clearPreview();
       return;
     }
 
-    // Keep demo photos reasonably small for browser storage.
     if (file.size > 2 * 1024 * 1024) {
       notify("Choose a photo smaller than 2 MB for this demo.");
       input.value = "";
-      preview.innerHTML = "";
+      clearPreview();
       return;
     }
 
     const reader = new FileReader();
 
     reader.onload = () => {
-      preview.innerHTML = `
-        <img src="${reader.result}"
-          alt="Product photo preview"
-          style="width:140px;height:110px;object-fit:cover;border-radius:12px;">
-      `;
+      const imageData = String(reader.result || "");
+
+      if (preview instanceof HTMLImageElement) {
+        preview.src = imageData;
+        preview.hidden = !imageData;
+      } else {
+        preview.innerHTML = `
+          <img
+            src="${imageData}"
+            alt="Product photo preview"
+            style="width:140px;height:110px;object-fit:cover;border-radius:12px;">
+        `;
+      }
+    };
+
+    reader.onerror = () => {
+      notify("The photo could not be loaded. Please try again.");
+      input.value = "";
+      clearPreview();
     };
 
     reader.readAsDataURL(file);
@@ -674,13 +784,18 @@ function setupListingForm() {
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
 
-    const value = (selector) => form.querySelector(selector)?.value?.trim() || "";
+    const value = (selector) =>
+      form.querySelector(selector)?.value?.trim() || "";
 
     const name = value('[name="name"], #productName');
     const category = value('[name="category"], #formCategory');
     const county = value('[name="county"], #formCounty');
     const town = value('[name="town"], #formTown');
-    const seller = value('[name="seller"], #sellerName');
+
+    const seller = value(
+      '[name="farmer"], [name="seller"], #sellerName'
+    );
+
     const phone = value('[name="phone"], #sellerPhone');
     const price = Number(value('[name="price"], #productPrice'));
     const quantity = Number(value('[name="quantity"], #productQuantity'));
@@ -713,7 +828,7 @@ function setupListingForm() {
 
       image = await new Promise((resolve, reject) => {
         const reader = new FileReader();
-        reader.onload = () => resolve(String(reader.result));
+        reader.onload = () => resolve(String(reader.result || ""));
         reader.onerror = reject;
         reader.readAsDataURL(photoFile);
       }).catch(() => "");
@@ -756,18 +871,27 @@ function setupListingForm() {
     activeLocation = "";
     activeSaleFilter = "all";
     activeSort = "newest";
+    activeFairOnly = false;
 
     if ($("#searchInput")) $("#searchInput").value = "";
     if ($("#countyFilter")) $("#countyFilter").value = "";
     if ($("#saleFilter")) $("#saleFilter").value = "all";
     if ($("#sortFilter")) $("#sortFilter").value = "newest";
+    if ($("#fairOnly")) $("#fairOnly").checked = false;
 
     renderCategories();
     renderListings();
 
     form.reset();
 
-    if ($("#photoPreview")) $("#photoPreview").innerHTML = "";
+    const preview = $("#photoPreview");
+
+    if (preview instanceof HTMLImageElement) {
+      preview.removeAttribute("src");
+      preview.hidden = true;
+    } else if (preview) {
+      preview.innerHTML = "";
+    }
 
     if (modal) modal.hidden = true;
 
@@ -783,18 +907,17 @@ function setupListingForm() {
 function setupListingModal() {
   const modal = $("#listingModal");
 
-  const openButtons = [
-    $("#sellButton"),
-    $("#heroSellButton")
-  ].filter(Boolean);
-
-  openButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      if (modal) modal.hidden = false;
+  [$("#sellButton"), $("#heroSellButton")]
+    .filter(Boolean)
+    .forEach((button) => {
+      button.addEventListener("click", () => {
+        if (modal) modal.hidden = false;
+      });
     });
-  });
 
-  modal?.querySelectorAll("[data-close-modal]").forEach((button) => {
+  modal?.querySelectorAll(
+    '[data-close="listingModal"], [data-close-modal]'
+  ).forEach((button) => {
     button.addEventListener("click", () => {
       modal.hidden = true;
     });
@@ -807,34 +930,35 @@ function setupListingModal() {
 
 function setupCountyOptions() {
   const countySelect = $("#formCounty");
-
   if (!countySelect) return;
 
   const selected = countySelect.value;
 
   countySelect.innerHTML =
     '<option value="">Choose county</option>' +
-    COUNTIES.map((county) =>
-      `<option value="${escapeHTML(county)}">${escapeHTML(county)}</option>`
-    ).join("");
+    COUNTIES.map((county) => `
+      <option value="${escapeHTML(county)}">
+        ${escapeHTML(county)}
+      </option>
+    `).join("");
 
   countySelect.value = selected;
 }
 
 function setupCategoryOptions() {
   const categorySelect = $("#formCategory");
-
   if (!categorySelect) return;
 
   categorySelect.innerHTML =
     '<option value="">Choose category</option>' +
-    CATEGORIES.map((category) =>
-      `<option value="${escapeHTML(category.id)}">${escapeHTML(category.name)}</option>`
-    ).join("");
+    CATEGORIES.map((category) => `
+      <option value="${escapeHTML(category.id)}">
+        ${escapeHTML(category.name)}
+      </option>
+    `).join("");
 }
 
-// Demo service pricing examples.
-// These are example rates, not verified quotations.
+// Example service rates only; confirm actual rates with providers.
 const SERVICE_RATE_EXAMPLES = [
   { service: "Tractor ploughing", unit: "acre", exampleRate: 3500 },
   { service: "Rotavation", unit: "acre", exampleRate: 4500 },
@@ -850,7 +974,6 @@ function getServiceRateExamples() {
   }));
 }
 
-// Connect this section after Part 4's main initialisation function.
 function initialiseSellingFeatures() {
   setupPriceCheck();
   setupPhotoPreview();
@@ -861,8 +984,7 @@ function initialiseSellingFeatures() {
 }
 
 /* =========================================================
-   MAVUNOBRIDGE — PART 3
-   Cart, checkout demo, favourites and buyer requests
+   PART 3 — CART, DEMO CHECKOUT, FAVOURITES, REQUESTS
    ========================================================= */
 
 function getCart() {
@@ -898,10 +1020,7 @@ function addToCart(listingId) {
       return;
     }
 
-    cart.push({
-      id: product.id,
-      quantity: 1
-    });
+    cart.push({ id: product.id, quantity: 1 });
   }
 
   if (saveCart()) {
@@ -948,7 +1067,6 @@ function renderCart() {
 
   const cartProducts = getCart().map((entry) => {
     const product = listings.find((item) => item.id === entry.id);
-
     if (!product) return null;
 
     const quantity = Math.max(1, Number(entry.quantity || 1));
@@ -974,9 +1092,7 @@ function renderCart() {
             <button type="button"
               data-cart-minus="${escapeHTML(product.id)}"
               aria-label="Decrease quantity">−</button>
-
             <span>${quantity}</span>
-
             <button type="button"
               data-cart-plus="${escapeHTML(product.id)}"
               aria-label="Increase quantity">+</button>
@@ -1014,22 +1130,20 @@ function renderCart() {
   if (countElement) countElement.textContent = String(itemCount);
 
   const checkout = $("#checkoutButton");
-
-  if (checkout) {
-    checkout.disabled = cartProducts.length === 0;
-  }
+  if (checkout) checkout.disabled = cartProducts.length === 0;
 }
 
 function setupCartModal() {
   const modal = $("#cartModal");
-  const openButton = $("#openCart");
 
-  openButton?.addEventListener("click", () => {
+  $("#openCart")?.addEventListener("click", () => {
     renderCart();
     if (modal) modal.hidden = false;
   });
 
-  modal?.querySelectorAll("[data-close-modal]").forEach((button) => {
+  modal?.querySelectorAll(
+    '[data-close="cartModal"], [data-close-modal]'
+  ).forEach((button) => {
     button.addEventListener("click", () => {
       modal.hidden = true;
     });
@@ -1041,9 +1155,7 @@ function setupCartModal() {
 }
 
 function setupDemoCheckout() {
-  const button = $("#checkoutButton");
-
-  button?.addEventListener("click", () => {
+  $("#checkoutButton")?.addEventListener("click", () => {
     if (!cart.length) {
       notify("Add a product to your cart first.");
       return;
@@ -1053,7 +1165,6 @@ function setupDemoCheckout() {
 
     const items = cart.map((entry) => {
       const product = listings.find((item) => item.id === entry.id);
-
       if (!product) return null;
 
       const quantity = Number(entry.quantity || 1);
@@ -1097,16 +1208,11 @@ function setupDemoCheckout() {
     if (modal) modal.hidden = true;
 
     notify("Demo order recorded! No payment was taken.");
-
     console.log("MavunoBridge demo order:", order);
   });
 }
 
 /* -------------------- FAVOURITES -------------------- */
-
-let favourites = readData(KEYS.favourites, []);
-
-if (!Array.isArray(favourites)) favourites = [];
 
 function toggleFavourite(listingId) {
   if (favourites.includes(listingId)) {
@@ -1123,6 +1229,37 @@ function toggleFavourite(listingId) {
 
 function getFavouriteListings() {
   return listings.filter((item) => favourites.includes(item.id));
+}
+
+function addFavouriteButtons() {
+  const grid = $("#listingGrid");
+  if (!grid) return;
+
+  grid.querySelectorAll(".product-card").forEach((card) => {
+    const id = card.dataset.id;
+    if (!id || card.querySelector("[data-favourite]")) return;
+
+    const button = document.createElement("button");
+    button.type = "button";
+    button.dataset.favourite = id;
+    button.className = "favourite-button";
+
+    const updateLabel = () => {
+      const isFavourite = favourites.includes(id);
+      button.textContent = isFavourite ? "♥ Saved" : "♡ Save";
+      button.setAttribute("aria-pressed", String(isFavourite));
+      button.setAttribute(
+        "aria-label",
+        isFavourite ? "Remove from favourites" : "Add to favourites"
+      );
+    };
+
+    updateLabel();
+
+    button.addEventListener("click", () => toggleFavourite(id));
+
+    card.querySelector(".product-image-wrap")?.appendChild(button);
+  });
 }
 
 /* -------------------- BUYER REQUESTS -------------------- */
@@ -1185,7 +1322,7 @@ function renderBuyerRequests(container) {
     : "<p>No buyer requests yet.</p>";
 }
 
-/* -------------------- MACHINERY / SERVICE ENQUIRY -------------------- */
+/* -------------------- MACHINERY / SERVICE ENQUIRIES -------------------- */
 
 function createServiceEnquiry(details) {
   const enquiry = {
@@ -1208,18 +1345,16 @@ function createServiceEnquiry(details) {
     return false;
   }
 
-  const enquiries = readData("mavunobridge_service_enquiries_v1", []);
+  const key = "mavunobridge_service_enquiries_v1";
+  const enquiries = readData(key, []);
   enquiries.unshift(enquiry);
 
-  if (!saveData("mavunobridge_service_enquiries_v1", enquiries)) {
-    return false;
-  }
+  if (!saveData(key, enquiries)) return false;
 
   notify("Service enquiry saved on this device. Contact the provider to confirm.");
   return enquiry;
 }
 
-/* Part 3 initialisation */
 function initialiseShoppingFeatures() {
   renderCart();
   setupCartModal();
@@ -1227,11 +1362,8 @@ function initialiseShoppingFeatures() {
 }
 
 /* =========================================================
-   MAVUNOBRIDGE — PART 4
-   Language, navigation, slideshow, favourites and startup
+   PART 4 — LANGUAGE, NAVIGATION AND SLIDESHOW
    ========================================================= */
-
-/* -------------------- LANGUAGE -------------------- */
 
 const UI_TEXT = {
   en: {
@@ -1267,7 +1399,6 @@ function getLanguage() {
 
 function applyLanguage(language) {
   const selected = UI_TEXT[language] ? language : "en";
-
   saveData(KEYS.language, selected);
 
   const selector = $("#languageSelect");
@@ -1304,6 +1435,7 @@ function setupLanguage() {
   });
 
   selector.value = getLanguage();
+  applyLanguage(getLanguage());
 }
 
 /* -------------------- MOBILE NAVIGATION -------------------- */
@@ -1354,7 +1486,7 @@ function setupHeroSlideshow() {
   const slides = [
     {
       image: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1600&q=85",
-      alt: "Agricultural farmland in Kenya"
+      alt: "Agricultural farmland"
     },
     {
       image: "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=1600&q=85",
@@ -1397,41 +1529,6 @@ function setupHeroSlideshow() {
   showSlide(0);
 }
 
-/* -------------------- FAVOURITE BUTTONS -------------------- */
-
-function addFavouriteButtons() {
-  const grid = $("#listingGrid");
-  if (!grid) return;
-
-  grid.querySelectorAll(".product-card").forEach((card) => {
-    const id = card.dataset.id;
-    if (!id || card.querySelector("[data-favourite]")) return;
-
-    const button = document.createElement("button");
-    button.type = "button";
-    button.dataset.favourite = id;
-    button.className = "favourite-button";
-
-    const updateLabel = () => {
-      const isFavourite = favourites.includes(id);
-      button.textContent = isFavourite ? "♥ Saved" : "♡ Save";
-      button.setAttribute("aria-pressed", String(isFavourite));
-      button.setAttribute(
-        "aria-label",
-        isFavourite ? "Remove from favourites" : "Add to favourites"
-      );
-    };
-
-    updateLabel();
-
-    button.addEventListener("click", () => {
-      toggleFavourite(id);
-    });
-
-    card.querySelector(".product-image-wrap")?.appendChild(button);
-  });
-}
-
 /* -------------------- ACCESSIBILITY -------------------- */
 
 function setupEscapeKey() {
@@ -1461,26 +1558,18 @@ function setupSupportLinks() {
 /* -------------------- FINAL STARTUP -------------------- */
 
 function startMavunoBridge() {
-  // Marketplace and filters
   initialiseMarketplace();
-
-  // Selling features
   initialiseSellingFeatures();
-
-  // Cart and demo checkout
   initialiseShoppingFeatures();
 
-  // Navigation and interface
   setupLanguage();
   setupMobileNavigation();
   setupHeroSlideshow();
   setupEscapeKey();
   setupSupportLinks();
 
-  // Add save buttons to the rendered cards.
   addFavouriteButtons();
 
-  // Re-add favourite buttons after every product render.
   const listingGrid = $("#listingGrid");
 
   if (listingGrid) {
@@ -1501,7 +1590,6 @@ function startMavunoBridge() {
   );
 }
 
-// Avoid starting the app twice.
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", startMavunoBridge, {
     once: true
