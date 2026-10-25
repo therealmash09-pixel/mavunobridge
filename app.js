@@ -1,1069 +1,2473 @@
+/* =========================================================
+   MAVUNOMART
+   MARKETPLACE ENGINE
+========================================================= */
 
 "use strict";
 
-/* =========================================================
-   MAVUNOBRIDGE — MARKETPLACE DEMO
-   Current storage: this browser only.
-   Supabase integration can replace the local demo storage later.
-   ========================================================= */
 
-const MB = {
-  keys: {
-    listings: "mavunobridge_listings_v1",
-    requests: "mavunobridge_requests_v1",
-    cart: "mavunobridge_cart_v1",
-    profile: "mavunobridge_profile_v1"
+/* =========================================================
+   STORAGE
+========================================================= */
+
+const STORAGE_KEYS = {
+  listings: "shambamarket_listings_v4",
+  cart: "shambamarket_cart_v4",
+  language: "shambamarket_language_v2"
+};
+
+
+/* =========================================================
+   FAIR PRICE GUIDE
+   IMPORTANT:
+   These are indicative demo/reference ranges.
+   They are NOT official government prices.
+========================================================= */
+
+const FAIR_PRICE_GUIDE = {
+
+  "Tomatoes|kg": {
+    min: 60,
+    max: 110
   },
-  images: {
-    fruits: "https://images.unsplash.com/photo-1619566636858-adf3ef46400b?auto=format&fit=crop&w=900&q=80",
-    vegetables: "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=900&q=80",
-    nuts: "https://images.unsplash.com/photo-1508061253366-f7da158b6d46?auto=format&fit=crop&w=900&q=80",
-    starchy: "https://images.unsplash.com/photo-1518977676601-b53f82aba655?auto=format&fit=crop&w=900&q=80",
-    grains: "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&w=900&q=80",
-    legumes: "https://images.unsplash.com/photo-1515543904379-3d757afe72e4?auto=format&fit=crop&w=900&q=80",
-    livestock: "https://images.unsplash.com/photo-1516467508483-a7212febe31a?auto=format&fit=crop&w=900&q=80",
-    inputs: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=900&q=80",
-    services: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=900&q=80"
+
+  "Hass Avocados|kg": {
+    min: 90,
+    max: 180
   },
-  categoryNames: {
-    all: "All listings",
+
+  "Avocados|kg": {
+    min: 70,
+    max: 150
+  },
+
+  "Onions|kg": {
+    min: 70,
+    max: 130
+  },
+
+  "Potatoes|kg": {
+    min: 50,
+    max: 100
+  },
+
+  "Kale|kg": {
+    min: 50,
+    max: 100
+  },
+
+  "Sukuma Wiki|kg": {
+    min: 50,
+    max: 100
+  },
+
+  "Maize|kg": {
+    min: 45,
+    max: 80
+  },
+
+  "Beans|kg": {
+    min: 120,
+    max: 190
+  },
+
+  "Green Grams|kg": {
+    min: 140,
+    max: 220
+  },
+
+  "Groundnuts|kg": {
+    min: 150,
+    max: 250
+  },
+
+  "Bananas|kg": {
+    min: 60,
+    max: 120
+  },
+
+  "Oranges|kg": {
+    min: 60,
+    max: 120
+  },
+
+  "Sweet Potatoes|kg": {
+    min: 50,
+    max: 100
+  }
+
+};
+
+
+/* =========================================================
+   DEMO PRODUCTS
+========================================================= */
+
+const DEMO_LISTINGS = [
+
+  {
+    id: "demo-1",
+    name: "Hass Avocados",
+    category: "fruits",
+    saleType: "both",
+    retailPrice: 140,
+    retailUnit: "kg",
+    bulkPrice: 110,
+    bulkUnit: "kg",
+    bulkMinimum: 10,
+    quantity: 250,
+    stockUnit: "kg",
+    location: "Kiambu",
+    seller: "Green Valley Farm",
+    phone: "0700000001",
+    image:
+      "https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?auto=format&fit=crop&w=900&q=80",
+    description:
+      "Fresh Hass avocados harvested from a local farm.",
+    createdAt: Date.now() - 100000
+  },
+
+
+  {
+    id: "demo-2",
+    name: "Tomatoes",
+    category: "vegetables",
+    saleType: "retail",
+    retailPrice: 80,
+    retailUnit: "kg",
+    quantity: 180,
+    stockUnit: "kg",
+    location: "Nakuru",
+    seller: "Nakuru Fresh Produce",
+    phone: "0700000002",
+    image:
+      "https://images.unsplash.com/photo-1546094096-0df4bcaaa337?auto=format&fit=crop&w=900&q=80",
+    description:
+      "Fresh red tomatoes suitable for homes, restaurants and retailers.",
+    createdAt: Date.now() - 200000
+  },
+
+
+  {
+    id: "demo-3",
+    name: "Beans",
+    category: "legumes",
+    saleType: "both",
+    retailPrice: 170,
+    retailUnit: "kg",
+    bulkPrice: 145,
+    bulkUnit: "kg",
+    bulkMinimum: 20,
+    quantity: 500,
+    stockUnit: "kg",
+    location: "Meru",
+    seller: "Meru Farmers Group",
+    phone: "0700000003",
+    image:
+      "https://images.unsplash.com/photo-1551462147-ff29053b8b7f?auto=format&fit=crop&w=900&q=80",
+    description:
+      "Clean, dry beans available for household and bulk buyers.",
+    createdAt: Date.now() - 300000
+  },
+
+
+  {
+    id: "demo-4",
+    name: "Maize",
+    category: "grains",
+    saleType: "bulk",
+    bulkPrice: 65,
+    bulkUnit: "kg",
+    bulkMinimum: 20,
+    quantity: 1000,
+    stockUnit: "kg",
+    location: "Uasin Gishu",
+    seller: "North Rift Grain Hub",
+    phone: "0700000004",
+    image:
+      "https://images.unsplash.com/photo-1601598851547-4302969d4a8e?auto=format&fit=crop&w=900&q=80",
+    description:
+      "Quality maize available for bulk agricultural buyers.",
+    createdAt: Date.now() - 400000
+  },
+
+
+  {
+    id: "demo-5",
+    name: "Potatoes",
+    category: "starchy",
+    saleType: "both",
+    retailPrice: 85,
+    retailUnit: "kg",
+    bulkPrice: 65,
+    bulkUnit: "kg",
+    bulkMinimum: 20,
+    quantity: 700,
+    stockUnit: "kg",
+    location: "Nyandarua",
+    seller: "Highland Potato Farmers",
+    phone: "0700000005",
+    image:
+      "https://images.unsplash.com/photo-1518977676601-b53f82aba655?auto=format&fit=crop&w=900&q=80",
+    description:
+      "Fresh highland potatoes available in retail and bulk quantities.",
+    createdAt: Date.now() - 500000
+  },
+
+
+  {
+    id: "demo-6",
+    name: "Green Grams",
+    category: "legumes",
+    saleType: "retail",
+    retailPrice: 190,
+    retailUnit: "kg",
+    quantity: 200,
+    stockUnit: "kg",
+    location: "Machakos",
+    seller: "Eastern Growers",
+    phone: "0700000006",
+    image:
+      "https://images.unsplash.com/photo-1515543904379-3d757afe72e4?auto=format&fit=crop&w=900&q=80",
+    description:
+      "Clean green grams from Eastern Kenya.",
+    createdAt: Date.now() - 600000
+  },
+
+
+  {
+    id: "demo-7",
+    name: "Bananas",
+    category: "fruits",
+    saleType: "retail",
+    retailPrice: 90,
+    retailUnit: "kg",
+    quantity: 300,
+    stockUnit: "kg",
+    location: "Kisumu",
+    seller: "Lake Region Farmers",
+    phone: "0700000007",
+    image:
+      "https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?auto=format&fit=crop&w=900&q=80",
+    description:
+      "Fresh bananas supplied directly from farmers.",
+    createdAt: Date.now() - 700000
+  },
+
+
+  {
+    id: "demo-8",
+    name: "Onions",
+    category: "vegetables",
+    saleType: "retail",
+    retailPrice: 105,
+    retailUnit: "kg",
+    quantity: 250,
+    stockUnit: "kg",
+    location: "Nakuru",
+    seller: "Rift Valley Produce",
+    phone: "0700000008",
+    image:
+      "https://images.unsplash.com/photo-1508747703725-719777637510?auto=format&fit=crop&w=900&q=80",
+    description:
+      "Dry onions suitable for home and commercial use.",
+    createdAt: Date.now() - 800000
+  }
+
+];
+
+
+/* =========================================================
+   STATE
+========================================================= */
+
+let listings = [];
+let cart = [];
+
+let activeCategory = "all";
+let activeSaleFilter = "all";
+let activeLocation = "all";
+let activeSearch = "";
+let activeSort = "newest";
+
+
+/* =========================================================
+   DOM HELPERS
+========================================================= */
+
+const $ = (selector) => document.querySelector(selector);
+
+const $$ = (selector) => document.querySelectorAll(selector);
+
+
+/* =========================================================
+   INIT
+========================================================= */
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  loadData();
+
+  setupNavigation();
+
+  setupSearch();
+
+  setupCategories();
+
+  setupFilters();
+
+  setupListingModal();
+
+  setupCart();
+
+  setupLogin();
+
+  setupSmartAssist();
+
+  setupLanguage();
+
+  updateYear();
+
+  renderMarketplace();
+
+  renderCart();
+
+  updateMessageBadge();
+
+});
+
+
+/* =========================================================
+   STORAGE
+========================================================= */
+
+function loadData() {
+
+  const savedListings =
+    localStorage.getItem(STORAGE_KEYS.listings);
+
+  const savedCart =
+    localStorage.getItem(STORAGE_KEYS.cart);
+
+  if (savedListings) {
+
+    try {
+      listings = JSON.parse(savedListings);
+    } catch {
+      listings = [...DEMO_LISTINGS];
+    }
+
+  } else {
+
+    listings = [...DEMO_LISTINGS];
+
+  }
+
+
+  if (savedCart) {
+
+    try {
+      cart = JSON.parse(savedCart);
+    } catch {
+      cart = [];
+    }
+
+  } else {
+
+    cart = [];
+
+  }
+
+}
+
+
+function saveListings() {
+
+  localStorage.setItem(
+    STORAGE_KEYS.listings,
+    JSON.stringify(listings)
+  );
+
+}
+
+
+function saveCart() {
+
+  localStorage.setItem(
+    STORAGE_KEYS.cart,
+    JSON.stringify(cart)
+  );
+
+}
+
+
+/* =========================================================
+   NAVIGATION
+========================================================= */
+
+function setupNavigation() {
+
+  const menuToggle = $("#menuToggle");
+  const mobileNav = $("#mobileNav");
+
+  if (menuToggle && mobileNav) {
+
+    menuToggle.addEventListener("click", () => {
+
+      mobileNav.classList.toggle("open");
+
+    });
+
+  }
+
+
+  $$(".mobile-nav a").forEach(link => {
+
+    link.addEventListener("click", () => {
+
+      mobileNav?.classList.remove("open");
+
+    });
+
+  });
+
+
+  $("#sellButton")?.addEventListener(
+    "click",
+    openListingModal
+  );
+
+
+  $("#heroSellButton")?.addEventListener(
+    "click",
+    openListingModal
+  );
+
+}
+
+
+/* =========================================================
+   SEARCH
+========================================================= */
+
+function setupSearch() {
+
+  const form = $("#searchForm");
+
+  if (!form) return;
+
+  form.addEventListener("submit", event => {
+
+    event.preventDefault();
+
+    activeSearch =
+      $("#searchInput")?.value
+        .trim()
+        .toLowerCase() || "";
+
+    const searchCategory =
+      $("#searchCategory")?.value || "all";
+
+
+    if (searchCategory === "produce") {
+
+      activeCategory = "all";
+
+    }
+
+    if (searchCategory === "inputs") {
+
+      activeCategory = "inputs";
+
+    }
+
+    if (searchCategory === "livestock") {
+
+      activeCategory = "livestock";
+
+    }
+
+
+    renderMarketplace();
+
+
+    document
+      .querySelector("#marketplace")
+      ?.scrollIntoView({
+        behavior: "smooth"
+      });
+
+  });
+
+}
+
+
+/* =========================================================
+   CATEGORIES
+========================================================= */
+
+function setupCategories() {
+
+  $$(".category-card").forEach(card => {
+
+    card.addEventListener("click", () => {
+
+      activeCategory =
+        card.dataset.category || "all";
+
+      activeSearch = "";
+
+      const input = $("#searchInput");
+
+      if (input) input.value = "";
+
+      renderMarketplace();
+
+      $("#marketplace")?.scrollIntoView({
+        behavior: "smooth"
+      });
+
+    });
+
+  });
+
+}
+
+
+/* =========================================================
+   FILTERS
+========================================================= */
+
+function setupFilters() {
+
+  $$("[data-sale-filter]").forEach(button => {
+
+    button.addEventListener("click", () => {
+
+      $$("[data-sale-filter]")
+        .forEach(btn =>
+          btn.classList.remove("active")
+        );
+
+      button.classList.add("active");
+
+      activeSaleFilter =
+        button.dataset.saleFilter || "all";
+
+      renderMarketplace();
+
+    });
+
+  });
+
+
+  $("#locationFilter")?.addEventListener(
+    "change",
+    event => {
+
+      activeLocation = event.target.value;
+
+      renderMarketplace();
+
+    }
+  );
+
+
+  $("#sortSelect")?.addEventListener(
+    "change",
+    event => {
+
+      activeSort = event.target.value;
+
+      renderMarketplace();
+
+    }
+  );
+
+
+  $("#showAllButton")?.addEventListener(
+    "click",
+    resetFilters
+  );
+
+
+  $("#showAllButtonFallback")?.addEventListener(
+    "click",
+    resetFilters
+  );
+
+}
+
+
+function resetFilters() {
+
+  activeCategory = "all";
+  activeSaleFilter = "all";
+  activeLocation = "all";
+  activeSearch = "";
+  activeSort = "newest";
+
+
+  const searchInput = $("#searchInput");
+
+  if (searchInput) {
+    searchInput.value = "";
+  }
+
+
+  const locationFilter =
+    $("#locationFilter");
+
+  if (locationFilter) {
+    locationFilter.value = "all";
+  }
+
+
+  const sortSelect =
+    $("#sortSelect");
+
+  if (sortSelect) {
+    sortSelect.value = "newest";
+  }
+
+
+  $$("[data-sale-filter]")
+    .forEach(button => {
+
+      button.classList.toggle(
+        "active",
+        button.dataset.saleFilter === "all"
+      );
+
+    });
+
+
+  renderMarketplace();
+
+}
+
+
+/* =========================================================
+   MARKETPLACE
+========================================================= */
+
+function renderMarketplace() {
+
+  const grid = $("#listingGrid");
+
+  if (!grid) return;
+
+  let filtered = [...listings];
+
+
+  /* CATEGORY */
+
+  if (activeCategory !== "all") {
+
+    filtered = filtered.filter(item =>
+      item.category === activeCategory
+    );
+
+  }
+
+
+  /* SALE TYPE */
+
+  if (activeSaleFilter !== "all") {
+
+    filtered = filtered.filter(item =>
+
+      item.saleType === activeSaleFilter ||
+      item.saleType === "both"
+
+    );
+
+  }
+
+
+  /* LOCATION */
+
+  if (activeLocation !== "all") {
+
+    filtered = filtered.filter(item =>
+      item.location === activeLocation
+    );
+
+  }
+
+
+  /* SEARCH */
+
+  if (activeSearch) {
+
+    filtered = filtered.filter(item => {
+
+      const searchable = [
+
+        item.name,
+        item.category,
+        item.location,
+        item.seller,
+        item.description
+
+      ]
+        .join(" ")
+        .toLowerCase();
+
+      return searchable.includes(activeSearch);
+
+    });
+
+  }
+
+
+  /* SORT */
+
+  if (activeSort === "newest") {
+
+    filtered.sort(
+      (a,b) => b.createdAt - a.createdAt
+    );
+
+  }
+
+
+  if (activeSort === "price-low") {
+
+    filtered.sort(
+      (a,b) =>
+        getDisplayPrice(a) -
+        getDisplayPrice(b)
+    );
+
+  }
+
+
+  if (activeSort === "price-high") {
+
+    filtered.sort(
+      (a,b) =>
+        getDisplayPrice(b) -
+        getDisplayPrice(a)
+    );
+
+  }
+
+
+  if (activeSort === "name") {
+
+    filtered.sort((a,b) =>
+      a.name.localeCompare(b.name)
+    );
+
+  }
+
+
+  if (activeSort === "fairness") {
+
+    filtered.sort((a,b) =>
+      getFairnessScore(a) -
+      getFairnessScore(b)
+    );
+
+  }
+
+
+  grid.innerHTML = "";
+
+
+  if (!filtered.length) {
+
+    $("#emptyState")?.classList.remove("hidden");
+
+  } else {
+
+    $("#emptyState")?.classList.add("hidden");
+
+    filtered.forEach(item => {
+
+      grid.appendChild(
+        createListingCard(item)
+      );
+
+    });
+
+  }
+
+
+  const count =
+    $("#resultsCount");
+
+  if (count) {
+
+    count.textContent =
+      `${filtered.length} product${filtered.length === 1 ? "" : "s"}`;
+
+  }
+
+}
+
+
+/* =========================================================
+   PRICE HELPERS
+========================================================= */
+
+function getDisplayPrice(item) {
+
+  if (
+    activeSaleFilter === "bulk" &&
+    item.bulkPrice
+  ) {
+
+    return Number(item.bulkPrice);
+
+  }
+
+  if (item.retailPrice) {
+
+    return Number(item.retailPrice);
+
+  }
+
+  if (item.bulkPrice) {
+
+    return Number(item.bulkPrice);
+
+  }
+
+  return 0;
+
+}
+
+
+function getPriceUnit(item) {
+
+  if (
+    activeSaleFilter === "bulk" &&
+    item.bulkPrice
+  ) {
+
+    return item.bulkUnit || "unit";
+
+  }
+
+  if (item.retailPrice) {
+
+    return item.retailUnit || "unit";
+
+  }
+
+  return item.bulkUnit || "unit";
+
+}
+
+
+function getFairGuide(item, priceType = "retail") {
+
+  const price =
+    priceType === "bulk"
+      ? item.bulkPrice
+      : item.retailPrice;
+
+
+  const unit =
+    priceType === "bulk"
+      ? item.bulkUnit
+      : item.retailUnit;
+
+
+  if (!price || !unit) return null;
+
+
+  const exactKey =
+    `${item.name}|${unit}`;
+
+
+  if (FAIR_PRICE_GUIDE[exactKey]) {
+
+    return FAIR_PRICE_GUIDE[exactKey];
+
+  }
+
+
+  /*
+    Fallback:
+    Use category-level demo ranges.
+    This makes the system useful even when
+    a farmer enters a new product.
+  */
+
+  const fallback = {
+
+    fruits: {
+      min: 60,
+      max: 180
+    },
+
+    vegetables: {
+      min: 50,
+      max: 140
+    },
+
+    nuts: {
+      min: 120,
+      max: 280
+    },
+
+    starchy: {
+      min: 45,
+      max: 110
+    },
+
+    grains: {
+      min: 45,
+      max: 120
+    },
+
+    legumes: {
+      min: 100,
+      max: 250
+    },
+
+    livestock: {
+      min: 500,
+      max: 50000
+    },
+
+    inputs: {
+      min: 50,
+      max: 5000
+    }
+
+  };
+
+
+  return fallback[item.category] || null;
+
+}
+
+
+/* =========================================================
+   FAIRNESS
+========================================================= */
+
+function getFairness(item, priceType = "retail") {
+
+  const price =
+    priceType === "bulk"
+      ? Number(item.bulkPrice)
+      : Number(item.retailPrice);
+
+
+  const guide =
+    getFairGuide(item, priceType);
+
+
+  if (!guide || !price) {
+
+    return {
+      status: "unknown",
+      label: "Guide unavailable",
+      difference: 0,
+      guide: null
+    };
+
+  }
+
+
+  const difference =
+    ((price - guide.max) / guide.max) * 100;
+
+
+  if (price < guide.min) {
+
+    return {
+      status: "good",
+      label: "Good value",
+      difference,
+      guide
+    };
+
+  }
+
+
+  if (price <= guide.max) {
+
+    return {
+      status: "good",
+      label: "Fair price",
+      difference,
+      guide
+    };
+
+  }
+
+
+  if (price <= guide.max * 1.20) {
+
+    return {
+      status: "watch",
+      label: "Above fair range",
+      difference,
+      guide
+    };
+
+  }
+
+
+  return {
+    status: "high",
+    label: "Potentially overpriced",
+    difference,
+    guide
+  };
+
+}
+
+
+function getFairnessScore(item) {
+
+  const retail =
+    getFairness(item, "retail");
+
+  const bulk =
+    getFairness(item, "bulk");
+
+
+  const values = [];
+
+  if (retail.guide) {
+    values.push(Math.max(0, retail.difference));
+  }
+
+  if (bulk.guide) {
+    values.push(Math.max(0, bulk.difference));
+  }
+
+  if (!values.length) return 999;
+
+  return Math.min(...values);
+
+}
+
+
+/* =========================================================
+   PRODUCT CARD
+========================================================= */
+
+function createListingCard(item) {
+
+  const card =
+    document.createElement("article");
+
+  card.className = "listing-card";
+
+
+  const image =
+    item.image ||
+    "https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=900&q=80";
+
+
+  const price =
+    getDisplayPrice(item);
+
+
+  const unit =
+    getPriceUnit(item);
+
+
+  let priceType = "retail";
+
+  if (
+    activeSaleFilter === "bulk" &&
+    item.bulkPrice
+  ) {
+
+    priceType = "bulk";
+
+  }
+
+
+  if (
+    !item.retailPrice &&
+    item.bulkPrice
+  ) {
+
+    priceType = "bulk";
+
+  }
+
+
+  const fairness =
+    getFairness(item, priceType);
+
+
+  let fairHTML = "";
+
+
+  if (fairness.guide) {
+
+    fairHTML = `
+
+      <div class="fair-badge ${fairness.status}">
+
+        ${
+          fairness.status === "good"
+            ? "🟢"
+            : fairness.status === "watch"
+            ? "🟠"
+            : "🔴"
+        }
+
+        ${fairness.label}
+
+      </div>
+
+      <div class="fair-guide">
+
+        Guide:
+        KSh ${formatMoney(fairness.guide.min)}
+        –
+        KSh ${formatMoney(fairness.guide.max)}
+        /${unit}
+
+      </div>
+
+    `;
+
+  }
+
+
+  let saleText = "";
+
+
+  if (
+    item.saleType === "both" &&
+    item.bulkPrice
+  ) {
+
+    saleText = `
+      <div class="listing-unit">
+        Bulk: KSh ${formatMoney(item.bulkPrice)}/${item.bulkUnit}
+      </div>
+    `;
+
+  }
+
+
+  card.innerHTML = `
+
+    <div
+      class="listing-image"
+      style="background-image:url('${escapeAttribute(image)}')"
+    >
+
+      <span class="listing-category">
+        ${formatCategory(item.category)}
+      </span>
+
+    </div>
+
+
+    <div class="listing-body">
+
+      <div class="listing-title-row">
+
+        <div>
+
+          <div class="listing-title">
+            ${escapeHTML(item.name)}
+          </div>
+
+          <div class="listing-location">
+            📍 ${escapeHTML(item.location)}
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <p class="listing-description">
+
+        ${escapeHTML(
+          item.description || "Fresh agricultural product."
+        )}
+
+      </p>
+
+
+      <div>
+
+        <span class="listing-price">
+          KSh ${formatMoney(price)}
+        </span>
+
+        <span class="listing-unit">
+          /${unit}
+        </span>
+
+      </div>
+
+
+      ${saleText}
+
+      ${fairHTML}
+
+
+      <div class="seller-row">
+
+        👤
+        ${escapeHTML(item.seller)}
+
+      </div>
+
+
+      <div class="listing-actions">
+
+        <button
+          class="btn btn-primary cart-add"
+          type="button"
+          data-add-cart="${item.id}"
+        >
+          🛒 Add to Cart
+        </button>
+
+
+        <button
+          class="btn btn-outline"
+          type="button"
+          data-buy-now="${item.id}"
+        >
+          Buy
+        </button>
+
+      </div>
+
+    </div>
+
+  `;
+
+
+  card
+    .querySelector("[data-add-cart]")
+    ?.addEventListener(
+      "click",
+      () => addToCart(item.id, priceType)
+    );
+
+
+  card
+    .querySelector("[data-buy-now]")
+    ?.addEventListener(
+      "click",
+      () => {
+
+        addToCart(item.id, priceType);
+
+        openCart();
+
+      }
+    );
+
+
+  return card;
+
+}
+
+
+/* =========================================================
+   CART
+========================================================= */
+
+function setupCart() {
+
+  $("#cartButton")?.addEventListener(
+    "click",
+    openCart
+  );
+
+
+  $("#continueShopping")?.addEventListener(
+    "click",
+    () => {
+
+      $("#cartModal")?.close();
+
+      $("#marketplace")?.scrollIntoView({
+        behavior: "smooth"
+      });
+
+    }
+  );
+
+
+  $("#checkoutButton")?.addEventListener(
+    "click",
+    checkout
+  );
+
+}
+
+
+function addToCart(productId, priceType = "retail") {
+
+  const product =
+    listings.find(item =>
+      item.id === productId
+    );
+
+
+  if (!product) return;
+
+
+  let existing =
+    cart.find(item =>
+      item.productId === productId &&
+      item.priceType === priceType
+    );
+
+
+  if (!existing) {
+
+    existing = {
+
+      productId,
+
+      priceType,
+
+      quantity:
+        priceType === "bulk"
+          ? Number(product.bulkMinimum || 1)
+          : 1
+
+    };
+
+    cart.push(existing);
+
+  } else {
+
+    existing.quantity +=
+      priceType === "bulk"
+        ? Number(product.bulkMinimum || 1)
+        : 1;
+
+  }
+
+
+  saveCart();
+
+  renderCart();
+
+  showToast(
+    `${product.name} added to your cart 🛒`
+  );
+
+}
+
+
+function removeFromCart(productId, priceType) {
+
+  cart = cart.filter(item =>
+    !(
+      item.productId === productId &&
+      item.priceType === priceType
+    )
+  );
+
+
+  saveCart();
+
+  renderCart();
+
+}
+
+
+function changeCartQuantity(
+  productId,
+  priceType,
+  direction
+) {
+
+  const cartItem =
+    cart.find(item =>
+      item.productId === productId &&
+      item.priceType === priceType
+    );
+
+
+  if (!cartItem) return;
+
+
+  const product =
+    listings.find(item =>
+      item.id === productId
+    );
+
+
+  if (!product) return;
+
+
+  const step =
+    priceType === "bulk"
+      ? Number(product.bulkMinimum || 1)
+      : 1;
+
+
+  cartItem.quantity +=
+    direction * step;
+
+
+  const minimum =
+    priceType === "bulk"
+      ? step
+      : 1;
+
+
+  if (cartItem.quantity < minimum) {
+
+    removeFromCart(
+      productId,
+      priceType
+    );
+
+    return;
+
+  }
+
+
+  if (
+    product.quantity &&
+    cartItem.quantity > product.quantity
+  ) {
+
+    cartItem.quantity =
+      product.quantity;
+
+    showToast(
+      "You reached the available stock."
+    );
+
+  }
+
+
+  saveCart();
+
+  renderCart();
+
+}
+
+
+function renderCart() {
+
+  const container =
+    $("#cartItems");
+
+  if (!container) return;
+
+
+  container.innerHTML = "";
+
+
+  if (!cart.length) {
+
+    $("#cartEmpty")
+      ?.classList.remove("hidden");
+
+    $("#cartSummary")
+      ?.classList.add("hidden");
+
+    updateCartCount();
+
+    return;
+
+  }
+
+
+  $("#cartEmpty")
+    ?.classList.add("hidden");
+
+  $("#cartSummary")
+    ?.classList.remove("hidden");
+
+
+  let subtotal = 0;
+
+  let itemCount = 0;
+
+  let hasHighPrice = false;
+
+
+  cart.forEach(cartItem => {
+
+    const product =
+      listings.find(item =>
+        item.id === cartItem.productId
+      );
+
+
+    if (!product) return;
+
+
+    const price =
+      cartItem.priceType === "bulk"
+        ? Number(product.bulkPrice)
+        : Number(product.retailPrice);
+
+
+    const unit =
+      cartItem.priceType === "bulk"
+        ? product.bulkUnit
+        : product.retailUnit;
+
+
+    const total =
+      price * cartItem.quantity;
+
+
+    subtotal += total;
+
+    itemCount += cartItem.quantity;
+
+
+    const fairness =
+      getFairness(
+        product,
+        cartItem.priceType
+      );
+
+
+    if (fairness.status === "high") {
+
+      hasHighPrice = true;
+
+    }
+
+
+    const image =
+      product.image ||
+      "https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=500&q=80";
+
+
+    const item =
+      document.createElement("div");
+
+    item.className = "cart-item";
+
+
+    item.innerHTML = `
+
+      <div
+        class="cart-item-image"
+        style="background-image:url('${escapeAttribute(image)}')"
+      ></div>
+
+
+      <div>
+
+        <h4>
+          ${escapeHTML(product.name)}
+        </h4>
+
+        <small>
+          ${escapeHTML(product.seller)}
+        </small>
+
+        <small>
+          KSh ${formatMoney(price)}/${unit}
+        </small>
+
+
+        <div class="quantity-controls">
+
+          <button
+            type="button"
+            data-minus
+          >
+            −
+          </button>
+
+          <strong>
+            ${cartItem.quantity}
+          </strong>
+
+          <button
+            type="button"
+            data-plus
+          >
+            +
+          </button>
+
+        </div>
+
+
+        <button
+          class="remove-cart-item"
+          type="button"
+          data-remove
+        >
+          Remove
+        </button>
+
+      </div>
+
+
+      <div class="cart-item-price">
+
+        KSh ${formatMoney(total)}
+
+      </div>
+
+    `;
+
+
+    item
+      .querySelector("[data-minus]")
+      ?.addEventListener(
+        "click",
+        () =>
+          changeCartQuantity(
+            product.id,
+            cartItem.priceType,
+            -1
+          )
+      );
+
+
+    item
+      .querySelector("[data-plus]")
+      ?.addEventListener(
+        "click",
+        () =>
+          changeCartQuantity(
+            product.id,
+            cartItem.priceType,
+            1
+          )
+      );
+
+
+    item
+      .querySelector("[data-remove]")
+      ?.addEventListener(
+        "click",
+        () =>
+          removeFromCart(
+            product.id,
+            cartItem.priceType
+          )
+      );
+
+
+    container.appendChild(item);
+
+  });
+
+
+  $("#cartItemTotal").textContent =
+    itemCount;
+
+
+  $("#cartSubtotal").textContent =
+    `KSh ${formatMoney(subtotal)}`;
+
+
+  $("#cartFairWarning")
+    ?.classList.toggle(
+      "hidden",
+      !hasHighPrice
+    );
+
+
+  updateCartCount();
+
+}
+
+
+function updateCartCount() {
+
+  const count =
+    cart.reduce(
+      (total, item) =>
+        total + Number(item.quantity || 0),
+      0
+    );
+
+
+  const element =
+    $("#cartCount");
+
+  if (element) {
+
+    element.textContent =
+      count > 99 ? "99+" : count;
+
+  }
+
+}
+
+
+/* =========================================================
+   OPEN CART
+========================================================= */
+
+function openCart() {
+
+  renderCart();
+
+  const modal =
+    $("#cartModal");
+
+  if (
+    modal &&
+    typeof modal.showModal === "function"
+  ) {
+
+    modal.showModal();
+
+  }
+
+}
+
+
+/* =========================================================
+   CHECKOUT
+   NEW: contacts each seller (one inquiry per seller)
+   and sends the buyer to the Messages page to chat.
+========================================================= */
+
+function checkout() {
+
+  if (!cart.length) {
+
+    showToast(
+      "Your cart is empty."
+    );
+
+    return;
+
+  }
+
+
+  let who =
+    ChatStore.identity();
+
+  if (!who || who.role !== "buyer" || !who.name) {
+
+    const name =
+      (prompt("Your name, so sellers know who is interested:") || "")
+        .trim();
+
+    if (!name) return;
+
+    who = { role: "buyer", name };
+
+    ChatStore.setIdentity(who);
+
+  }
+
+
+  const ids =
+    ChatStore.createFromCart(
+      cart,
+      listings,
+      who.name
+    );
+
+
+  cart = [];
+
+  saveCart();
+
+  renderCart();
+
+  $("#cartModal")?.close();
+
+
+  location.href =
+    `messages.html?c=${ids[0]}`;
+
+}
+
+
+/* =========================================================
+   MESSAGE BADGE (NEW)
+========================================================= */
+
+function updateMessageBadge() {
+
+  const badge =
+    $("#msgCount");
+
+  const me =
+    typeof ChatStore !== "undefined"
+      ? ChatStore.identity()
+      : null;
+
+  if (badge && me) {
+
+    badge.textContent =
+      ChatStore.unreadCount(me) || "";
+
+  }
+
+}
+
+
+/* =========================================================
+   LISTING MODAL
+========================================================= */
+
+function setupListingModal() {
+
+  const modal =
+    $("#listingModal");
+
+  const form =
+    $("#listingForm");
+
+
+  $("#saleType")?.addEventListener(
+    "change",
+    updatePricingFields
+  );
+
+
+  updatePricingFields();
+
+
+  form?.addEventListener(
+    "submit",
+    handleListingSubmit
+  );
+
+
+  $$("[data-close-modal]")
+    .forEach(button => {
+
+      button.addEventListener(
+        "click",
+        () => {
+
+          const modal =
+            button.closest("dialog");
+
+          modal?.close();
+
+        }
+      );
+
+    });
+
+
+  /*
+    Close dialogs when clicking backdrop.
+  */
+
+  [$("#listingModal"), $("#cartModal"), $("#loginModal")]
+    .forEach(dialog => {
+
+      if (!dialog) return;
+
+      dialog.addEventListener(
+        "click",
+        event => {
+
+          if (event.target === dialog) {
+            dialog.close();
+          }
+
+        }
+      );
+
+    });
+
+}
+
+
+function openListingModal() {
+
+  const modal =
+    $("#listingModal");
+
+  if (
+    modal &&
+    typeof modal.showModal === "function"
+  ) {
+
+    modal.showModal();
+
+  }
+
+}
+
+
+function updatePricingFields() {
+
+  const type =
+    $("#saleType")?.value || "retail";
+
+
+  const retailFields =
+    $("#retailFields");
+
+  const bulkFields =
+    $("#bulkFields");
+
+
+  if (retailFields) {
+
+    retailFields.classList.toggle(
+      "hidden",
+      type === "bulk"
+    );
+
+  }
+
+
+  if (bulkFields) {
+
+    bulkFields.classList.toggle(
+      "hidden",
+      type === "retail"
+    );
+
+  }
+
+
+  const retailPrice =
+    $("#retailPrice");
+
+  const bulkPrice =
+    $("#bulkPrice");
+
+  const bulkMinimum =
+    $("#bulkMinimum");
+
+
+  if (retailPrice) {
+
+    retailPrice.required =
+      type === "retail" ||
+      type === "both";
+
+  }
+
+
+  if (bulkPrice) {
+
+    bulkPrice.required =
+      type === "bulk" ||
+      type === "both";
+
+  }
+
+
+  if (bulkMinimum) {
+
+    bulkMinimum.required =
+      type === "bulk" ||
+      type === "both";
+
+  }
+
+}
+
+
+/* =========================================================
+   CREATE LISTING
+========================================================= */
+
+function handleListingSubmit(event) {
+
+  event.preventDefault();
+
+
+  const form =
+    event.target;
+
+
+  const type =
+    $("#saleType").value;
+
+
+  const newListing = {
+
+    id:
+      `user-${Date.now()}`,
+
+    name:
+      $("#listingName").value.trim(),
+
+    category:
+      $("#listingType").value,
+
+    saleType:
+      type,
+
+    retailPrice:
+      type === "bulk"
+        ? null
+        : Number($("#retailPrice").value),
+
+    retailUnit:
+      $("#retailUnit").value,
+
+    bulkPrice:
+      type === "retail"
+        ? null
+        : Number($("#bulkPrice").value),
+
+    bulkUnit:
+      $("#bulkUnit").value,
+
+    bulkMinimum:
+      type === "retail"
+        ? null
+        : Number($("#bulkMinimum").value),
+
+    quantity:
+      Number($("#listingQuantity").value),
+
+    stockUnit:
+      $("#listingStockUnit").value,
+
+    location:
+      $("#listingLocation").value.trim(),
+
+    seller:
+      $("#listingSeller").value.trim(),
+
+    phone:
+      $("#listingPhone").value.trim(),
+
+    image:
+      $("#listingImage").value.trim(),
+
+    description:
+      $("#listingDescription").value.trim(),
+
+    createdAt:
+      Date.now()
+
+  };
+
+
+  if (
+    !newListing.name ||
+    !newListing.category ||
+    !newListing.location ||
+    !newListing.seller ||
+    !newListing.phone
+  ) {
+
+    showListingMessage(
+      "Please complete all required fields.",
+      true
+    );
+
+    return;
+
+  }
+
+
+  if (
+    (type === "retail" || type === "both") &&
+    (!newListing.retailPrice ||
+      newListing.retailPrice <= 0)
+  ) {
+
+    showListingMessage(
+      "Enter a valid retail price.",
+      true
+    );
+
+    return;
+
+  }
+
+
+  if (
+    (type === "bulk" || type === "both") &&
+    (!newListing.bulkPrice ||
+      newListing.bulkPrice <= 0)
+  ) {
+
+    showListingMessage(
+      "Enter a valid bulk price.",
+      true
+    );
+
+    return;
+
+  }
+
+
+  listings.unshift(newListing);
+
+  saveListings();
+
+  renderMarketplace();
+
+  form.reset();
+
+  updatePricingFields();
+
+
+  $("#listingModal")?.close();
+
+
+  showToast(
+    "Your product has been listed successfully! 🌱"
+  );
+
+}
+
+
+function showListingMessage(
+  message,
+  error = false
+) {
+
+  const element =
+    $("#listingMessage");
+
+  if (!element) return;
+
+  element.textContent = message;
+
+  element.style.color =
+    error
+      ? "#c83d3d"
+      : "#356b43";
+
+}
+
+
+/* =========================================================
+   LOGIN
+========================================================= */
+
+function setupLogin() {
+
+  $("#loginButton")?.addEventListener(
+    "click",
+    () => {
+
+      $("#loginModal")?.showModal();
+
+    }
+  );
+
+
+  $("#loginForm")?.addEventListener(
+    "submit",
+    event => {
+
+      event.preventDefault();
+
+      $("#loginModal")?.close();
+
+      showToast(
+        "Demo login successful 👋"
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   SMART ASSIST
+========================================================= */
+
+function setupSmartAssist() {
+
+  const county =
+    $("#countySelect");
+
+  const output =
+    $("#insightMessage");
+
+
+  if (!county || !output) return;
+
+
+  const insights = {
+
+    nairobi:
+      "Urban farming, poultry, vegetables and short-cycle crops can be practical market opportunities.",
+
+    kiambu:
+      "Kiambu has strong opportunities in horticulture, dairy and high-value crops.",
+
+    nakuru:
+      "Nakuru offers opportunities across vegetables, grains, dairy and horticulture.",
+
+    muranga:
+      "Murang'a is well suited to horticulture, fruits, tea and smallholder farming.",
+
+    machakos:
+      "Water-efficient crops, legumes and drought-resilient farming can be important choices.",
+
+    kisumu:
+      "Vegetables, grains, fish-related value chains and livestock can create market opportunities.",
+
+    meru:
+      "Meru has strong potential in fruits, horticulture, dairy and other high-value crops."
+
+  };
+
+
+  county.addEventListener(
+    "change",
+    () => {
+
+      const value =
+        county.value;
+
+
+      output.textContent =
+        insights[value] ||
+        "Select your county to see an insight.";
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   LANGUAGE
+========================================================= */
+
+const TRANSLATIONS = {
+
+  en: {
+
+    navHome: "Home",
+    navMarketplace: "Marketplace",
+    navSmart: "Smart Assist",
+    navCommunity: "Community",
+    login: "Login",
+    cart: "Cart",
+    searchPlaceholder:
+      "Search products e.g. Hass avocados..."
+
+  },
+
+
+  sw: {
+
+    navHome: "Nyumbani",
+    navMarketplace: "Soko",
+    navSmart: "Msaidizi wa Kilimo",
+    navCommunity: "Jamii",
+    login: "Ingia",
+    cart: "Kikapu",
+    searchPlaceholder:
+      "Tafuta bidhaa mfano parachichi ya Hass..."
+
+  },
+
+
+  sheng: {
+
+    navHome: "Home",
+    navMarketplace: "Soko",
+    navSmart: "Smart Assist",
+    navCommunity: "Community",
+    login: "Ingia",
+    cart: "Cart",
+    searchPlaceholder:
+      "Search stuff kama Hass avocado..."
+
+  }
+
+};
+
+
+function setupLanguage() {
+
+  const select =
+    $("#languageSelect");
+
+  if (!select) return;
+
+
+  const saved =
+    localStorage.getItem(
+      STORAGE_KEYS.language
+    );
+
+
+  if (saved && TRANSLATIONS[saved]) {
+
+    select.value = saved;
+
+    applyLanguage(saved);
+
+  }
+
+
+  select.addEventListener(
+    "change",
+    event => {
+
+      const language =
+        event.target.value;
+
+      localStorage.setItem(
+        STORAGE_KEYS.language,
+        language
+      );
+
+      applyLanguage(language);
+
+    }
+  );
+
+}
+
+
+function applyLanguage(language) {
+
+  const dictionary =
+    TRANSLATIONS[language] ||
+    TRANSLATIONS.en;
+
+
+  $$("[data-i18n]").forEach(element => {
+
+    const key =
+      element.dataset.i18n;
+
+    if (dictionary[key]) {
+
+      element.textContent =
+        dictionary[key];
+
+    }
+
+  });
+
+
+  $$("[data-i18n-placeholder]")
+    .forEach(element => {
+
+      const key =
+        element.dataset.i18nPlaceholder;
+
+      if (dictionary[key]) {
+
+        element.placeholder =
+          dictionary[key];
+
+      }
+
+    });
+
+}
+
+
+/* =========================================================
+   UTILITIES
+========================================================= */
+
+function formatMoney(number) {
+
+  return Number(number || 0)
+    .toLocaleString("en-KE", {
+      maximumFractionDigits: 2
+    });
+
+}
+
+
+function formatCategory(category) {
+
+  const names = {
+
     fruits: "Fruits",
     vegetables: "Vegetables",
     nuts: "Nuts",
-    starchy: "Starchy crops",
+    starchy: "Starchy Foods",
     grains: "Grains",
     legumes: "Legumes",
     livestock: "Livestock",
-    inputs: "Farm inputs",
-    services: "Services & machinery"
-  },
-  counties: [
-    "Nairobi", "Kiambu", "Nakuru", "Uasin Gishu", "Meru", "Nyeri",
-    "Kirinyaga", "Murang'a", "Machakos", "Makueni", "Kajiado",
-    "Laikipia", "Kakamega", "Bungoma", "Kisumu", "Trans Nzoia",
-    "Embu", "Kitui", "Other"
-  ]
-};
+    inputs: "Farm Inputs"
 
-const $ = (selector, root = document) => root.querySelector(selector);
-const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
-
-function makeId(prefix = "item") {
-  if (window.crypto && typeof window.crypto.randomUUID === "function") {
-    return `${prefix}-${window.crypto.randomUUID()}`;
-  }
-  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-}
-
-function readStore(key, fallback) {
-  try {
-    const raw = localStorage.getItem(key);
-    if (!raw) return fallback;
-    const parsed = JSON.parse(raw);
-    return parsed ?? fallback;
-  } catch (error) {
-    console.warn("Could not read local demo data:", error);
-    return fallback;
-  }
-}
-
-function writeStore(key, value) {
-  try {
-    localStorage.setItem(key, JSON.stringify(value));
-    return true;
-  } catch (error) {
-    console.error("Could not save demo data:", error);
-    showToast("Your browser could not save this. Try fewer or smaller photos.");
-    return false;
-  }
-}
-
-function escapeHTML(value = "") {
-  return String(value).replace(/[&<>"']/g, char => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#39;"
-  })[char]);
-}
-
-function formatMoney(value) {
-  const amount = Number(value);
-  if (!Number.isFinite(amount)) return "Price on request";
-  return "KSh " + new Intl.NumberFormat("en-KE", {
-    maximumFractionDigits: 2
-  }).format(amount);
-}
-
-function unitLabel(unit = "item") {
-  const units = {
-    kg: "kg", piece: "piece", bunch: "bunch", bag: "bag",
-    crate: "crate", litre: "litre", animal: "animal", item: "item",
-    acre: "acre", hour: "hour", day: "day", fixed: "fixed price",
-    tonne: "tonne", sack: "sack", load: "load"
   };
-  return units[unit] || unit;
+
+
+  return names[category] ||
+    "Agriculture";
+
 }
 
-function formatPrice(price, unit) {
-  if (price === "" || price === null || price === undefined ||
-      !Number.isFinite(Number(price))) {
-    return "Price on request";
-  }
-  const suffix = unit && unit !== "fixed" ? ` / ${unitLabel(unit)}` : "";
-  return `${formatMoney(price)}${suffix}`;
+
+function escapeHTML(value) {
+
+  return String(value || "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+
 }
+
+
+function escapeAttribute(value) {
+
+  return String(value || "")
+    .replaceAll("\\", "")
+    .replaceAll("'", "%27")
+    .replaceAll('"', "%22");
+
+}
+
+
+function updateYear() {
+
+  const year =
+    $("#currentYear");
+
+  if (year) {
+
+    year.textContent =
+      new Date().getFullYear();
+
+  }
+
+}
+
+
+let toastTimer;
 
 function showToast(message) {
-  const toast = $("#toast");
+
+  const toast =
+    $("#toast");
+
   if (!toast) return;
-  toast.textContent = message;
+
+
+  clearTimeout(toastTimer);
+
+
+  toast.textContent =
+    message;
+
   toast.classList.add("show");
-  clearTimeout(showToast.timer);
-  showToast.timer = setTimeout(() => toast.classList.remove("show"), 3200);
-}
 
-function openDialog(id) {
-  const dialog = document.getElementById(id);
-  if (!dialog) return;
-  if (typeof dialog.showModal === "function") {
-    if (!dialog.open) dialog.showModal();
-  } else {
-    dialog.setAttribute("open", "");
-  }
-  document.body.classList.add("modal-open");
-}
 
-function closeDialog(id) {
-  const dialog = document.getElementById(id);
-  if (!dialog) return;
-  if (typeof dialog.close === "function" && dialog.open) dialog.close();
-  else dialog.removeAttribute("open");
+  toastTimer =
+    setTimeout(() => {
 
-  if (!$("dialog[open]")) document.body.classList.remove("modal-open");
-}
+      toast.classList.remove("show");
 
-function setupDialogs() {
-  $$("[data-close]").forEach(button => {
-    button.addEventListener("click", () => closeDialog(button.dataset.close));
-  });
+    }, 2800);
 
-  $$("dialog").forEach(dialog => {
-    dialog.addEventListener("close", () => {
-      if (!$("dialog[open]")) document.body.classList.remove("modal-open");
-    });
-
-    dialog.addEventListener("click", event => {
-      if (event.target === dialog) closeDialog(dialog.id);
-    });
-  });
-}
-
-/* ---------------- SAMPLE LISTINGS ----------------
-   These are clearly labelled demonstration listings,
-   not verified real sellers or current market offers.
---------------------------------------------------- */
-
-function createDemoListings() {
-  const now = Date.now();
-  const sample = [
-    {
-      name: "Fresh Irish potatoes",
-      category: "starchy", type: "product", saleType: "both",
-      retailPrice: 40, retailUnit: "kg",
-      bulkPrice: 2800, bulkUnit: "bag", bulkMinimum: 5,
-      quantity: 500, stockUnit: "kg", location: "Nakuru",
-      seller: "Demo Green Valley Farm", phone: "",
-      description: "Demonstration listing for potatoes. Confirm variety, bag size, quality and delivery terms with the seller.",
-      images: [MB.images.starchy], demo: true, createdAt: now - 60000
-    },
-    {
-      name: "Dry maize grain",
-      category: "grains", type: "product", saleType: "both",
-      retailPrice: 45, retailUnit: "kg",
-      bulkPrice: 3500, bulkUnit: "bag", bulkMinimum: 10,
-      quantity: 1000, stockUnit: "kg", location: "Uasin Gishu",
-      seller: "Demo Harvest Point", phone: "",
-      description: "Sample grain offer for the marketplace demonstration. Agree on moisture level, bag size and collection details.",
-      images: [MB.images.grains], demo: true, createdAt: now - 120000
-    },
-    {
-      name: "Fresh green vegetables",
-      category: "vegetables", type: "product", saleType: "retail",
-      retailPrice: 60, retailUnit: "bunch",
-      quantity: 80, stockUnit: "pieces", location: "Kiambu",
-      seller: "Demo Fresh Basket", phone: "",
-      description: "Illustrative vegetable listing. Confirm the specific vegetable and available quantity.",
-      images: [MB.images.vegetables], demo: true, createdAt: now - 180000
-    },
-    {
-      name: "Dry beans",
-      category: "legumes", type: "product", saleType: "both",
-      retailPrice: 120, retailUnit: "kg",
-      bulkPrice: 7000, bulkUnit: "bag", bulkMinimum: 5,
-      quantity: 350, stockUnit: "kg", location: "Meru",
-      seller: "Demo Farmers Collective", phone: "",
-      description: "Sample dry bean offer. Variety, bag weight and final price need confirmation.",
-      images: [MB.images.legumes], demo: true, createdAt: now - 240000
-    },
-    {
-      name: "Avocados",
-      category: "fruits", type: "product", saleType: "both",
-      retailPrice: 80, retailUnit: "kg",
-      bulkPrice: 2200, bulkUnit: "crate", bulkMinimum: 4,
-      quantity: 200, stockUnit: "kg", location: "Murang'a",
-      seller: "Demo Orchard Farm", phone: "",
-      description: "Sample avocado listing. Check size, ripeness, grade and crate capacity before agreeing.",
-      images: [MB.images.fruits], demo: true, createdAt: now - 300000
-    },
-    {
-      name: "Groundnuts",
-      category: "nuts", type: "product", saleType: "retail",
-      retailPrice: 180, retailUnit: "kg",
-      quantity: 100, stockUnit: "kg", location: "Kitui",
-      seller: "Demo Dryland Harvest", phone: "",
-      description: "Demonstration groundnut offer. Confirm whether the product is raw, roasted or processed.",
-      images: [MB.images.nuts], demo: true, createdAt: now - 360000
-    },
-    {
-      name: "Healthy dairy goats",
-      category: "livestock", type: "product", saleType: "retail",
-      retailPrice: 12000, retailUnit: "animal",
-      quantity: 4, stockUnit: "animals", location: "Nyeri",
-      seller: "Demo Livestock Centre", phone: "",
-      description: "Example livestock listing. Buyers should inspect the animals and verify relevant records before purchase.",
-      images: [MB.images.livestock], demo: true, createdAt: now - 420000
-    },
-    {
-      name: "Seedling starter packs",
-      category: "inputs", type: "product", saleType: "retail",
-      retailPrice: 250, retailUnit: "item",
-      quantity: 50, stockUnit: "items", location: "Kiambu",
-      seller: "Demo Farm Supplies", phone: "",
-      description: "Example farm-input listing. Confirm crop variety, pack contents and supplier details.",
-      images: [MB.images.inputs], demo: true, createdAt: now - 480000
-    },
-    {
-      name: "Tractor ploughing service",
-      category: "services", type: "service", serviceMode: "service",
-      servicePrice: 2500, serviceUnit: "acre",
-      quantity: 20, stockUnit: "available slots", location: "Nakuru",
-      seller: "Demo Field Services", phone: "",
-      description: "Example service offer. Confirm acreage, terrain, transport charges and availability.",
-      images: [MB.images.services], demo: true, createdAt: now - 540000
-    },
-    {
-      name: "Tractor available for hire",
-      category: "services", type: "machinery", serviceMode: "rent",
-      servicePrice: 5000, serviceUnit: "day", machineCondition: "Used - good",
-      quantity: 1, stockUnit: "items", location: "Uasin Gishu",
-      seller: "Demo Machinery Hire", phone: "",
-      description: "Illustrative machinery hire offer. Confirm operator, fuel, transport and hire conditions.",
-      images: [MB.images.services], demo: true, createdAt: now - 600000
-    }
-  ];
-
-  return sample.map((item, index) => ({
-    id: `demo-${index + 1}`,
-    ...item
-  }));
-}
-
-let listings = readStore(MB.keys.listings, null);
-if (!Array.isArray(listings)) {
-  listings = createDemoListings();
-  writeStore(MB.keys.listings, listings);
-}
-
-let requests = readStore(MB.keys.requests, []);
-if (!Array.isArray(requests)) requests = [];
-
-let cart = readStore(MB.keys.cart, []);
-if (!Array.isArray(cart)) cart = [];
-
-let profile = readStore(MB.keys.profile, null);
-let selectedCategory = "all";
-let selectedSaleFilter = "all";
-let selectedPhotos = [];
-let toastTimer = null;
-
-/* ---------------- CATEGORY AND FILTERING ---------------- */
-
-function getListingCategoryLabel(category) {
-  return MB.categoryNames[category] || "Other";
-}
-
-function listingMatchesSale(item) {
-  if (selectedSaleFilter === "all") return true;
-
-  if (selectedSaleFilter === "retail") {
-    return item.saleType === "retail" || item.saleType === "both";
-  }
-  if (selectedSaleFilter === "bulk") {
-    return item.saleType === "bulk" || item.saleType === "both";
-  }
-  if (selectedSaleFilter === "rent") {
-    return item.category === "services" && item.serviceMode === "rent";
-  }
-  if (selectedSaleFilter === "service") {
-    return item.category === "services" &&
-      (item.type === "service" || item.serviceMode === "service");
-  }
-  if (selectedSaleFilter === "sale") {
-    return item.category === "services" &&
-      (item.serviceMode === "sale" || item.type === "machinery");
-  }
-  return true;
-}
-
-function listingMatchesSearch(item, query) {
-  if (!query) return true;
-  const searchable = [
-    item.name, item.description, item.seller, item.location,
-    getListingCategoryLabel(item.category), item.serviceMode
-  ].filter(Boolean).join(" ").toLowerCase();
-  return searchable.includes(query.toLowerCase());
-}
-
-function getSortPrice(item) {
-  if (item.category === "services") return Number(item.servicePrice) || Infinity;
-  if (item.saleType === "bulk") return Number(item.bulkPrice) || Infinity;
-  return Number(item.retailPrice) || Number(item.bulkPrice) || Infinity;
-}
-
-function getFilteredListings() {
-  const query = ($("#searchInput")?.value || "").trim();
-  const categoryFromSearch = $("#searchCategory")?.value || "all";
-  const county = $("#locationFilter")?.value || "all";
-  const sort = $("#sortSelect")?.value || "newest";
-
-  let result = listings.filter(item => {
-    const category = categoryFromSearch !== "all"
-      ? categoryFromSearch
-      : selectedCategory;
-
-    return (category === "all" || item.category === category) &&
-      (county === "all" || item.location === county) &&
-      listingMatchesSale(item) &&
-      listingMatchesSearch(item, query);
-  });
-
-  if (sort === "price-low") result.sort((a, b) => getSortPrice(a) - getSortPrice(b));
-  else if (sort === "price-high") result.sort((a, b) => getSortPrice(b) - getSortPrice(a));
-  else if (sort === "name") result.sort((a, b) => a.name.localeCompare(b.name));
-  else result.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-
-  return result;
-}
-
-function renderListings() {
-  const grid = $("#listingGrid");
-  const empty = $("#emptyState");
-  if (!grid || !empty) return;
-
-  const results = getFilteredListings();
-  const categoryFromSearch = $("#searchCategory")?.value || "all";
-  const activeCategory = categoryFromSearch !== "all"
-    ? categoryFromSearch
-    : selectedCategory;
-
-  $("#activeCategoryLabel").textContent = getListingCategoryLabel(activeCategory);
-  $("#resultsCount").textContent = `${results.length} ${results.length === 1 ? "offer" : "offers"}`;
-  grid.innerHTML = "";
-  empty.hidden = results.length !== 0;
-
-  results.forEach(item => {
-    const card = document.createElement("article");
-    card.className = "listing-card";
-    const cover = item.images?.[0] || MB.images[item.category] || MB.images.fruits;
-    const retailAvailable = item.saleType === "retail" || item.saleType === "both";
-    const bulkAvailable = item.saleType === "bulk" || item.saleType === "both";
-    const isService = item.category === "services";
-
-    const badges = [];
-    if (item.demo) badges.push('<span class="listing-badge">Demo offer</span>');
-    if (retailAvailable && !isService) badges.push('<span class="listing-badge">Retail</span>');
-    if (bulkAvailable && !isService) badges.push('<span class="listing-badge bulk">Bulk</span>');
-    if (item.serviceMode === "rent") badges.push('<span class="listing-badge">For hire</span>');
-    if (item.serviceMode === "service") badges.push('<span class="listing-badge">Service</span>');
-    if (item.serviceMode === "sale") badges.push('<span class="listing-badge">For sale</span>');
-
-    let priceHTML = "";
-    if (isService) {
-      priceHTML = `<div class="listing-price"><small>${escapeHTML(item.serviceMode || "Service")}</small>
-        <strong>${escapeHTML(formatPrice(item.servicePrice, item.serviceUnit))}</strong></div>`;
-    } else {
-      if (retailAvailable) {
-        priceHTML += `<div class="listing-price"><small>Retail</small>
-          <strong>${escapeHTML(formatPrice(item.retailPrice, item.retailUnit))}</strong></div>`;
-      }
-      if (bulkAvailable) {
-        const minimum = item.bulkMinimum
-          ? `<small>Minimum: ${escapeHTML(item.bulkMinimum)} ${escapeHTML(unitLabel(item.bulkUnit))} units</small>`
-          : "";
-        priceHTML += `<div class="listing-price"><small>Bulk</small>
-          <strong>${escapeHTML(formatPrice(item.bulkPrice, item.bulkUnit))}</strong>${minimum}</div>`;
-      }
-    }
-
-    card.innerHTML = `
-      <div class="listing-image">
-        <img src="${escapeHTML(cover)}" alt="${escapeHTML(item.name)}" loading="lazy">
-        <div class="listing-badges">${badges.join("")}</div>
-      </div>
-      <div class="listing-body">
-        <div class="listing-meta">
-          <span>📍 ${escapeHTML(item.location || "Kenya")}</span>
-          <span>${escapeHTML(getListingCategoryLabel(item.category))}</span>
-        </div>
-        <h3>${escapeHTML(item.name)}</h3>
-        <p class="listing-description">${escapeHTML(item.description || "Contact the seller for more details.")}</p>
-        <div class="listing-prices">${priceHTML}</div>
-        <div class="listing-card-footer">
-          <button class="button button-outline" data-action="details" data-id="${escapeHTML(item.id)}">View details</button>
-          <button class="button button-primary" data-action="cart" data-id="${escapeHTML(item.id)}">Add to cart</button>
-        </div>
-        <div class="listing-seller">Listed by ${escapeHTML(item.seller || "Marketplace seller")}</div>
-      </div>`;
-    grid.appendChild(card);
-  });
-
-  $$(".category-card").forEach(button => {
-    button.classList.toggle("selected", button.dataset.category === activeCategory);
-  });
-}
-
-function setCategory(category) {
-  selectedCategory = category || "all";
-  $("#searchCategory").value = category || "all";
-  renderListings();
-  $("#marketplace").scrollIntoView({ behavior: "smooth", block: "start" });
-}
-
-function setupMarketplace() {
-  $$(".category-card, [data-category]").forEach(button => {
-    button.addEventListener("click", () => setCategory(button.dataset.category));
-  });
-
-  $$(".sale-filter").forEach(button => {
-    button.addEventListener("click", () => {
-      selectedSaleFilter = button.dataset.saleFilter || "all";
-      $$(".sale-filter").forEach(item => {
-        item.classList.toggle("active", item === button);
-      });
-      renderListings();
-    });
-  });
-
-  $("#searchForm")?.addEventListener("submit", event => {
-    event.preventDefault();
-    selectedCategory = $("#searchCategory").value || "all";
-    renderListings();
-    $("#marketplace").scrollIntoView({ behavior: "smooth", block: "start" });
-  });
-
-  ["searchInput", "searchCategory", "locationFilter", "sortSelect"].forEach(id => {
-    $(`#${id}`)?.addEventListener(id === "searchInput" ? "input" : "change", () => {
-      if (id === "searchCategory") selectedCategory = $("#searchCategory").value;
-      renderListings();
-    });
-  });
-
-  $("#showAllButton")?.addEventListener("click", () => {
-    selectedCategory = "all";
-    selectedSaleFilter = "all";
-    $("#searchInput").value = "";
-    $("#searchCategory").value = "all";
-    $("#locationFilter").value = "all";
-    $("#sortSelect").value = "newest";
-    $$(".sale-filter").forEach(button => {
-      button.classList.toggle("active", button.dataset.saleFilter === "all");
-    });
-    renderListings();
-  });
-
-  $("#listingGrid")?.addEventListener("click", event => {
-    const button = event.target.closest("[data-action]");
-    if (!button) return;
-    const item = listings.find(listing => listing.id === button.dataset.id);
-    if (!item) return;
-    if (button.dataset.action === "details") showListingDetails(item);
-    if (button.dataset.action === "cart") addToCart(item);
-  });
-}
-
-/* ---------------- CREATE LISTING ---------------- */
-
-function updateSaleFields() {
-  const saleType = $("#saleType")?.value || "retail";
-  const type = $("#listingType")?.value || "product";
-  const isService = type === "service" || type === "machinery";
-
-  $("#retailFields").hidden = isService || !["retail", "both"].includes(saleType);
-  $("#bulkFields").hidden = isService || !["bulk", "both"].includes(saleType);
-  $("#serviceFields").hidden = !isService;
-
-  $("#retailPrice").required = !isService && ["retail", "both"].includes(saleType);
-  $("#bulkPrice").required = !isService && ["bulk", "both"].includes(saleType);
-  $("#bulkMinimum").required = !isService && ["bulk", "both"].includes(saleType);
-  $("#servicePrice").required = isService;
-}
-
-function openListingForm() {
-  $("#listingForm").reset();
-  selectedPhotos = [];
-  $("#photoPreview").innerHTML = "";
-  $("#listingMessage").textContent = "";
-  $("#listingType").value = "product";
-  $("#saleType").value = "retail";
-  $("#listingCategory").value = "";
-  $("#machineCondition").value = "Not applicable";
-  updateSaleFields();
-  openDialog("listingModal");
-}
-
-function setupListingForm() {
-  ["openListingButton", "heroSellButton", "marketSellButton", "footerSellButton"]
-    .forEach(id => $(`#${id}`)?.addEventListener("click", openListingForm));
-
-  $("#saleType")?.addEventListener("change", updateSaleFields);
-  $("#listingType")?.addEventListener("change", () => {
-    if ($("#listingType").value !== "product") {
-      $("#listingCategory").value = "services";
-    }
-    updateSaleFields();
-  });
-
-  $("#listingCategory")?.addEventListener("change", () => {
-    if ($("#listingCategory").value === "services") {
-      if ($("#listingType").value === "product") $("#listingType").value = "machinery";
-    } else if ($("#listingType").value !== "product") {
-      $("#listingType").value = "product";
-    }
-    updateSaleFields();
-  });
-
-  $("#listingPhotos")?.addEventListener("change", handlePhotoSelection);
-  $("#photoPreview")?.addEventListener("click", event => {
-    const removeButton = event.target.closest("[data-remove-photo]");
-    if (!removeButton) return;
-    selectedPhotos.splice(Number(removeButton.dataset.removePhoto), 1);
-    renderPhotoPreview();
-  });
-
-  $("#listingForm")?.addEventListener("submit", async event => {
-    event.preventDefault();
-    const message = $("#listingMessage");
-    message.textContent = "";
-
-    const type = $("#listingType").value;
-    const category = $("#listingCategory").value;
-    const saleType = $("#saleType").value;
-    const isService = type === "service" || type === "machinery";
-
-    if (isService && category !== "services") {
-      message.textContent = "Choose Services & machinery for a service or machinery listing.";
-      return;
-    }
-
-    const retailPrice = $("#retailPrice").value;
-    const bulkPrice = $("#bulkPrice").value;
-    const bulkMinimum = $("#bulkMinimum").value;
-    const servicePrice = $("#servicePrice").value;
-
-    if (!isService && ["retail", "both"].includes(saleType) &&
-        (retailPrice === "" || Number(retailPrice) < 0)) {
-      message.textContent = "Enter a valid retail price.";
-      return;
-    }
-    if (!isService && ["bulk", "both"].includes(saleType) &&
-        (bulkPrice === "" || Number(bulkPrice) < 0 || Number(bulkMinimum) < 1)) {
-      message.textContent = "Enter a valid bulk price and minimum bulk order.";
-      return;
-    }
-    if (isService && (servicePrice === "" || Number(servicePrice) < 0)) {
-      message.textContent = "Enter a valid service or machinery price.";
-      return;
-    }
-
-    const submitButton = $('#listingForm button[type="submit"]');
-    submitButton.disabled = true;
-    submitButton.textContent = "Preparing listing…";
-
-    try {
-      const imageData = [];
-      for (const file of selectedPhotos.slice(0, 6)) {
-        imageData.push(await compressImage(file));
-      }
-
-      const item = {
-        id: makeId("listing"),
-        name: $("#listingName").value.trim(),
-        category,
-        type,
-        saleType: isService ? "service" : saleType,
-        retailPrice: !isService && ["retail", "both"].includes(saleType) ? Number(retailPrice) : null,
-        retailUnit: $("#retailUnit").value,
-        bulkPrice: !isService && ["bulk", "both"].includes(saleType) ? Number(bulkPrice) : null,
-        bulkUnit: $("#bulkUnit").value,
-        bulkMinimum: !isService && ["bulk", "both"].includes(saleType) ? Number(bulkMinimum) : null,
-        serviceMode: isService ? $("#serviceMode").value : "",
-        servicePrice: isService ? Number(servicePrice) : null,
-        serviceUnit: $("#serviceUnit").value,
-        machineCondition: isService ? $("#machineCondition").value : "",
-        quantity: $("#listingQuantity").value === "" ? null : Number($("#listingQuantity").value),
-        stockUnit: $("#listingStockUnit").value,
-        location: $("#listingLocation").value,
-        seller: $("#listingSeller").value.trim(),
-        phone: $("#listingPhone").value.trim(),
-        description: $("#listingDescription").value.trim(),
-        images: imageData.length ? imageData : [MB.images[category] || MB.images.fruits],
-        demo: false,
-        createdAt: Date.now()
-      };
-
-      listings.unshift(item);
-      if (!writeStore(MB.keys.listings, listings)) {
-        listings.shift();
-        return;
-      }
-
-      closeDialog("listingModal");
-      renderListings();
-      showToast("Your listing has been added to this browser's demo marketplace.");
-      $("#marketplace").scrollIntoView({ behavior: "smooth" });
-    } catch (error) {
-      console.error(error);
-      message.textContent = "Could not process those photos. Try smaller images or fewer photos.";
-    } finally {
-      submitButton.disabled = false;
-      submitButton.textContent = "Publish listing";
-    }
-  });
-}
-
-async function compressImage(file) {
-  if (!file.type.startsWith("image/")) {
-    throw new Error("Please select image files.");
-  }
-
-  // Resize images before saving to localStorage to reduce quota errors.
-  const imageURL = URL.createObjectURL(file);
-
-  try {
-    const image = new Image();
-    image.src = imageURL;
-    await new Promise((resolve, reject) => {
-      image.onload = resolve;
-      image.onerror = reject;
-    });
-
-    const maxDimension = 1100;
-    const ratio = Math.min(1, maxDimension / Math.max(image.width, image.height));
-    const canvas = document.createElement("canvas");
-    canvas.width = Math.max(1, Math.round(image.width * ratio));
-    canvas.height = Math.max(1, Math.round(image.height * ratio));
-
-    const context = canvas.getContext("2d");
-    if (!context) throw new Error("Image processing is unavailable.");
-    context.drawImage(image, 0, 0, canvas.width, canvas.height);
-
-    return canvas.toDataURL("image/jpeg", 0.72);
-  } finally {
-    URL.revokeObjectURL(imageURL);
-  }
-}
-
-function handlePhotoSelection(event) {
-  const files = [...event.target.files];
-  const remaining = Math.max(0, 6 - selectedPhotos.length);
-
-  if (files.length > remaining) {
-    showToast("You can add up to 6 photos per listing.");
-  }
-
-  selectedPhotos.push(...files.slice(0, remaining));
-  selectedPhotos = selectedPhotos.slice(0, 6);
-  renderPhotoPreview();
-
-  // Let the same file be selected again if the user removes it.
-  event.target.value = "";
-}
-
-function renderPhotoPreview() {
-  const preview = $("#photoPreview");
-  if (!preview) return;
-  preview.innerHTML = "";
-
-  selectedPhotos.forEach((file, index) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      // A file may have been removed while its preview was loading.
-      if (!selectedPhotos.includes(file)) return;
-      const item = document.createElement("div");
-      item.className = "photo-preview-item";
-      item.innerHTML = `
-        <img src="${reader.result}" alt="Selected listing photo">
-        ${index === 0 ? "<small>Cover photo</small>" : ""}
-        <button type="button" data-remove-photo="${index}" aria-label="Remove photo">×</button>`;
-      preview.appendChild(item);
-    };
-    reader.readAsDataURL(file);
-  });
-}
-
-/* ---------------- LISTING DETAILS ---------------- */
-
-function showListingDetails(item) {
-  const images = (item.images || []).slice(0, 6);
-  const gallery = images.length
-    ? `<div class="detail-gallery">${images.map((src, index) =>
-        `<img src="${escapeHTML(src)}" alt="${escapeHTML(item.name)} photo ${index + 1}" loading="lazy">`
-      ).join("")}</div>`
-    : "";
-
-  const service = item.category === "services";
-  const prices = service
-    ? `<p><strong>${escapeHTML(item.serviceMode || "Service")}:</strong>
-         ${escapeHTML(formatPrice(item.servicePrice, item.serviceUnit))}</p>
-       ${item.machineCondition ? `<p><strong>Condition:</strong> ${escapeHTML(item.machineCondition)}</p>` : ""}`
-    : `<div class="listing-prices">
-        ${(item.saleType === "retail" || item.saleType === "both")
-          ? `<div class="listing-price"><small>Retail</small><strong>${escapeHTML(formatPrice(item.retailPrice, item.retailUnit))}</strong></div>` : ""}
-        ${(item.saleType === "bulk" || item.saleType === "both")
-          ? `<div class="listing-price"><small>Bulk</small><strong>${escapeHTML(formatPrice(item.bulkPrice, item.bulkUnit))}</strong><small>Minimum: ${escapeHTML(item.bulkMinimum || 1)}</small></div>` : ""}
-       </div>`;
-
-  const phoneHTML = item.phone
-    ? `<p><strong>Contact:</strong> <a href="tel:${escapeHTML(item.phone)}">${escapeHTML(item.phone)}</a></p>`
-    : `<p>Contact information has not been provided in this demo listing.</p>`;
-
-  $("#detailContent").innerHTML = `
-    ${gallery}
-    <span class="request-type">${escapeHTML(getListingCategoryLabel(item.category))}</span>
-    <h2>${escapeHTML(item.name)}</h2>
-    <p class="detail-copy">${escapeHTML(item.description || "No description provided.")}</p>
-    ${prices}
-    <div class="detail-contact">
-      <p><strong>Seller:</strong> ${escapeHTML(item.seller || "Marketplace seller")}</p>
-      <p><strong>County:</strong> ${escapeHTML(item.location || "Not specified")}</p>
-      ${item.quantity !== null && item.quantity !== undefined
-        ? `<p><strong>Availability:</strong> ${escapeHTML(item.quantity)} ${escapeHTML(item.stockUnit || "")}</p>` : ""}
-      ${phoneHTML}
-    </div>
-    ${item.demo ? '<p class="fine-print">This is a sample demonstration offer, not a verified real seller.</p>' : ""}
-    <div class="modal-actions">
-      <button class="button button-outline" data-close="detailModal">Close</button>
-      <button class="button button-primary" id="detailAddToCart">Add to cart</button>
-    </div>`;
-
-  $("#detailAddToCart")?.addEventListener("click", () => addToCart(item));
-  openDialog("detailModal");
-}
-
-/* ---------------- CART ---------------- */
-
-function addToCart(item) {
-  const existing = cart.find(line => line.id === item.id);
-  if (existing) existing.quantity += 1;
-  else cart.push({ id: item.id, quantity: 1 });
-
-  if (!writeStore(MB.keys.cart, cart)) return;
-  renderCart();
-  showToast(`${item.name} added to your demo cart.`);
-}
-
-function getCartLines() {
-  return cart.map(line => {
-    const item = listings.find(listing => listing.id === line.id);
-    return item ? { ...line, item } : null;
-  }).filter(Boolean);
-}
-
-function getCartPrice(item) {
-  if (item.category === "services") return Number(item.servicePrice) || 0;
-  if (item.saleType === "bulk") return Number(item.bulkPrice) || 0;
-  return Number(item.retailPrice ?? item.bulkPrice) || 0;
-}
-
-function renderCart() {
-  const lines = getCartLines();
-  const count = lines.reduce((sum, line) => sum + line.quantity, 0);
-  const subtotal = lines.reduce((sum, line) => sum + getCartPrice(line.item) * line.quantity, 0);
-
-  $("#cartCount").textContent = String(count);
-  $("#cartSubtotal").textContent = formatMoney(subtotal);
-
-  const container = $("#cartItems");
-  container.innerHTML = "";
-
-  if (!lines.length) {
-    container.innerHTML = '<div class="empty-state compact"><span>🛒</span><h3>Your cart is empty</h3><p>Explore the marketplace to add demo items.</p></div>';
-    return;
-  }
-
-  lines.forEach(line => {
-    const item = document.createElement("div");
-    item.className = "cart-line";
-    item.innerHTML = `
-      <div><strong>${escapeHTML(line.item.name)}</strong>
-        <small>${escapeHTML(formatPrice(getCartPrice(line.item), line.item.category === "services" ? line.item.serviceUnit : line.item.retailUnit))}</small>
-        <small>Quantity: ${escapeHTML(line.quantity)}</small>
-      </div>
-      <div class="cart-line-actions">
-        <button data-cart-action="minus" data-id="${escapeHTML(line.id)}" aria-label="Reduce quantity">−</button>
-        <span>${escapeHTML(line.quantity)}</span>
-        <button data-cart-action="plus" data-id="${escapeHTML(line.id)}" aria-label="Increase quantity">+</button>
-        <button data-cart-action="remove" data-id="${escapeHTML(line.id)}" aria-label="Remove item">×</button>
-      </div>`;
-    container.appendChild(item);
-  });
-}
-
-function setupCart() {
-  $("#openCartButton")?.addEventListener("click", () => {
-    renderCart();
-    openDialog("cartModal");
-  });
-
-  $("#cartItems")?.addEventListener("click", event => {
-    const button = event.target.closest("[data-cart-action]");
-    if (!button) return;
-
-    const line = cart.find(item => item.id === button.dataset.id);
-    if (!line) return;
-
-    if (button.dataset.cartAction === "minus") line.quantity -= 1;
-    if (button.dataset.cartAction === "plus") line.quantity += 1;
-    if (button.dataset.cartAction === "remove") line.quantity = 0;
-
-    cart = cart.filter(item => item.quantity > 0);
-    writeStore(MB.keys.cart, cart);
-    renderCart();
-  });
-
-  $("#clearCartButton")?.addEventListener("click", () => {
-    cart = [];
-    writeStore(MB.keys.cart, cart);
-    renderCart();
-    showToast("Demo cart cleared.");
-  });
-
-  $("#checkoutButton")?.addEventListener("click", () => {
-    if (!cart.length) {
-      showToast("Your cart is empty.");
-      return;
-    }
-    showToast("Demo only: no order or payment has been sent.");
-  });
-}
-
-/* ---------------- BUYER REQUEST BOARD ---------------- */
-
-function renderRequests() {
-  const grid = $("#requestGrid");
-  const empty = $("#requestEmpty");
-  if (!grid || !empty) return;
-
-  grid.innerHTML = "";
-  empty.hidden = requests.length > 0;
-
-  [...requests].sort((a, b) => b.createdAt - a.createdAt).forEach(request => {
-    const card = document.createElement("article");
-    card.className = "request-card";
-    card.innerHTML = `
-      <span class="request-type">${escapeHTML(request.type)}</span>
-      <h3>${escapeHTML(request.title)}</h3>
-      <div class="request-details">
-        <span>📍 ${escapeHTML(request.location)}</span>
-        ${request.budget !== null ? `<span>💰 Budget: ${escapeHTML(formatMoney(request.budget))}</span>` : ""}
-      </div>
-      <p>${escapeHTML(request.description || "Contact the buyer for more details.")}</p>
-      ${request.contact
-        ? `<p><strong>Contact:</strong> ${escapeHTML(request.contact)}</p>`
-        : '<p class="fine-print">No contact details provided.</p>'}
-      <p class="fine-print">${request.demo ? "Sample request" : "Local demo request"}</p>`;
-    grid.appendChild(card);
-  });
-}
-
-function openRequestForm() {
-  $("#requestForm").reset();
-  $("#requestMessage").textContent = "";
-  openDialog("requestModal");
-}
-
-function setupRequests() {
-  $("#openRequestButton")?.addEventListener("click", openRequestForm);
-  $("#openRequestButtonEmpty")?.addEventListener("click", openRequestForm);
-
-  $("#requestForm")?.addEventListener("submit", event => {
-    event.preventDefault();
-
-    const budgetText = $("#requestBudget").value;
-    const request = {
-      id: makeId("request"),
-      title: $("#requestTitle").value.trim(),
-      type: $("#requestType").value,
-      location: $("#requestLocation").value,
-      budget: budgetText === "" ? null : Number(budgetText),
-      contact: $("#requestContact").value.trim(),
-      description: $("#requestDescription").value.trim(),
-      createdAt: Date.now(),
-      demo: false
-    };
-
-    if (!request.title || !request.location) {
-      $("#requestMessage").textContent = "Please provide a request title and county.";
-      return;
-    }
-
-    requests.unshift(request);
-    if (!writeStore(MB.keys.requests, requests)) {
-      requests.shift();
-      return;
-    }
-
-    renderRequests();
-    closeDialog("requestModal");
-    showToast("Your request has been posted in this browser's demo board.");
-    $("#need-board").scrollIntoView({ behavior: "smooth" });
-  });
-}
-
-/* ---------------- DEMO PROFILE ---------------- */
-
-function renderProfileButton() {
-  const button = $("#profileButton");
-  if (!button) return;
-  button.textContent = profile?.name
-    ? `Hi, ${profile.name.slice(0, 14)}`
-    : "My profile";
-}
-
-function setupProfile() {
-  renderProfileButton();
-
-  $("#profileButton")?.addEventListener("click", () => {
-    $("#profileName").value = profile?.name || "";
-    $("#profileRole").value = profile?.role || "farmer";
-    openDialog("loginModal");
-  });
-
-  $("#loginForm")?.addEventListener("submit", event => {
-    event.preventDefault();
-    profile = {
-      name: $("#profileName").value.trim(),
-      role: $("#profileRole").value
-    };
-
-    if (!profile.name) return;
-    if (!writeStore(MB.keys.profile, profile)) return;
-
-    renderProfileButton();
-    closeDialog("loginModal");
-    showToast("Demo profile saved in this browser. No account was created.");
-  });
-}
-
-/* ---------------- COUNTY INSIGHTS ---------------- */
-
-const countyInsights = {
-  Nairobi: "Explore urban retailers, food businesses and buyers. Use the county filter to narrow available demo offers.",
-  Kiambu: "Discover sample horticulture, fruit and farm-input offers. Check each listing for its actual collection location.",
-  Nakuru: "Explore illustrative grain, potato and agricultural-service listings in this demo marketplace.",
-  "Uasin Gishu": "Explore sample grain and machinery offers. Verify quantities, quality and transport arrangements directly.",
-  Meru: "Discover illustrative legume and produce offers. Ask sellers about harvest timing and availability.",
-  Nyeri: "Explore sample livestock and agricultural offers. Confirm quality and seller details before making arrangements.",
-  Kirinyaga: "Use category filters to explore sample produce listings and compare seller-provided terms.",
-  "Murang'a": "Explore illustrative fruit and produce listings. Confirm grades, quantities and delivery terms with sellers.",
-  Machakos: "Browse the marketplace for sample farm-input, produce and service listings.",
-  Makueni: "Explore sample dryland produce and agricultural-service offers in this demonstration.",
-  Kajiado: "Browse livestock and machinery categories, and verify all listing information before arranging a transaction.",
-  Laikipia: "Explore sample livestock and agricultural-service listings in the demo marketplace.",
-  Kakamega: "Browse produce and farm-input categories to discover illustrative offers.",
-  Bungoma: "Explore sample grain and produce offers. Confirm prices and bag sizes directly with sellers.",
-  Kisumu: "Use the search and county filters to find relevant sample offers in the marketplace.",
-  "Trans Nzoia": "Explore illustrative grain and farm-service offers. Check the seller's details and availability.",
-  Embu: "Browse produce, grain and farm-input categories for demonstration listings.",
-  Kitui: "Explore sample nuts and dryland produce listings. Confirm product condition and quantity.",
-  Other: "Choose a category or search for a product to discover relevant listings in this demo."
-};
-
-function setupCountyInsights() {
-  const select = $("#countySelect");
-  if (!select) return;
-
-  function update() {
-    const county = select.value;
-    $("#insightMessage").innerHTML = `
-      <span class="insight-icon">📍</span>
-      <h3>${escapeHTML(county)} market insight</h3>
-      <p>${escapeHTML(countyInsights[county] || countyInsights.Other)}</p>
-      <button class="button button-outline" id="filterCountyButton" type="button">View ${escapeHTML(county)} listings →</button>`;
-
-    $("#filterCountyButton")?.addEventListener("click", () => {
-      $("#locationFilter").value = county;
-      selectedCategory = "all";
-      $("#searchCategory").value = "all";
-      renderListings();
-      $("#marketplace").scrollIntoView({ behavior: "smooth" });
-    });
-  }
-
-  select.addEventListener("change", update);
-  update();
-}
-
-/* ---------------- MOBILE NAVIGATION ---------------- */
-
-function setupMobileMenu() {
-  const toggle = $("#menuToggle");
-  const nav = $("#mainNav");
-  if (!toggle || !nav) return;
-
-  toggle.addEventListener("click", () => {
-    const open = nav.classList.toggle("open");
-    toggle.setAttribute("aria-expanded", String(open));
-    toggle.setAttribute("aria-label", open ? "Close navigation" : "Open navigation");
-    toggle.textContent = open ? "✕" : "☰";
-  });
-
-  nav.querySelectorAll("a").forEach(link => {
-    link.addEventListener("click", () => {
-      nav.classList.remove("open");
-      toggle.setAttribute("aria-expanded", "false");
-      toggle.setAttribute("aria-label", "Open navigation");
-      toggle.textContent = "☰";
-    });
-  });
-}
-
-/* ---------------- STARTUP ---------------- */
-
-function initialiseApp() {
-  $("#currentYear").textContent = String(new Date().getFullYear());
-
-  setupDialogs();
-  setupMarketplace();
-  setupListingForm();
-  setupCart();
-  setupRequests();
-  setupProfile();
-  setupCountyInsights();
-  setupMobileMenu();
-
-  renderListings();
-  renderCart();
-  renderRequests();
-  updateSaleFields();
-
-  console.info("MavunoBridge demo marketplace loaded.");
-}
-
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", initialiseApp);
-} else {
-  initialiseApp();
 }
