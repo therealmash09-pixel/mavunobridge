@@ -1,1544 +1,537 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <title>MavunoMart | Kenya's Smart Agricultural Marketplace</title>
-
-  <meta
-    name="description"
-    content="MavunoMart connects Kenyan farmers and buyers through a smart agricultural marketplace with fair-price guidance."
-  >
+  <title>MavunoBridge | Kenya's Agricultural Marketplace</title>
+  <meta name="description" content="MavunoBridge connects Kenyan farmers, buyers and agricultural businesses through a smarter agricultural marketplace.">
+  <meta name="theme-color" content="#123d2a">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-    rel="stylesheet"
-  >
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="style.css">
+
   <script src="chat.js" defer></script>
   <script src="app.js" defer></script>
 </head>
 
 <body>
-
-  <!-- ==============================
-       TOP ANNOUNCEMENT
-  =============================== -->
   <div class="announcement">
-    <span>🌱</span>
-    <strong>MavunoMart</strong>
-    <span>— Fairer prices. Smarter farming. Better connections.</span>
+    <span>🇰🇪</span>
+    <strong>MavunoBridge</strong>
+    <span>— Connecting shambas to better opportunities.</span>
   </div>
 
-
-  <!-- ==============================
-       HEADER
-  =============================== -->
   <header class="site-header">
-
     <div class="container nav-wrapper">
-
-      <a href="#home" class="brand">
-        <div class="brand-icon">🌱</div>
-
-        <div>
-          <strong>MavunoMart</strong>
+      <a href="#home" class="brand" aria-label="MavunoBridge home">
+        <span class="brand-icon">🌱</span>
+        <span>
+          <strong>Mavuno<span class="brand-accent">Bridge</span></strong>
           <small>Kenyan Agriculture Marketplace</small>
-        </div>
+        </span>
       </a>
 
-
-      <nav class="desktop-nav">
-
+      <nav class="desktop-nav" aria-label="Main navigation">
         <a href="#home" data-i18n="navHome">Home</a>
-
-        <a href="#marketplace" data-i18n="navMarketplace">
-          Marketplace
-        </a>
-
-        <a href="#smartAssist" data-i18n="navSmart">
-          Smart Assist
-        </a>
-
-        <a href="#community" data-i18n="navCommunity">
-          Community
-        </a>
-
+        <a href="#marketplace" data-i18n="navMarketplace">Marketplace</a>
+        <a href="#smartAssist" data-i18n="navSmart">Smart Assist</a>
+        <a href="#community" data-i18n="navCommunity">Community</a>
       </nav>
 
-
       <div class="nav-actions">
-
-        <select id="languageSelect" aria-label="Language">
+        <label for="languageSelect" class="hidden">Choose language</label>
+        <select id="languageSelect" aria-label="Choose language">
           <option value="en">English</option>
           <option value="sw">Kiswahili</option>
           <option value="sheng">Sheng</option>
         </select>
 
-
-        <a
-          class="btn btn-outline"
-          href="messages.html"
-        >
+        <a class="btn btn-outline" href="messages.html">
           💬 Messages <span id="msgCount"></span>
         </a>
 
-
-        <button
-          class="cart-button"
-          id="cartButton"
-          type="button"
-          aria-label="Shopping cart"
-        >
-          🛒
-          <span data-i18n="cart">Cart</span>
-
-          <span
-            id="cartCount"
-            class="cart-count"
-          >
-            0
-          </span>
+        <button class="cart-button" id="cartButton" type="button">
+          🛒 <span data-i18n="cart">Cart</span>
+          <span id="cartCount" class="cart-count">0</span>
         </button>
 
-
-        <button
-          class="btn btn-outline"
-          id="loginButton"
-          type="button"
-          data-i18n="login"
-        >
+        <button class="btn btn-outline" id="loginButton" type="button" data-i18n="login">
           Login
         </button>
 
-
-        <button
-          class="menu-toggle"
-          id="menuToggle"
-          type="button"
-          aria-label="Open menu"
-        >
+        <button class="btn btn-outline menu-toggle" id="menuToggle" type="button" aria-label="Open navigation menu" aria-controls="mobileNav" aria-expanded="false">
           ☰
         </button>
-
       </div>
-
     </div>
 
-
-    <nav id="mobileNav" class="mobile-nav">
-
+    <nav id="mobileNav" class="mobile-nav" aria-label="Mobile navigation">
       <a href="#home">Home</a>
       <a href="#marketplace">Marketplace</a>
-      <a href="#smartAssist">Smart Assist</a>
+      <a href="smart-assist.html">Smart Assist</a>
+      <a href="sacco.html">SACCO Hub</a>
       <a href="#community">Community</a>
       <a href="messages.html">Messages</a>
-
     </nav>
-
   </header>
 
-
-  <!-- ==============================
-       HERO
-  =============================== -->
   <main>
-
-    <section id="home" class="hero">
-
+    <!-- HERO -->
+    <section class="hero" id="home">
       <div class="container hero-grid">
-
         <div class="hero-content">
+          <span class="eyebrow">🌍 Built for Kenyan Agriculture</span>
 
-          <div class="eyebrow">
-            🇰🇪 Built for Kenyan Agriculture
-          </div>
-
-          <h1>
-            From the
-            <span>shamba</span>
-            to the market.
-          </h1>
+          <h1>From the shamba to <span>better markets.</span></h1>
 
           <p>
-            MavunoMart connects farmers, buyers and agricultural
-            businesses while helping people make smarter and fairer
-            purchasing decisions.
+            Find fresh farm produce, compare prices, connect directly with farmers
+            and discover new farming opportunities. Soko iko hapa!
           </p>
 
-
-          <div class="hero-buttons">
-
-            <a
-              href="#marketplace"
-              class="btn btn-primary btn-large"
-            >
-              🛒 Explore Marketplace
-            </a>
-
-            <button
-              class="btn btn-light btn-large"
-              id="heroSellButton"
-              type="button"
-            >
-              🧑🏾‍🌾 Sell Your Product
+          <div class="hero-actions">
+            <a href="#marketplace" class="btn btn-primary">🛒 Explore Marketplace</a>
+            <button class="btn btn-light" id="heroSellButton" type="button">
+              🧑🏾‍🌾 Sell Your Products
             </button>
-
           </div>
-
 
           <div class="hero-stats">
-
-            <div>
-              <strong>9+</strong>
-              <span>Product categories</span>
-            </div>
-
-            <div>
-              <strong>47</strong>
-              <span>Counties supported</span>
-            </div>
-
-            <div>
-              <strong>24/7</strong>
-              <span>Marketplace access</span>
-            </div>
-
+            <div><strong>8+</strong><span>Product categories</span></div>
+            <div><strong>47</strong><span>Counties to explore</span></div>
+            <div><strong>24/7</strong><span>Online access</span></div>
           </div>
-
         </div>
 
-
-        <div class="hero-card">
-
-          <div class="hero-card-top">
-            <span>🛡️</span>
-
-            <div>
-              <strong>Fair Price Shield</strong>
-              <small>Protecting smarter purchases</small>
-            </div>
+        <div class="hero-visual">
+          <img
+            src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1100&q=85"
+            alt="Green agricultural fields in a rural farming landscape"
+            fetchpriority="high"
+          >
+          <div class="floating-note">
+            <strong>🌿 Grow. Connect. Thrive.</strong>
+            <span>Bringing farmers and buyers closer.</span>
           </div>
-
-
-          <div class="price-demo">
-
-            <div>
-              <span>Tomatoes</span>
-              <strong>KSh 80/kg</strong>
-            </div>
-
-            <div class="price-meter">
-              <span></span>
-            </div>
-
-            <small>
-              🟢 Within the indicative fair-price range
-            </small>
-
-          </div>
-
-
-          <div class="hero-mini-grid">
-
-            <div>
-              <span>📍</span>
-              <strong>Local</strong>
-              <small>Kenyan sellers</small>
-            </div>
-
-            <div>
-              <span>📦</span>
-              <strong>Bulk</strong>
-              <small>Wholesale options</small>
-            </div>
-
-            <div>
-              <span>🔎</span>
-              <strong>Smart</strong>
-              <small>Better discovery</small>
-            </div>
-
-            <div>
-              <span>🤝</span>
-              <strong>Direct</strong>
-              <small>Buyer & farmer</small>
-            </div>
-
-          </div>
-
         </div>
-
       </div>
-
     </section>
 
-
-    <!-- ==============================
-         SEARCH
-    =============================== -->
-    <section class="search-section">
-
+    <!-- MARKETPLACE -->
+    <section class="section" id="marketplace">
       <div class="container">
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow">THE DIGITAL SOKO</span>
+            <h2>Explore the marketplace</h2>
+            <p>Search products, check available offers and connect with sellers across Kenya.</p>
+          </div>
+          <button class="btn btn-primary" id="sellButton" type="button">
+            + List a product
+          </button>
+        </div>
 
-        <form id="searchForm" class="search-box">
-
-          <span class="search-icon">🔎</span>
-
+        <form class="search-box" id="searchForm">
+          <label class="hidden" for="searchInput">Search marketplace</label>
           <input
             id="searchInput"
             type="search"
-            placeholder="Search products e.g. Hass avocados..."
+            placeholder="Search tomatoes, maize, avocados..."
             data-i18n-placeholder="searchPlaceholder"
-            autocomplete="off"
           >
 
-
+          <label class="hidden" for="searchCategory">Search category</label>
           <select id="searchCategory">
-
-            <option value="all">All categories</option>
-            <option value="produce">Produce</option>
-            <option value="inputs">Farm Inputs</option>
+            <option value="produce">Farm produce</option>
+            <option value="inputs">Farm inputs</option>
             <option value="livestock">Livestock</option>
-
           </select>
 
-
-          <button
-            type="submit"
-            class="btn btn-primary"
-          >
-            Search
-          </button>
-
+          <button class="btn btn-primary" type="submit">Search</button>
         </form>
 
-      </div>
-
-    </section>
-
-
-    <!-- ==============================
-         CATEGORIES
-    =============================== -->
-    <section class="section categories-section">
-
-      <div class="container">
-
-        <div class="section-heading">
-
-          <div>
-            <span class="section-label">EXPLORE</span>
-
-            <h2>
-              Shop by category
-            </h2>
-
-            <p>
-              Find fresh produce, livestock and farming supplies.
-            </p>
-          </div>
-
+        <div class="category-grid" aria-label="Product categories">
+          <button class="category-card active" data-category="all" type="button">
+            <span class="category-icon">🛍️</span>All products
+          </button>
+          <button class="category-card" data-category="fruits" type="button">
+            <span class="category-icon">🥑</span>Fruits
+          </button>
+          <button class="category-card" data-category="vegetables" type="button">
+            <span class="category-icon">🥬</span>Vegetables
+          </button>
+          <button class="category-card" data-category="nuts" type="button">
+            <span class="category-icon">🥜</span>Nuts
+          </button>
+          <button class="category-card" data-category="starchy" type="button">
+            <span class="category-icon">🥔</span>Starchy foods
+          </button>
+          <button class="category-card" data-category="grains" type="button">
+            <span class="category-icon">🌽</span>Grains
+          </button>
+          <button class="category-card" data-category="legumes" type="button">
+            <span class="category-icon">🫘</span>Legumes
+          </button>
+          <button class="category-card" data-category="livestock" type="button">
+            <span class="category-icon">🐄</span>Livestock
+          </button>
+          <button class="category-card" data-category="inputs" type="button">
+            <span class="category-icon">🌱</span>Farm inputs
+          </button>
         </div>
 
+        <div class="filter-row" aria-label="Marketplace filters">
+          <span>Sale type:</span>
+          <button class="btn btn-outline active" type="button" data-sale-filter="all">All</button>
+          <button class="btn btn-outline" type="button" data-sale-filter="retail">Retail</button>
+          <button class="btn btn-outline" type="button" data-sale-filter="bulk">Bulk</button>
 
-        <div class="category-grid">
-
-          <button
-            class="category-card"
-            data-category="fruits"
-            type="button"
-          >
-            <span class="category-image fruits-image"></span>
-            <strong>Fruits</strong>
-            <small>Fresh Kenyan fruits</small>
-          </button>
-
-
-          <button
-            class="category-card"
-            data-category="vegetables"
-            type="button"
-          >
-            <span class="category-image vegetables-image"></span>
-            <strong>Vegetables</strong>
-            <small>Fresh vegetables</small>
-          </button>
-
-
-          <button
-            class="category-card"
-            data-category="nuts"
-            type="button"
-          >
-            <span class="category-image nuts-image"></span>
-            <strong>Nuts</strong>
-            <small>Nuts & tree crops</small>
-          </button>
-
-
-          <button
-            class="category-card"
-            data-category="starchy"
-            type="button"
-          >
-            <span class="category-image starchy-image"></span>
-            <strong>Starchy Foods</strong>
-            <small>Roots & tubers</small>
-          </button>
-
-
-          <button
-            class="category-card"
-            data-category="grains"
-            type="button"
-          >
-            <span class="category-image grains-image"></span>
-            <strong>Grains</strong>
-            <small>Cereals & grains</small>
-          </button>
-
-
-          <button
-            class="category-card"
-            data-category="legumes"
-            type="button"
-          >
-            <span class="category-image legumes-image"></span>
-            <strong>Legumes</strong>
-            <small>Beans & pulses</small>
-          </button>
-
-
-          <button
-            class="category-card"
-            data-category="livestock"
-            type="button"
-          >
-            <span class="category-image livestock-image"></span>
-            <strong>Livestock</strong>
-            <small>Animals & products</small>
-          </button>
-
-
-          <button
-            class="category-card"
-            data-category="inputs"
-            type="button"
-          >
-            <span class="category-image inputs-image"></span>
-            <strong>Farm Inputs</strong>
-            <small>Tools & supplies</small>
-          </button>
-
-        </div>
-
-      </div>
-
-    </section>
-
-
-    <!-- ==============================
-         MARKETPLACE
-    =============================== -->
-    <section
-      id="marketplace"
-      class="section marketplace-section"
-    >
-
-      <div class="container">
-
-        <div class="marketplace-header">
-
-          <div>
-            <span class="section-label">MARKETPLACE</span>
-
-            <h2>
-              Find what you need
-            </h2>
-
-            <p>
-              Compare products and make informed purchasing decisions.
-            </p>
-          </div>
-
-
-          <button
-            class="btn btn-primary"
-            id="sellButton"
-            type="button"
-          >
-            + List a Product
-          </button>
-
-        </div>
-
-
-        <!-- FAIR PRICE EXPLANATION -->
-
-        <div class="fair-price-banner">
-
-          <div class="fair-price-icon">
-            🛡️
-          </div>
-
-          <div class="fair-price-content">
-
-            <strong>
-              Fair Price Shield
-            </strong>
-
-            <p>
-              We compare seller prices against indicative market
-              ranges to help buyers identify unusually high prices.
-            </p>
-
-          </div>
-
-          <div class="fair-legend">
-
-            <span class="fair-good">
-              ● Fair
-            </span>
-
-            <span class="fair-watch">
-              ● Above range
-            </span>
-
-            <span class="fair-high">
-              ● Potentially overpriced
-            </span>
-
-          </div>
-
-        </div>
-
-
-        <!-- FILTERS -->
-
-        <div class="marketplace-controls">
-
-          <div class="filter-pills">
-
-            <button
-              class="filter-pill active"
-              data-sale-filter="all"
-              type="button"
-            >
-              All
-            </button>
-
-            <button
-              class="filter-pill"
-              data-sale-filter="retail"
-              type="button"
-            >
-              Retail
-            </button>
-
-            <button
-              class="filter-pill"
-              data-sale-filter="bulk"
-              type="button"
-            >
-              Bulk
-            </button>
-
-          </div>
-
-
+          <label for="locationFilter">County</label>
           <select id="locationFilter">
-
-            <option value="all">
-              All locations
-            </option>
-
-            <option value="Nairobi">Nairobi</option>
+            <option value="all">All counties</option>
             <option value="Kiambu">Kiambu</option>
             <option value="Nakuru">Nakuru</option>
-            <option value="Murang'a">Murang'a</option>
+            <option value="Meru">Meru</option>
+            <option value="Uasin Gishu">Uasin Gishu</option>
+            <option value="Nyandarua">Nyandarua</option>
             <option value="Machakos">Machakos</option>
             <option value="Kisumu">Kisumu</option>
-            <option value="Uasin Gishu">Uasin Gishu</option>
-            <option value="Meru">Meru</option>
-
           </select>
 
-
+          <label for="sortSelect">Sort by</label>
           <select id="sortSelect">
-
-            <option value="newest">
-              Newest
-            </option>
-
-            <option value="price-low">
-              Price: Low to High
-            </option>
-
-            <option value="price-high">
-              Price: High to Low
-            </option>
-
-            <option value="name">
-              Product Name
-            </option>
-
-            <option value="fairness">
-              Best Fair Price
-            </option>
-
+            <option value="newest">Newest listings</option>
+            <option value="price-low">Price: low to high</option>
+            <option value="price-high">Price: high to low</option>
+            <option value="name">Product name</option>
+            <option value="fairness">Fair-price guidance</option>
           </select>
-
         </div>
 
-
-        <div class="results-row">
-
-          <span id="resultsCount">
-            0 products
-          </span>
-
-          <button
-            id="showAllButtonFallback"
-            class="text-button"
-            type="button"
-          >
-            Reset filters
-          </button>
-
+        <div class="results-line">
+          <span id="resultsCount" aria-live="polite">Available products</span>
+          <button class="btn btn-outline" id="showAllButton" type="button">Reset filters</button>
+          <button class="btn btn-outline hidden" id="showAllButtonFallback" type="button">Show all</button>
         </div>
 
+        <div class="listing-grid" id="listingGrid" aria-live="polite"></div>
 
-        <!-- PRODUCT GRID -->
-
-        <div
-          id="listingGrid"
-          class="listing-grid"
-        ></div>
-
-
-        <div
-          id="emptyState"
-          class="empty-state hidden"
-        >
-
-          <div class="empty-icon">
-            🔎
-          </div>
-
-          <h3>No products found</h3>
-
-          <p>
-            Try another search or reset your filters.
-          </p>
-
-          <button
-            id="showAllButton"
-            class="btn btn-primary"
-            type="button"
-          >
-            Show all products
-          </button>
-
+        <div class="empty-state hidden" id="emptyState">
+          <h3>No matching products found</h3>
+          <p>Hakuna results for now. Try another product, county or category.</p>
+          <button class="btn btn-primary" id="showAllButtonFallback" type="button">Show all products</button>
         </div>
 
+        <p class="form-help">
+          Fair-price labels are indicative demo guidance, not official live market prices.
+          Confirm quantity, quality, transport and final price with the seller before buying.
+        </p>
       </div>
-
     </section>
 
-
-    <!-- ==============================
-         SMART ASSIST
-    =============================== -->
-    <section
-      id="smartAssist"
-      class="section smart-section"
-    >
-
+    <!-- VALUE PROPOSITION -->
+    <section class="section section-soft">
       <div class="container">
-
-        <div class="smart-grid">
-
+        <div class="section-heading">
           <div>
-
-            <span class="section-label">
-              SMART ASSIST
-            </span>
-
-            <h2>
-              Agriculture made smarter.
-            </h2>
-
-            <p>
-              Get simple agricultural insights based on your
-              county and farming goals.
-            </p>
-
-
-            <div class="smart-form">
-
-              <label for="countySelect">
-                Your county
-              </label>
-
-              <select id="countySelect">
-
-                <option value="">
-                  Select county
-                </option>
-
-                <option value="nairobi">
-                  Nairobi
-                </option>
-
-                <option value="kiambu">
-                  Kiambu
-                </option>
-
-                <option value="nakuru">
-                  Nakuru
-                </option>
-
-                <option value="muranga">
-                  Murang'a
-                </option>
-
-                <option value="machakos">
-                  Machakos
-                </option>
-
-                <option value="kisumu">
-                  Kisumu
-                </option>
-
-                <option value="meru">
-                  Meru
-                </option>
-
-              </select>
-
-              <div
-                id="insightMessage"
-                class="insight-message"
-              >
-                Select your county to see an insight.
-              </div>
-
-            </div>
-
-
-            <a
-              href="smart-assist.html"
-              class="btn btn-primary"
-            >
-              Open Smart Assist
-            </a>
-
+            <span class="eyebrow">MORE THAN A MARKETPLACE</span>
+            <h2>Tools made for real farming needs</h2>
+            <p>Simple tools to help farmers and buyers make informed decisions.</p>
           </div>
-
-
-          <div class="smart-feature-card">
-
-            <div class="smart-feature-icon">
-              🧠
-            </div>
-
-            <h3>
-              Market Intelligence
-            </h3>
-
-            <p>
-              MavunoMart is designed to help farmers and buyers
-              understand products, prices and market opportunities.
-            </p>
-
-
-            <div class="smart-points">
-
-              <div>
-                <span>✓</span>
-                Fair-price guidance
-              </div>
-
-              <div>
-                <span>✓</span>
-                Product discovery
-              </div>
-
-              <div>
-                <span>✓</span>
-                Bulk buying
-              </div>
-
-              <div>
-                <span>✓</span>
-                Local marketplace
-              </div>
-
-            </div>
-
-          </div>
-
         </div>
-
-      </div>
-
-    </section>
-
-
-    <!-- ==============================
-         COMMUNITY / UNIQUE FEATURE
-    =============================== -->
-    <section
-      id="community"
-      class="section community-section"
-    >
-
-      <div class="container">
-
-        <div class="section-heading centered">
-
-          <span class="section-label">
-            WHY MAVUNOMART?
-          </span>
-
-          <h2>
-            More than just a marketplace.
-          </h2>
-
-          <p>
-            Technology designed around real agricultural challenges.
-          </p>
-
-        </div>
-
 
         <div class="feature-grid">
-
           <article class="feature-card">
-
-            <div class="feature-number">
-              01
-            </div>
-
-            <div class="feature-icon">
-              🛡️
-            </div>
-
-            <h3>
-              Fair Price Shield
-            </h3>
-
-            <p>
-              Buyers can see whether a listed price is within an
-              indicative fair-price range.
-            </p>
-
+            <div class="feature-icon">⚖️</div>
+            <h3>Fair-price guidance</h3>
+            <p>Compare listed prices with indicative reference ranges and ask sellers for details before you buy.</p>
           </article>
 
-
           <article class="feature-card">
-
-            <div class="feature-number">
-              02
-            </div>
-
-            <div class="feature-icon">
-              🛒
-            </div>
-
-            <h3>
-              Smart Shopping Cart
-            </h3>
-
-            <p>
-              Buyers can combine products, adjust quantities and
-              instantly see their estimated basket total.
-            </p>
-
+            <div class="feature-icon">🤝</div>
+            <h3>Direct connections</h3>
+            <p>Contact sellers about stock, quality, collection, delivery and bulk orders.</p>
           </article>
 
-
           <article class="feature-card">
-
-            <div class="feature-number">
-              03
-            </div>
-
-            <div class="feature-icon">
-              📦
-            </div>
-
-            <h3>
-              Retail + Bulk
-            </h3>
-
-            <p>
-              Farmers can serve individual customers and larger
-              buyers from the same marketplace.
-            </p>
-
+            <div class="feature-icon">🌦️</div>
+            <h3>Smart Assist</h3>
+            <p>Explore farming insights and useful crop-planning guidance for your county.</p>
+            <a href="smart-assist.html">Open Smart Assist →</a>
           </article>
-
-
-          <article class="feature-card">
-
-            <div class="feature-number">
-              04
-            </div>
-
-            <div class="feature-icon">
-              🧠
-            </div>
-
-            <h3>
-              Smart Assist
-            </h3>
-
-            <p>
-              Agricultural information is brought closer to farmers
-              through a simple digital assistant.
-            </p>
-
-          </article>
-
         </div>
-
       </div>
-
     </section>
 
+    <!-- SMART ASSIST -->
+    <section class="section" id="smartAssist">
+      <div class="container">
+        <div class="smart-panel">
+          <div>
+            <span class="eyebrow">SMART FARMING</span>
+            <h2>Make your next farming move smarter.</h2>
+            <p>
+              Choose your county to see a general farming insight.
+              For current forecasts or AI advice, the relevant service must be connected and available.
+            </p>
+            <a class="btn btn-light" href="smart-assist.html">Explore Smart Assist →</a>
+          </div>
+
+          <div class="tool-card">
+            <h3>County farming insight</h3>
+            <label for="countySelect">Choose your county</label>
+            <select id="countySelect">
+              <option value="">Select county</option>
+              <option value="nairobi">Nairobi</option>
+              <option value="kiambu">Kiambu</option>
+              <option value="nakuru">Nakuru</option>
+              <option value="muranga">Murang'a</option>
+              <option value="machakos">Machakos</option>
+              <option value="kisumu">Kisumu</option>
+              <option value="meru">Meru</option>
+            </select>
+            <div class="tool-result" id="insightMessage" aria-live="polite">
+              Select your county to view a general farming insight.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- COMMUNITY -->
+    <section class="section section-soft" id="community">
+      <div class="container">
+        <div class="community-panel">
+          <div>
+            <span class="eyebrow">GROW TOGETHER</span>
+            <h2>Stronger farmers. Better opportunities.</h2>
+            <p>
+              Explore farmer groups, SACCO opportunities and ways to connect
+              with other people in agriculture. Always verify an organisation's
+              details and membership terms before sending money.
+            </p>
+          </div>
+          <a class="btn btn-primary" href="sacco.html">Explore SACCO Hub →</a>
+        </div>
+      </div>
+    </section>
   </main>
 
-
-  <!-- ==============================
-       LISTING MODAL
-  =============================== -->
-  <dialog id="listingModal" class="modal">
-
-    <div class="modal-header">
-
-      <div>
-        <span class="section-label">
-          SELL
-        </span>
-
-        <h2>
-          List your product
-        </h2>
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <a href="#home" class="brand">
+            <span class="brand-icon">🌱</span>
+            <span>Mavuno<span class="brand-accent">Bridge</span></span>
+          </a>
+          <p>Connecting Kenyan agriculture, one listing at a time.</p>
+        </div>
+        <div>
+          <strong>Explore</strong>
+          <p><a href="#marketplace">Marketplace</a></p>
+          <p><a href="smart-assist.html">Smart Assist</a></p>
+          <p><a href="sacco.html">SACCO Hub</a></p>
+        </div>
+        <div>
+          <strong>Connect</strong>
+          <p><a href="messages.html">Messages</a></p>
+          <p><a href="#community">Community</a></p>
+          <p>Built for farmers and buyers in Kenya 🇰🇪</p>
+        </div>
       </div>
-
-      <button
-        class="modal-close"
-        data-close-modal
-        type="button"
-      >
-        ×
-      </button>
-
+      <div class="footer-bottom">
+        © <span id="currentYear"></span> MavunoBridge. Demo marketplace.
+        Verify prices, sellers and offers before making a transaction.
+      </div>
     </div>
-
-
-    <form id="listingForm">
-
-      <div class="form-grid">
-
-        <div class="form-group">
-
-          <label for="listingName">
-            Product name
-          </label>
-
-          <input
-            id="listingName"
-            type="text"
-            placeholder="e.g. Hass Avocados"
-            required
-          >
-
-        </div>
-
-
-        <div class="form-group">
-
-          <label for="listingType">
-            Category
-          </label>
-
-          <select id="listingType" required>
-
-            <option value="">
-              Choose category
-            </option>
-
-            <option value="fruits">Fruits</option>
-            <option value="vegetables">Vegetables</option>
-            <option value="nuts">Nuts</option>
-            <option value="starchy">Starchy Foods</option>
-            <option value="grains">Grains</option>
-            <option value="legumes">Legumes</option>
-            <option value="livestock">Livestock</option>
-            <option value="inputs">Farm Inputs</option>
-
-          </select>
-
-        </div>
-
-
-        <div class="form-group">
-
-          <label for="saleType">
-            Selling option
-          </label>
-
-          <select id="saleType" required>
-
-            <option value="retail">
-              Retail
-            </option>
-
-            <option value="bulk">
-              Bulk
-            </option>
-
-            <option value="both">
-              Retail + Bulk
-            </option>
-
-          </select>
-
-        </div>
-
-
-        <div class="form-group">
-
-          <label for="listingLocation">
-            County / location
-          </label>
-
-          <input
-            id="listingLocation"
-            type="text"
-            placeholder="e.g. Kiambu"
-            required
-          >
-
-        </div>
-
-      </div>
-
-
-      <!-- RETAIL -->
-
-      <div
-        id="retailFields"
-        class="pricing-panel"
-      >
-
-        <h3>
-          🛍️ Retail price
-        </h3>
-
-        <div class="form-grid">
-
-          <div class="form-group">
-
-            <label for="retailPrice">
-              Price
-            </label>
-
-            <input
-              id="retailPrice"
-              type="number"
-              min="0"
-              step="0.01"
-              placeholder="80"
-            >
-
-          </div>
-
-
-          <div class="form-group">
-
-            <label for="retailUnit">
-              Unit
-            </label>
-
-            <select id="retailUnit">
-
-              <option value="kg">per kg</option>
-              <option value="bag">per bag</option>
-              <option value="crate">per crate</option>
-              <option value="piece">per piece</option>
-              <option value="litre">per litre</option>
-              <option value="animal">per animal</option>
-
-            </select>
-
-          </div>
-
-        </div>
-
-      </div>
-
-
-      <!-- BULK -->
-
-      <div
-        id="bulkFields"
-        class="pricing-panel"
-      >
-
-        <h3>
-          📦 Bulk price
-        </h3>
-
-        <div class="form-grid">
-
-          <div class="form-group">
-
-            <label for="bulkPrice">
-              Price
-            </label>
-
-            <input
-              id="bulkPrice"
-              type="number"
-              min="0"
-              step="0.01"
-              placeholder="60"
-            >
-
-          </div>
-
-
-          <div class="form-group">
-
-            <label for="bulkUnit">
-              Unit
-            </label>
-
-            <select id="bulkUnit">
-
-              <option value="kg">per kg</option>
-              <option value="bag">per bag</option>
-              <option value="crate">per crate</option>
-              <option value="piece">per piece</option>
-              <option value="litre">per litre</option>
-              <option value="animal">per animal</option>
-
-            </select>
-
-          </div>
-
-
-          <div class="form-group">
-
-            <label for="bulkMinimum">
-              Minimum order
-            </label>
-
-            <input
-              id="bulkMinimum"
-              type="number"
-              min="1"
-              step="1"
-              placeholder="10"
-            >
-
-          </div>
-
-        </div>
-
-      </div>
-
-
-      <div class="form-grid">
-
-        <div class="form-group">
-
-          <label for="listingQuantity">
-            Available quantity
-          </label>
-
-          <input
-            id="listingQuantity"
-            type="number"
-            min="1"
-            placeholder="100"
-            required
-          >
-
-        </div>
-
-
-        <div class="form-group">
-
-          <label for="listingStockUnit">
-            Stock unit
-          </label>
-
-          <select id="listingStockUnit">
-
-            <option value="kg">kg</option>
-            <option value="bags">bags</option>
-            <option value="crates">crates</option>
-            <option value="pieces">pieces</option>
-            <option value="animals">animals</option>
-
-          </select>
-
-        </div>
-
-
-        <div class="form-group">
-
-          <label for="listingSeller">
-            Seller name
-          </label>
-
-          <input
-            id="listingSeller"
-            type="text"
-            placeholder="Your name"
-            required
-          >
-
-        </div>
-
-
-        <div class="form-group">
-
-          <label for="listingPhone">
-            Phone
-          </label>
-
-          <input
-            id="listingPhone"
-            type="tel"
-            placeholder="07XXXXXXXX"
-            required
-          >
-
-        </div>
-
-      </div>
-
-
-      <div class="form-group">
-
-        <label for="listingImage">
-          Product image URL
-        </label>
-
-        <input
-          id="listingImage"
-          type="url"
-          placeholder="https://..."
-        >
-
-      </div>
-
-
-      <div class="form-group">
-
-        <label for="listingDescription">
-          Description
-        </label>
-
-        <textarea
-          id="listingDescription"
-          rows="4"
-          placeholder="Tell buyers about your product..."
-        ></textarea>
-
-      </div>
-
-
-      <div
-        id="listingMessage"
-        class="form-message"
-      ></div>
-
-
-      <button
-        class="btn btn-primary btn-full"
-        type="submit"
-      >
-        Publish Product
-      </button>
-
-    </form>
-
-  </dialog>
-
-
-  <!-- ==============================
-       CART MODAL
-  =============================== -->
-  <dialog id="cartModal" class="modal cart-modal">
-
-    <div class="modal-header">
-
-      <div>
-        <span class="section-label">
-          YOUR BASKET
-        </span>
-
-        <h2>
-          Shopping Cart
-        </h2>
-      </div>
-
-      <button
-        class="modal-close"
-        data-close-modal
-        type="button"
-      >
-        ×
-      </button>
-
-    </div>
-
-
-    <div id="cartItems"></div>
-
-
-    <div
-      id="cartEmpty"
-      class="cart-empty"
-    >
-
-      <div>
-        🛒
-      </div>
-
-      <h3>
-        Your cart is empty
-      </h3>
-
-      <p>
-        Add products from the marketplace to start shopping.
-      </p>
-
-      <button
-        class="btn btn-primary"
-        id="continueShopping"
-        type="button"
-      >
-        Continue Shopping
-      </button>
-
-    </div>
-
-
-    <div
-      id="cartSummary"
-      class="cart-summary"
-    >
-
-      <div class="cart-price-row">
-        <span>Items</span>
-        <strong id="cartItemTotal">0</strong>
-      </div>
-
-      <div class="cart-price-row">
-        <span>Estimated subtotal</span>
-        <strong id="cartSubtotal">KSh 0</strong>
-      </div>
-
-
-      <div
-        id="cartFairWarning"
-        class="cart-fair-warning hidden"
-      >
-        ⚠️ Some items are priced significantly above the
-        indicative fair-price guide. Review them before buying.
-      </div>
-
-
-      <button
-        id="checkoutButton"
-        class="btn btn-primary btn-full"
-        type="button"
-      >
-        Proceed to Checkout
-      </button>
-
-    </div>
-
-  </dialog>
-
-
-  <!-- ==============================
-       LOGIN MODAL
-  =============================== -->
-  <dialog id="loginModal" class="modal small-modal">
-
-    <div class="modal-header">
-
-      <div>
-        <span class="section-label">
-          ACCOUNT
-        </span>
-
-        <h2>
-          Welcome back
-        </h2>
-      </div>
-
-      <button
-        class="modal-close"
-        data-close-modal
-        type="button"
-      >
-        ×
-      </button>
-
-    </div>
-
-
-    <form id="loginForm">
-
-      <div class="form-group">
-
-        <label for="loginEmail">
-          Email
-        </label>
-
-        <input
-          id="loginEmail"
-          type="email"
-          placeholder="you@example.com"
-          required
-        >
-
-      </div>
-
-
-      <div class="form-group">
-
-        <label for="loginPassword">
-          Password
-        </label>
-
-        <input
-          id="loginPassword"
-          type="password"
-          placeholder="••••••••"
-          required
-        >
-
-      </div>
-
-
-      <button
-        class="btn btn-primary btn-full"
-        type="submit"
-      >
-        Login
-      </button>
-
-
-      <p class="demo-note">
-        Demo mode — no real account is created.
-      </p>
-
-    </form>
-
-  </dialog>
-
-
-  <!-- ==============================
-       TOAST
-  =============================== -->
-  <div
-    id="toast"
-    class="toast"
-    role="status"
-    aria-live="polite"
-  ></div>
-
-
-  <!-- ==============================
-       FOOTER
-  =============================== -->
-  <footer class="footer">
-
-    <div class="container footer-grid">
-
-      <div>
-
-        <div class="brand footer-brand">
-
-          <div class="brand-icon">
-            🌱
-          </div>
-
-          <div>
-            <strong>MavunoMart</strong>
-            <small>Smart agriculture for Kenya</small>
-          </div>
-
-        </div>
-
-        <p>
-          Connecting farmers and buyers through technology.
-        </p>
-
-      </div>
-
-
-      <div>
-
-        <h4>
-          Marketplace
-        </h4>
-
-        <a href="#marketplace">Products</a>
-        <a href="#marketplace">Fair Price Shield</a>
-        <a href="sacco.html">SACCO</a>
-
-      </div>
-
-
-      <div>
-
-        <h4>
-          Smart Tools
-        </h4>
-
-        <a href="smart-assist.html">
-          Smart Assist
-        </a>
-
-        <a href="#community">
-          About MavunoMart
-        </a>
-
-      </div>
-
-    </div>
-
-
-    <div class="footer-bottom">
-
-      <span>
-        © <span id="currentYear"></span> MavunoMart
-      </span>
-
-      <span>
-        Built for innovation in Kenyan agriculture 🇰🇪
-      </span>
-
-    </div>
-
   </footer>
 
+  <!-- LIST PRODUCT MODAL -->
+  <dialog class="modal" id="listingModal">
+    <div class="modal-header">
+      <h2>List your product</h2>
+      <button class="btn btn-outline" type="button" data-close-modal aria-label="Close listing form">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <p class="form-help">Weka details za bidhaa yako. Use a real product photo when possible.</p>
+
+      <form id="listingForm">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="listingName">Product name *</label>
+            <input id="listingName" name="listingName" required maxlength="100" placeholder="e.g. Fresh tomatoes">
+          </div>
+
+          <div class="form-group">
+            <label for="listingType">Category *</label>
+            <select id="listingType" name="listingType" required>
+              <option value="fruits">Fruits</option>
+              <option value="vegetables">Vegetables</option>
+              <option value="nuts">Nuts</option>
+              <option value="starchy">Starchy foods</option>
+              <option value="grains">Grains</option>
+              <option value="legumes">Legumes</option>
+              <option value="livestock">Livestock</option>
+              <option value="inputs">Farm inputs</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="listingLocation">County / location *</label>
+            <input id="listingLocation" name="listingLocation" required maxlength="100" placeholder="e.g. Nakuru">
+          </div>
+
+          <div class="form-group">
+            <label for="listingSeller">Farmer / business name *</label>
+            <input id="listingSeller" name="listingSeller" required maxlength="100" placeholder="Farm or seller name">
+          </div>
+
+          <div class="form-group">
+            <label for="listingPhone">Contact phone *</label>
+            <input id="listingPhone" name="listingPhone" required type="tel" maxlength="25" placeholder="e.g. 07XXXXXXXX">
+          </div>
+
+          <div class="form-group">
+            <label for="listingQuantity">Available quantity *</label>
+            <input id="listingQuantity" name="listingQuantity" type="number" min="1" step="any" required>
+          </div>
+
+          <div class="form-group">
+            <label for="listingStockUnit">Quantity unit *</label>
+            <select id="listingStockUnit" name="listingStockUnit" required>
+              <option value="kg">Kilograms (kg)</option>
+              <option value="bag">Bags</option>
+              <option value="crate">Crates</option>
+              <option value="piece">Pieces</option>
+              <option value="litre">Litres</option>
+              <option value="animal">Animals</option>
+              <option value="unit">Units</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="saleType">Sale type *</label>
+            <select id="saleType" name="saleType" required>
+              <option value="retail">Retail</option>
+              <option value="bulk">Bulk</option>
+              <option value="both">Retail and bulk</option>
+            </select>
+          </div>
+
+          <div class="form-group" id="retailFields">
+            <label for="retailPrice">Retail price (KSh) *</label>
+            <input id="retailPrice" name="retailPrice" type="number" min="0" step="0.01">
+            <label for="retailUnit">Retail price unit</label>
+            <select id="retailUnit" name="retailUnit">
+              <option value="kg">Per kg</option>
+              <option value="bag">Per bag</option>
+              <option value="crate">Per crate</option>
+              <option value="piece">Per piece</option>
+              <option value="litre">Per litre</option>
+              <option value="animal">Per animal</option>
+              <option value="unit">Per unit</option>
+            </select>
+          </div>
+
+          <div class="form-group" id="bulkFields">
+            <label for="bulkPrice">Bulk price (KSh) *</label>
+            <input id="bulkPrice" name="bulkPrice" type="number" min="0" step="0.01">
+            <label for="bulkUnit">Bulk price unit</label>
+            <select id="bulkUnit" name="bulkUnit">
+              <option value="kg">Per kg</option>
+              <option value="bag">Per bag</option>
+              <option value="crate">Per crate</option>
+              <option value="piece">Per piece</option>
+              <option value="litre">Per litre</option>
+              <option value="animal">Per animal</option>
+              <option value="unit">Per unit</option>
+            </select>
+            <label for="bulkMinimum">Minimum bulk quantity</label>
+            <input id="bulkMinimum" name="bulkMinimum" type="number" min="1" step="1" value="10">
+          </div>
+
+          <div class="form-group full">
+            <label for="listingImage">Product image URL</label>
+            <input id="listingImage" name="listingImage" type="url" placeholder="https://...">
+            <span class="form-help">Use an image URL. This demo form does not upload image files to a server.</span>
+          </div>
+
+          <div class="form-group full">
+            <label for="listingDescription">Description / condition</label>
+            <textarea id="listingDescription" name="listingDescription" rows="3" maxlength="700" placeholder="Describe quality, harvest date, collection or delivery details..."></textarea>
+          </div>
+        </div>
+
+        <p class="form-help" id="listingMessage" aria-live="polite"></p>
+        <button class="btn btn-primary" type="submit">Publish demo listing</button>
+      </form>
+    </div>
+  </dialog>
+
+  <!-- CART MODAL -->
+  <dialog class="modal" id="cartModal">
+    <div class="modal-header">
+      <h2>Your shopping cart</h2>
+      <button class="btn btn-outline" type="button" data-close-modal aria-label="Close cart">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <div id="cartItems"></div>
+
+      <div class="empty-state" id="cartEmpty">
+        <h3>Your cart is empty</h3>
+        <p>Add products from the marketplace to get started.</p>
+      </div>
+
+      <div id="cartSummary" class="hidden">
+        <div class="tool-result" id="cartFairWarning">
+          Remember to confirm quality, quantities and final prices with sellers.
+        </div>
+        <p>Subtotal: <strong>KSh <span id="cartSubtotal">0</span></strong></p>
+        <p class="form-help">Transport and delivery costs may be separate.</p>
+        <button class="btn btn-primary" id="checkoutButton" type="button">Contact sellers</button>
+      </div>
+
+      <button class="btn btn-outline" id="continueShopping" type="button">Continue shopping</button>
+      <span id="cartItemTotal" class="form-help"></span>
+    </div>
+  </dialog>
+
+  <!-- DEMO LOGIN MODAL -->
+  <dialog class="modal" id="loginModal">
+    <div class="modal-header">
+      <h2>Welcome to MavunoBridge</h2>
+      <button class="btn btn-outline" type="button" data-close-modal aria-label="Close login">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <p>This is a demo login form. It does not create a real account until authentication is connected.</p>
+
+      <form id="loginForm">
+        <div class="form-grid">
+          <div class="form-group full">
+            <label for="loginEmail">Email address</label>
+            <input id="loginEmail" name="loginEmail" type="email" required autocomplete="email">
+          </div>
+          <div class="form-group full">
+            <label for="loginPassword">Password</label>
+            <input id="loginPassword" name="loginPassword" type="password" required autocomplete="current-password" minlength="6">
+          </div>
+        </div>
+        <p class="form-help">Demo only: don't enter a real password here.</p>
+        <button class="btn btn-primary" type="submit">Continue to demo</button>
+      </form>
+    </div>
+  </dialog>
+
+  <div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
 </body>
 </html>
