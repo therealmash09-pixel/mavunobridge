@@ -3,83 +3,111 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Farmer Community | MavunoMart</title>
+  <title>SACCO Hub | MavunoBridge</title>
   <link rel="stylesheet" href="style.css">
-  <style>
-    .community-page{width:min(1000px,90%);margin:45px auto 70px}
-    .community-hero{padding:35px;border-radius:22px;background:#174c32;color:white}
-    .community-hero h1{font-size:clamp(32px,5vw,46px);line-height:1.1}
-    .community-hero p{max-width:650px;color:#d9e9dc}
-    .community-panels{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:25px}
-    .community-panel{padding:24px;border:1px solid #e1e8df;border-radius:17px}
-    .community-panel h2{margin-top:0}
-    .community-panel label{display:block;margin:12px 0 6px;font-size:13px;font-weight:700}
-    .community-panel input,.community-panel select,.community-panel textarea{width:100%;padding:11px;border:1px solid #dbe3d9;border-radius:10px}
-    .community-result{margin-top:13px;padding:12px;background:#eaf4eb;border-radius:10px;color:#174c32;font-size:13px}
-    @media(max-width:650px){.community-panels{grid-template-columns:1fr}.community-hero{padding:24px}}
-  </style>
 </head>
 <body>
-<header class="site-header">
-  <a class="brand" href="index.html"><span class="brand-icon">🌱</span><span>Mavuno<span class="brand-accent">Mart</span><small>Shamba yako, soko yako.</small></span></a>
-  <a class="btn btn-green" href="index.html#marketplace">Back to marketplace ↗</a>
-</header>
+  <header class="site-header">
+    <a class="brand" href="index.html">
+      <span class="brand-mark">M</span>
+      <span>Mavuno<span class="brand-accent">Bridge</span><small>FROM SHAMBA TO SOKO</small></span>
+    </a>
+    <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation">☰</button>
+    <nav id="mainNav">
+      <a href="index.html">Marketplace</a>
+      <a href="smart-assist.html">Smart Assist</a>
+      <a href="sacco.html">SACCO Hub</a>
+      <a href="messages.html">Buyer Requests</a>
+    </nav>
+  </header>
 
-<main class="community-page">
-  <section class="community-hero">
-    <span class="eyebrow light-eyebrow">GROW TOGETHER</span>
-    <h1>Farmer groups & SACCOs 🤝</h1>
-    <p>Farmer groups can help members save, share knowledge, coordinate transport and explore collective marketing opportunities.</p>
+  <section class="page-hero">
+    <span class="eyebrow">GROW TOGETHER</span>
+    <h1>SACCO & farmer groups hub.</h1>
+    <p>
+      Explore group-saving ideas, shared equipment and collective selling.
+      Verify every organisation before joining or sending money.
+    </p>
   </section>
 
-  <div class="community-panels">
-    <section class="community-panel">
-      <h2>🏦 Why join a farmer group?</h2>
-      <ul>
-        <li>Learn from other farmers.</li>
-        <li>Explore group marketing and bulk sales.</li>
-        <li>Coordinate transport where available.</li>
-        <li>Learn about savings and financial services from registered organisations.</li>
-      </ul>
-      <p class="product-location">Demo notice: no real SACCO directory is connected yet. Verify an organisation and its registration before sending money or personal information.</p>
-    </section>
+  <main class="page-wrap">
+    <div class="notice">
+      Demo directory: these are example group concepts, not verified registered SACCOs.
+      No membership or financial transaction happens here.
+    </div>
 
-    <section class="community-panel">
-      <h2>📩 Express demo interest</h2>
-      <form id="interestForm">
-        <label for="interestName">Name or farm name</label>
-        <input id="interestName" maxlength="80" required placeholder="Your name or farm">
-        <label for="interestCounty">County</label>
-        <select id="interestCounty" required>
-          <option value="">Choose county</option>
-          <option>Nairobi</option><option>Kiambu</option><option>Nakuru</option>
-          <option>Machakos</option><option>Nyeri</option><option>Meru</option>
-          <option>Kisumu</option><option>Other</option>
-        </select>
-        <label for="interestType">What interests you?</label>
-        <select id="interestType" required>
-          <option value="">Choose an option</option>
-          <option>Group marketing</option><option>Shared transport</option>
-          <option>Farmer training</option><option>SACCO information</option>
-        </select>
-        <button class="btn btn-green" type="submit" style="margin-top:16px">Preview interest</button>
+    <div class="sacco-cards" style="margin-top:22px">
+      <article class="sacco-card">
+        <span class="eyebrow">GROUP SAVING</span>
+        <h3>Local Farmers Savings Circle</h3>
+        <p>Discuss regular savings, emergency support and shared buying of farm inputs.</p>
+        <button class="btn btn-primary join" type="button" data-group="Local Farmers Savings Circle">
+          I'm interested
+        </button>
+      </article>
+
+      <article class="sacco-card">
+        <span class="eyebrow">SHARED EQUIPMENT</span>
+        <h3>Machinery Sharing Network</h3>
+        <p>Coordinate ploughing, shelling, irrigation or transport with nearby farmers.</p>
+        <button class="btn btn-primary join" type="button" data-group="Machinery Sharing Network">
+          I'm interested
+        </button>
+      </article>
+
+      <article class="sacco-card">
+        <span class="eyebrow">COLLECTIVE SELLING</span>
+        <h3>Harvest Aggregation Group</h3>
+        <p>Combine suitable quantities to approach bulk buyers and compare offers.</p>
+        <button class="btn btn-primary join" type="button" data-group="Harvest Aggregation Group">
+          I'm interested
+        </button>
+      </article>
+    </div>
+
+    <section class="panel" style="margin-top:25px">
+      <h2>Share a group opportunity</h2>
+      <form id="groupForm" class="panel-grid">
+        <label>
+          Group / opportunity name
+          <input id="groupName" required placeholder="Name of your group">
+        </label>
+
+        <label>
+          County
+          <select id="groupCounty" required>
+            <option value="">Choose county</option>
+          </select>
+        </label>
+
+        <label class="full">
+          What does the group offer?
+          <textarea id="groupDesc" rows="3" required placeholder="Savings, equipment hire, collective selling…"></textarea>
+        </label>
+
+        <div class="full">
+          <button class="btn btn-primary" type="submit">Save demo opportunity</button>
+        </div>
       </form>
-      <div id="interestResult" class="community-result" hidden aria-live="polite"></div>
     </section>
-  </div>
-</main>
 
-<script>
-  document.getElementById("interestForm").addEventListener("submit", event => {
-    event.preventDefault();
-    const name = document.getElementById("interestName").value.trim();
-    const county = document.getElementById("interestCounty").value;
-    const type = document.getElementById("interestType").value;
-    const result = document.getElementById("interestResult");
-    result.hidden = false;
-    result.textContent =
-      `Demo preview: ${name} from ${county} is interested in ${type.toLowerCase()}. Nothing has been sent or saved to an organisation.`;
-  });
-</script>
+    <h2 style="margin-top:36px">Opportunities saved in this browser</h2>
+    <div id="groupsList" class="message-list"></div>
+
+    <p class="notice" style="margin-top:20px">
+      Safety tip: check registration, written rules, fees, withdrawal terms and official contacts.
+      Never share your PIN, password or one-time codes.
+    </p>
+  </main>
+
+  <footer>
+    <a class="brand" href="index.html">
+      <span class="brand-mark">M</span>
+      <span>Mavuno<span class="brand-accent">Bridge</span><small>FROM SHAMBA TO SOKO</small></span>
+    </a>
+    <p>Community tools for a demo. MavunoBridge is not a financial institution.</p>
+  </footer>
+
+  <script src="sacco.js" defer></script>
 </body>
 </html>
