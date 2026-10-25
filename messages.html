@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Messages | MavunoMart</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  .chat-page{width:min(1100px,94%);margin:30px auto 60px}
+  .who-bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:14px 16px;border:1px solid #e1e8df;border-radius:14px;margin-bottom:16px}
+  .who-bar input,.who-bar select{padding:9px;border:1px solid #dbe3d9;border-radius:10px}
+  .chat-layout{display:grid;grid-template-columns:300px 1fr;gap:16px;min-height:560px}
+  .convo-list,.chat-pane{border:1px solid #e1e8df;border-radius:16px;overflow:hidden;background:#fff}
+  .convo{padding:14px;border-bottom:1px solid #eef2ec;cursor:pointer}
+  .convo:hover,.convo.active{background:#eaf4eb}
+  .convo small{color:#6b7a6e;display:block}
+  .dot{background:#c83d3d;color:#fff;border-radius:99px;padding:1px 7px;font-size:11px;margin-left:6px}
+  .chat-pane{display:flex;flex-direction:column}
+  .chat-head{padding:14px 16px;background:#174c32;color:#fff;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+  .chat-head a{color:#d9e9dc;font-size:13px}
+  .order-card{margin:12px;padding:12px;border-radius:12px;background:#f5f8f3;font-size:13px}
+  .badge{display:inline-block;padding:2px 9px;border-radius:99px;font-size:11px;font-weight:700;background:#fff3d6;color:#8a5a00}
+  .badge.agreed{background:#d9f0de;color:#174c32}.badge.declined{background:#fbe1e1;color:#a22}
+  .msgs{flex:1;padding:12px 16px;overflow-y:auto;max-height:380px;display:flex;flex-direction:column;gap:8px}
+  .msg{max-width:75%;padding:9px 12px;border-radius:12px;font-size:14px;background:#eef2ec}
+  .msg.me{align-self:flex-end;background:#174c32;color:#fff}
+  .msg.system{align-self:center;max-width:90%;background:#fff3d6;color:#6a4a00;font-size:12px;text-align:center}
+  .msg time{display:block;font-size:10px;opacity:.6;margin-top:3px}
+  .offer-actions button{margin-top:6px;margin-right:6px}
+  .quick{display:flex;flex-wrap:wrap;gap:6px;padding:8px 12px;border-top:1px solid #eef2ec}
+  .quick button{border:1px solid #dbe3d9;background:#fff;border-radius:99px;padding:6px 11px;font-size:12px;cursor:pointer}
+  .composer{display:flex;gap:8px;padding:12px;border-top:1px solid #eef2ec}
+  .composer input{flex:1;padding:10px;border:1px solid #dbe3d9;border-radius:10px}
+  .empty{padding:40px;text-align:center;color:#6b7a6e}
+  @media(max-width:760px){.chat-layout{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="index.html"><span class="brand-icon">🌱</span><span>Mavuno<span class="brand-accent">Mart</span></span></a>
+  <a class="btn btn-green" href="index.html#marketplace">Back to marketplace ↗</a>
+</header>
+
+<main class="chat-page">
+  <h1>💬 Messages</h1>
+
+  <div class="who-bar">
+    <label>I am a
+      <select id="roleSelect">
+        <option value="buyer">Buyer</option>
+        <option value="seller">Seller</option>
+      </select>
+    </label>
+    <label id="nameWrap">Name
+      <input id="nameInput" placeholder="Your name">
+    </label>
+    <select id="sellerPick" hidden></select>
+    <button class="btn btn-primary" id="saveWho" type="button">Save</button>
+    <small>Demo: the buyer and seller share this browser. Open two tabs to test both sides.</small>
+  </div>
+
+  <div class="chat-layout">
+    <aside class="convo-list" id="convoList"></aside>
+    <section class="chat-pane" id="chatPane"></section>
+  </div>
+</main>
+
+<script src="chat.js"></script>
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const esc = v => String(v ?? "").replace(/[&<>"']/g,
+    c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
+
+  let who = ChatStore.identity() || { role: "buyer", name: "" };
+  let activeId = new URLSearchParams(location.search).get("c");
+
+  const QUICK = {
+    buyer: [
+      "Is this still available?",
+      "Can you deliver?",
+      "Can I pick it up today?",
+      "Is the price negotiable?"
+    ],
+    seller: [
+      "Yes, it's available.",
+      "I can deliver for a small fee.",
+      "You can pick up today.",
+      "How much would you like?"
+    ]
+  };
+
+  function sellerNames() {
+    const fromListings = JSON.parse(
+      localStorage.getItem("shambamarket_listings_v4") || "[]"
+    ).map(l => l.seller);
+    const fromChats = ChatStore.all().map(c => c.seller);
+    return [...new Set([...fromListings, ...fromChats])].sort();
+  }
+
+  function setupWho() {
+    $("#roleSelect").value = who.role;
+    $("#nameInput").value = who.role === "buyer" ? who.name : "";
+    const pick = $("#sellerPick");
+    pick.innerHTML = sellerNames()
+      .map(n => `<option ${n === who.name ? "selected" : ""}>${esc(n)}</option>`).join("");
+    toggleWho();
+  }
+
+  function toggleWho() {
+    const seller = $("#roleSelect").value === "seller";
+    $("#sellerPick").hidden = !seller;
+    $("#nameWrap").hidden = seller;
+  }
+
+  $("#roleSelect").addEventListener("change", toggleWho);
+
+  $("#saveWho").addEventListener("click", () => {
+    const role = $("#roleSelect").value;
+    const name = role === "seller"
+      ? $("#sellerPick").value : $("#nameInput").value.trim();
+    if (!name) return alert("Please enter your name.");
+    who = { role, name };
+    ChatStore.setIdentity(who);
+    activeId = null;
+    render();
+  });
+
+  const mine = () => ChatStore.all().filter(c =>
+    who.role === "buyer" ? c.buyer === who.name : c.seller === who.name);
+
+  function renderList() {
+    const list = mine();
+    $("#convoList").innerHTML = list.length
+      ? list.map(c => {
+          const u = c.unread?.[who.role] || 0;
+          const other = who.role === "buyer" ? c.seller : c.buyer;
+          return `<div class="convo ${c.id === activeId ? "active" : ""}" data-id="${esc(c.id)}">
+            <strong>${esc(other)}</strong>${u ? `<span class="dot">${u}</span>` : ""}
+            <small>${esc(c.items.map(i => i.name).join(", "))}</small>
+            <small>${esc(c.status)}</small></div>`;
+        }).join("")
+      : `<div class="empty">No conversations yet.<br>Interested buyers will appear here.</div>`;
+
+    document.querySelectorAll(".convo").forEach(el =>
+      el.addEventListener("click", () => { activeId = el.dataset.id; render(); }));
+  }
+
+  function renderChat() {
+    const pane = $("#chatPane");
+    const c = ChatStore.all().find(x => x.id === activeId);
+    if (!c || !mine().some(x => x.id === c.id)) {
+      pane.innerHTML = `<div class="empty">Select a conversation.</div>`;
+      return;
+    }
+    ChatStore.markRead(c.id, who.role);
+
+    const other = who.role === "buyer" ? c.seller : c.buyer;
+    const phone = String(c.sellerPhone || "").replace(/\D/g, "").replace(/^0/, "254");
+    const closed = c.status === "agreed" || c.status === "declined";
+
+    const items = c.items.map(i =>
+      `${i.qty} ${esc(i.unit)} ${esc(i.name)} @ KSh ${ChatStore.money(i.price)}`).join("<br>");
+
+    const msgs = c.messages.map((m, idx) => {
+      const cls = m.from === "system" ? "system" : (m.from === who.role ? "me" : "");
+      const time = new Date(m.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      let extra = "";
+      if (m.offer && m.offer.state === "pending" && m.from !== who.role && !closed) {
+        extra = `<div class="offer-actions">
+          <button class="btn btn-primary" data-offer="accepted" data-idx="${idx}">Accept offer</button>
+          <button class="btn btn-outline" data-offer="declined" data-idx="${idx}">Decline</button></div>`;
+      } else if (m.offer) {
+        extra = `<small>Offer ${esc(m.offer.state)}</small>`;
+      }
+      return `<div class="msg ${cls}">${esc(m.text)}${extra}<time>${time}</time></div>`;
+    }).join("");
+
+    pane.innerHTML = `
+      <div class="chat-head">
+        <strong>${esc(other)}</strong>
+        <span>${who.role === "buyer" && phone
+          ? `<a href="https://wa.me/${phone}" target="_blank" rel="noopener">WhatsApp</a> · <a href="tel:${esc(c.sellerPhone)}">Call</a>` : ""}</span>
+      </div>
+      <div class="order-card">
+        <span class="badge ${esc(c.status)}">${esc(c.status.toUpperCase())}</span><br>
+        ${items}<br><strong>Estimated total: KSh ${ChatStore.money(c.total)}</strong>
+      </div>
+      <div class="msgs" id="msgs">${msgs}</div>
+      ${closed ? "" : `
+      <div class="quick">
+        ${QUICK[who.role].map(q => `<button type="button" data-quick="${esc(q)}">${esc(q)}</button>`).join("")}
+        <button type="button" id="offerBtn">💰 Make an offer</button>
+        <button type="button" id="dealBtn">✅ Mark deal agreed</button>
+        ${who.role === "seller" ? `<button type="button" id="declineBtn">🚫 Not available</button>` : ""}
+      </div>
+      <form class="composer" id="composer">
+        <input id="msgInput" placeholder="Type a message..." autocomplete="off">
+        <button class="btn btn-primary" type="submit">Send</button>
+      </form>`}`;
+
+    const box = $("#msgs"); box.scrollTop = box.scrollHeight;
+
+    pane.querySelectorAll("[data-quick]").forEach(b =>
+      b.addEventListener("click", () => { ChatStore.send(c.id, who.role, b.dataset.quick); render(); }));
+
+    pane.querySelectorAll("[data-offer]").forEach(b =>
+      b.addEventListener("click", () => {
+        const state = b.dataset.offer;
+        ChatStore.update?.(c.id, x => { x.messages[b.dataset.idx].offer.state = state; });
+        const amt = c.messages[b.dataset.idx].offer.amount;
+        if (state === "accepted")
+          ChatStore.setStatus(c.id, "agreed", `Offer of KSh ${ChatStore.money(amt)} accepted. Agree on pickup or delivery to finish.`);
+        else ChatStore.send(c.id, who.role, "Sorry, I can't accept that offer.");
+        render();
+      }));
+
+    $("#offerBtn")?.addEventListener("click", () => {
+      const amount = Number(prompt("Your offer for the whole order (KSh):"));
+      if (!amount || amount <= 0) return;
+      ChatStore.send(c.id, who.role, `Offer: KSh ${ChatStore.money(amount)} for the whole order.`,
+        { offer: { amount, state: "pending" } });
+      render();
+    });
+
+    $("#dealBtn")?.addEventListener("click", () => {
+      ChatStore.setStatus(c.id, "agreed", `${who.name} marked this deal as agreed.`); render();
+    });
+
+    $("#declineBtn")?.addEventListener("click", () => {
+      ChatStore.setStatus(c.id, "declined", `${c.seller} says this order is not available.`); render();
+    });
+
+    $("#composer")?.addEventListener("submit", e => {
+      e.preventDefault();
+      const t = $("#msgInput").value.trim();
+      if (!t) return;
+      ChatStore.send(c.id, who.role, t); render();
+    });
+  }
+
+  function render() { renderList(); renderChat(); }
+
+  setupWho();
+  if (who.name) render(); else $("#chatPane").innerHTML =
+    `<div class="empty">Choose Buyer or Seller above and save your name to start.</div>`;
+
+  /* live updates from another tab */
+  window.addEventListener("storage", e => {
+    if (e.key === "shambamarket_inquiries_v1" && who.name) render();
+  });
+})();
+</script>
+</body>
+</html>
