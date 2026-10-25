@@ -1,16 +1,17 @@
 
 "use strict";
 
-/* =========================================
-   MAVUNOBRIDGE — DEMO MESSAGES
-   Messages stay in this browser only.
-   ========================================= */
+/* ==========================================
+   MAVUNOBRIDGE — PRODUCT CHAT DEMO
+   Messages are saved in this browser only.
+   ========================================== */
 
 const MESSAGE_KEY = "mavunobridge_demo_messages_v1";
+const PENDING_CHAT_KEY = "mavunobridge_pending_chat_v1";
 
 const initialConversations = [
   {
-    id: "farm-1",
+    id: "sample-farm-chat",
     name: "Green Valley Farm",
     about: "Sample farmer · Kiambu County",
     messages: [
@@ -29,7 +30,7 @@ const initialConversations = [
     ]
   },
   {
-    id: "buyer-1",
+    id: "sample-buyer-chat",
     name: "Fresh Market Buyer",
     about: "Sample buyer · Nakuru County",
     messages: [
@@ -40,13 +41,13 @@ const initialConversations = [
     ]
   },
   {
-    id: "group-1",
+    id: "sample-farmer-group",
     name: "Farmer Connections",
     about: "Sample farming group",
     messages: [
       {
         from: "them",
-        text: "Welcome to the demo conversation. Share farming ideas here."
+        text: "Welcome to the demo conversation. Share your farming ideas here."
       }
     ]
   }
@@ -54,21 +55,24 @@ const initialConversations = [
 
 let conversations = loadConversations();
 let activeConversationId = null;
+let initialDraft = "";
 
-/* ---------- LOAD AND SAVE ---------- */
+function deepCopy(value) {
+  return JSON.parse(JSON.stringify(value));
+}
 
 function loadConversations() {
   try {
-    const saved = JSON.parse(
+    const stored = JSON.parse(
       localStorage.getItem(MESSAGE_KEY) || "null"
     );
 
-    return Array.isArray(saved) && saved.length > 0
-      ? saved
-      : JSON.parse(JSON.stringify(initialConversations));
+    return Array.isArray(stored) && stored.length
+      ? stored
+      : deepCopy(initialConversations);
   } catch (error) {
-    console.warn("Could not load saved messages:", error);
-    return JSON.parse(JSON.stringify(initialConversations));
+    console.warn("Could not load saved conversations:", error);
+    return deepCopy(initialConversations);
   }
 }
 
@@ -78,15 +82,12 @@ function saveConversations() {
       MESSAGE_KEY,
       JSON.stringify(conversations)
     );
-
     return true;
   } catch (error) {
     console.error("Could not save messages:", error);
     return false;
   }
 }
-
-/* ---------- SAFE DISPLAY ---------- */
 
 function escapeMessage(value) {
   return String(value ?? "").replace(/[&<>"']/g, (character) => ({
@@ -98,19 +99,74 @@ function escapeMessage(value) {
   })[character]);
 }
 
-/* ---------- CONVERSATION LIST ---------- */
+/* Start or return to the conversation associated with a product. */
+function prepareProductChat() {
+  let pending = null;
 
+  try {
+    pending = JSON.parse(
+      localStorage.getItem(PENDING_CHAT_KEY) || "null"
+    );
+  } catch (error) {
+    console.warn("Could not read selected product:", error);
+  }
+
+  if (!pending || !pending.productId) return;
+
+  try {
+    localStorage.removeItem(PENDING_CHAT_KEY);
+  } catch (_) {
+    // The chat can still open if pending data could not be cleared.
+  }
+
+  const conversationId = "listing-" + pending.productId;
+
+  let conversation = conversations.find(
+    (item) => item.id === conversationId
+  );
+
+  if (!conversation) {
+    conversation = {
+      id: conversationId,
+      productId: pending.productId,
+      productName: pending.productName || "Farm product",
+      name: pending.seller || "Farm seller",
+      about: `About ${pending.productName || "this product"} · ${pending.county || "Kenya"}`,
+      phone: pending.phone || "",
+      messages: []
+    };
+
+    conversations.unshift(conversation);
+  }
+
+  activeConversationId = conversationId;
+
+  if (
+    conversation.messages.length === 0 &&
+    typeof pending.message === "string"
+  ) {
+    initialDraft = pending.message;
+  }
+
+  saveConversations();
+}
+
+/* Render the contact list. */
 function renderConversationList() {
   const list = document.querySelector("#conversationList");
-
   if (!list) return;
 
   list.innerHTML = conversations.map((conversation) => {
     const lastMessage =
       conversation.messages[conversation.messages.length - 1];
 
-    const selected =
-      conversation.id === activeConversationId;
+    const selected = conversation.id === activeConversationId;
+
+    const preview = lastMessage
+      ? lastMessage.text
+      : conversation.productName
+        ? `Product enquiry: ${conversation.productName}`
+        : "Start a conversation";
 
     return `
       <button
@@ -119,22 +175,19 @@ function renderConversationList() {
         data-conversation="${escapeMessage(conversation.id)}"
       >
         <span class="conversation-avatar">
-          ${escapeMessage(conversation.name.slice(0, 1).toUpperCase())}
+          ${escapeMessage((conversation.name || "F").slice(0, 1).toUpperCase())}
         </span>
 
         <span class="conversation-summary">
-          <strong>${escapeMessage(conversation.name)}</strong>
-          <small>
-            ${escapeMessage(lastMessage ? lastMessage.text : "No messages yet")}
-          </small>
+          <strong>${escapeMessage(conversation.name || "Farm seller")}</strong>
+          <small>${escapeMessage(preview)}</small>
         </span>
       </button>
     `;
   }).join("");
 }
 
-/* ---------- DISPLAY SELECTED CHAT ---------- */
-
+/* Render the selected chat. */
 function renderActiveConversation() {
   const conversation = conversations.find(
     (item) => item.id === activeConversationId
@@ -156,55 +209,56 @@ function renderActiveConversation() {
 
     messageList.innerHTML = `
       <div class="message-empty">
-        Select a conversation on the left.
+        Select a conversation on the left, or open a chat from a product listing.
       </div>
     `;
 
     input.disabled = true;
     sendButton.disabled = true;
-
     return;
   }
 
-  title.textContent = conversation.name;
-  subtitle.textContent = conversation.about;
+  title.textContent = conversation.name || "Farm seller";
+  subtitle.textContent = conversation.about || "MavunoBridge conversation";
 
-  messageList.innerHTML = conversation.messages.map((message) => {
-    const isMine = message.from === "me";
-
-    return `
-      <div class="message-row ${isMine ? "mine" : "theirs"}">
-        <div class="message-bubble">
-          ${escapeMessage(message.text)}
-          <small>${isMine ? "You · demo" : "Demo contact"}</small>
-        </div>
+  if (!conversation.messages.length) {
+    messageList.innerHTML = `
+      <div class="message-empty">
+        This chat is ready. Send your enquiry below.
       </div>
     `;
-  }).join("");
+  } else {
+    messageList.innerHTML = conversation.messages.map((message) => {
+      const mine = message.from === "me";
 
-  messageList.scrollTop = messageList.scrollHeight;
+      return `
+        <div class="message-row ${mine ? "mine" : "theirs"}">
+          <div class="message-bubble">
+            ${escapeMessage(message.text)}
+            <small>${mine ? "You · demo" : "Demo contact"}</small>
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
 
   input.disabled = false;
   sendButton.disabled = false;
+  messageList.scrollTop = messageList.scrollHeight;
 }
 
-/* ---------- SELECT A CONVERSATION ---------- */
-
+/* Select an existing conversation. */
 function selectConversation(id) {
-  const exists = conversations.some(
-    (conversation) => conversation.id === id
-  );
-
-  if (!exists) return;
+  if (!conversations.some((item) => item.id === id)) return;
 
   activeConversationId = id;
+  initialDraft = "";
 
   renderConversationList();
   renderActiveConversation();
 }
 
-/* ---------- SEND A DEMO MESSAGE ---------- */
-
+/* Send a message to the local demo conversation. */
 function sendDemoMessage(event) {
   event.preventDefault();
 
@@ -217,7 +271,6 @@ function sendDemoMessage(event) {
   if (!input || !conversation) return;
 
   const text = input.value.trim();
-
   if (!text) {
     input.focus();
     return;
@@ -225,7 +278,7 @@ function sendDemoMessage(event) {
 
   const newMessage = {
     from: "me",
-    text,
+    text: text.slice(0, 1000),
     sentAt: Date.now()
   };
 
@@ -235,35 +288,31 @@ function sendDemoMessage(event) {
     conversation.messages.pop();
 
     alert(
-      "Could not save this message. Check your browser storage and try again."
+      "Could not save this message. Browser storage may be full."
     );
 
     return;
   }
 
   input.value = "";
+  initialDraft = "";
 
   renderConversationList();
   renderActiveConversation();
   input.focus();
 }
 
-/* ---------- INITIALISE ---------- */
-
 function initMessages() {
   const list = document.querySelector("#conversationList");
   const form = document.querySelector("#messageForm");
 
   if (!list || !form) {
-    console.error(
-      "Messages page elements are missing. Check messages.html."
-    );
+    console.error("Chat page elements are missing. Check messages.html.");
     return;
   }
 
   list.addEventListener("click", (event) => {
     const button = event.target.closest("[data-conversation]");
-
     if (!button) return;
 
     selectConversation(button.dataset.conversation);
@@ -271,8 +320,17 @@ function initMessages() {
 
   form.addEventListener("submit", sendDemoMessage);
 
+  prepareProductChat();
+
   renderConversationList();
   renderActiveConversation();
+
+  const input = document.querySelector("#messageInput");
+
+  if (initialDraft && input && !input.disabled) {
+    input.value = initialDraft;
+    input.focus();
+  }
 }
 
 document.addEventListener("DOMContentLoaded", initMessages);
