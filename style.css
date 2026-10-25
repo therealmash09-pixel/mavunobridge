@@ -901,3 +901,336 @@ footer > div {
   .product-photo { height: 210px; }
   .category-grid { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* =========================================================
+   MAVUNOBRIDGE — VISUAL UPGRADE
+   Append this section to the END of style.css
+   ========================================================= */
+
+:root {
+  --mb-forest: #183b28;
+  --mb-green: #2d6641;
+  --mb-olive: #789447;
+  --mb-cream: #f6f8f1;
+  --mb-line: #e3e9df;
+}
+
+/* Smoother interactions */
+button,
+a,
+.product-card,
+.category-card,
+.feature-links a,
+.sacco-card {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button,
+a {
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid #a4c36b;
+  outline-offset: 3px;
+}
+
+/* More polished category photo cards */
+.category-grid {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.category-card {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: 155px;
+  padding: 0;
+  border: 1px solid var(--mb-line);
+  border-radius: 17px;
+  background: #e9eee4;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  box-shadow: 0 4px 14px #173e2808;
+}
+
+.category-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background-size: cover;
+  background-position: center;
+  transform: scale(1);
+  transition: transform 300ms ease;
+}
+
+.category-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    to top,
+    #ffffff 0%,
+    #ffffffed 24%,
+    #ffffffa8 43%,
+    #ffffff05 78%
+  );
+}
+
+.category-card:hover::before {
+  transform: scale(1.07);
+}
+
+.category-card:hover,
+.category-card.active {
+  border-color: var(--mb-olive);
+  box-shadow: 0 8px 24px #173e2818;
+  transform: translateY(-3px);
+}
+
+.category-card.active {
+  outline: 2px solid var(--mb-olive);
+  outline-offset: 1px;
+}
+
+.category-card .cat-icon {
+  position: absolute;
+  top: 10px;
+  left: 11px;
+  font-size: 1.25rem;
+  filter: drop-shadow(0 1px 2px #fff);
+}
+
+.category-card b {
+  display: block;
+  padding: 34px 12px 0;
+  color: var(--mb-forest);
+  font-size: 0.91rem;
+  line-height: 1.25;
+}
+
+.category-card small {
+  display: block;
+  padding: 5px 12px 12px;
+  color: #59675a;
+  font-size: 0.73rem;
+}
+
+/* Category-specific photographic backgrounds */
+.category-card[data-category="all"]::before {
+  background-image: url("https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=600&q=80");
+}
+
+.category-card[data-category="fruits"]::before {
+  background-image: url("https://images.unsplash.com/photo-1619566636858-adf3ef46400b?auto=format&fit=crop&w=600&q=80");
+}
+
+.category-card[data-category="vegetables"]::before {
+  background-image: url("https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=600&q=80");
+}
+
+.category-card[data-category="nuts"]::before {
+  background-image: url("https://images.unsplash.com/photo-1508061253366-f7da158b6d46?auto=format&fit=crop&w=600&q=80");
+}
+
+.category-card[data-category="starchy"]::before {
+  background-image: url("https://images.unsplash.com/photo-1518977676601-b53f82aba655?auto=format&fit=crop&w=600&q=80");
+}
+
+.category-card[data-category="grains"]::before {
+  background-image: url("https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&w=600&q=80");
+}
+
+.category-card[data-category="cereals"]::before {
+  background-image: url("https://images.unsplash.com/photo-1601593768790-7b6b4c0b1e2c?auto=format&fit=crop&w=600&q=80");
+}
+
+.category-card[data-category="legumes"]::before {
+  background-image: url("https://images.unsplash.com/photo-1515543904379-3d757afe72e4?auto=format&fit=crop&w=600&q=80");
+}
+
+.category-card[data-category="spices"]::before {
+  background-image: url("https://images.unsplash.com/photo-1532336414038-cf19250c5757?auto=format&fit=crop&w=600&q=80");
+}
+
+.category-card[data-category="herbal"]::before {
+  background-image: url("https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?auto=format&fit=crop&w=600&q=80");
+}
+
+.category-card[data-category="livestock"]::before {
+  background-image: url("https://images.unsplash.com/photo-1516467508483-a7212febe31a?auto=format&fit=crop&w=600&q=80");
+}
+
+.category-card[data-category="inputs"]::before {
+  background-image: url("https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=600&q=80");
+}
+
+.category-card[data-category="tools"]::before {
+  background-image: url("https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=600&q=80");
+}
+
+.category-card[data-category="services"]::before {
+  background-image: url("https://images.unsplash.com/photo-1592982537447-7440770cbfc9?auto=format&fit=crop&w=600&q=80");
+}
+
+/* Cleaner marketplace product cards */
+.product-card {
+  border-color: var(--mb-line);
+  border-radius: 17px;
+  box-shadow: 0 5px 20px #173e2808;
+  transition:
+    transform 200ms ease,
+    box-shadow 200ms ease;
+}
+
+.product-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 14px 30px #173e2817;
+}
+
+.product-photo {
+  background: #edf2e7;
+}
+
+.product-photo img {
+  transition: transform 300ms ease;
+}
+
+.product-card:hover .product-photo img {
+  transform: scale(1.035);
+}
+
+.product-price {
+  color: var(--mb-forest);
+}
+
+.product-actions .btn {
+  border-radius: 10px;
+}
+
+/* Stronger headings and section spacing */
+.section-heading {
+  gap: 24px;
+}
+
+.section-heading h2 {
+  color: var(--mb-forest);
+}
+
+.eyebrow {
+  line-height: 1.5;
+}
+
+/* Improved search controls */
+.search-row select,
+.search-box {
+  min-height: 48px;
+  border-color: var(--mb-line);
+  border-radius: 12px;
+}
+
+.search-row select:hover,
+.search-box:focus-within {
+  border-color: var(--mb-olive);
+}
+
+/* Better buttons */
+.btn {
+  border-radius: 11px;
+}
+
+.btn-primary {
+  background: var(--mb-forest);
+}
+
+.btn-primary:hover {
+  background: var(--mb-green);
+  box-shadow: 0 6px 16px #183b2820;
+}
+
+/* Improve page sections used by Smart Assist and SACCO Hub */
+.page-hero {
+  background:
+    radial-gradient(ellipse at top right, #e5edcf 0%, transparent 55%),
+    linear-gradient(120deg, #f0f5e7, #fff);
+}
+
+.panel,
+.sacco-card,
+.message-item {
+  border-color: var(--mb-line);
+  box-shadow: 0 5px 20px #173e2808;
+}
+
+.sacco-card {
+  background: linear-gradient(145deg, #f8faf4, #fff);
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.sacco-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px #173e2810;
+}
+
+/* Responsive category layout */
+@media (max-width: 1000px) {
+  .category-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .category-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .category-card {
+    min-height: 125px;
+  }
+
+  .category-card b {
+    padding-right: 8px;
+    padding-left: 9px;
+    font-size: 0.82rem;
+  }
+
+  .category-card small {
+    padding-left: 9px;
+    font-size: 0.69rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .category-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .category-card {
+    min-height: 135px;
+  }
+}
+
+/* Respect reduced-motion accessibility preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
