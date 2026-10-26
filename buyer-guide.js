@@ -1,14 +1,16 @@
 /* =========================================================
-   MAVUNOBRIDGE — BUYER + FARMER WEBSITE GUIDE
-   Uses the existing buyer-guide.js filename.
-   Offline help works without an AI service.
-   Preserves the existing buyer-checklist function.
+   MAVUNOBRIDGE — BUYER + FARMER GUIDE
+   Navigation assistant + offline help.
+   Browser-only demo; no backend required for basic guidance.
    ========================================================= */
 
 (() => {
   "use strict";
 
-  /* Preserve the existing buyer checklist API. */
+  if (window.__MAVUNOBRIDGE_BUYER_FARMER_GUIDE__) return;
+  window.__MAVUNOBRIDGE_BUYER_FARMER_GUIDE__ = true;
+
+  /* Keep the buyer-checklist API for other project files. */
   window.MAVUNO_BUYER_GUIDE = window.MAVUNO_BUYER_GUIDE || {};
 
   window.MAVUNO_BUYER_GUIDE.checkListing = function checkListing(listing) {
@@ -18,12 +20,15 @@
     if (!item.name) checks.push("Ask for the exact product name.");
     if (!item.county) checks.push("Confirm the county and collection point.");
     if (!item.price) checks.push("Confirm the final price and unit.");
+
     if (!item.quantity && !item.qty) {
       checks.push("Confirm the available quantity before travelling.");
     }
+
     if (!item.condition) {
       checks.push("Ask about the product condition and inspect it where practical.");
     }
+
     if (!item.phone) checks.push("Ask the seller for a contact method.");
 
     if (!checks.length) {
@@ -35,12 +40,47 @@
     return checks;
   };
 
-  if (window.__MAVUNOBRIDGE_BUYER_FARMER_GUIDE__) return;
-  window.__MAVUNOBRIDGE_BUYER_FARMER_GUIDE__ = true;
-
   const currentPage = (
-    location.pathname.split("/").pop() || "index.html"
+    window.location.pathname.split("/").pop() || "index.html"
   ).toLowerCase();
+
+  const destinations = {
+    marketplace: {
+      label: "Marketplace",
+      url: "index.html#marketplace",
+      page: "index.html"
+    },
+    listing: {
+      label: "Create listing",
+      url: "index.html?guide=listing#marketplace",
+      page: "index.html"
+    },
+    "smart-assist": {
+      label: "Smart Assist",
+      url: "smart-assist.html",
+      page: "smart-assist.html"
+    },
+    sacco: {
+      label: "SACCO Hub",
+      url: "sacco.html",
+      page: "sacco.html"
+    },
+    requests: {
+      label: "Buyer Requests",
+      url: "buyer-requests.html",
+      page: "buyer-requests.html"
+    },
+    messages: {
+      label: "Messages",
+      url: "messages.html",
+      page: "messages.html"
+    },
+    signin: {
+      label: "Sign in",
+      url: "login.html",
+      page: "login.html"
+    }
+  };
 
   const pageNames = {
     "index.html": "Marketplace",
@@ -53,7 +93,8 @@
 
   const pageName = pageNames[currentPage] || "MavunoBridge";
 
-  /* GUIDE STYLES */
+  /* -------------------- GUIDE STYLES -------------------- */
+
   const css = document.createElement("style");
 
   css.textContent = `
@@ -84,8 +125,8 @@
       z-index: 10002;
       display: flex;
       flex-direction: column;
-      width: min(400px, calc(100vw - 24px));
-      height: min(610px, calc(100dvh - 110px));
+      width: min(410px, calc(100vw - 24px));
+      height: min(650px, calc(100dvh - 110px));
       min-height: 360px;
       overflow: hidden;
       border: 1px solid #dce5d9;
@@ -147,7 +188,7 @@
     }
 
     .mb-guide-bubble {
-      max-width: 94%;
+      max-width: 96%;
       padding: 11px 13px;
       border: 1px solid #e0e7dc;
       border-radius: 13px;
@@ -181,7 +222,8 @@
       display: flex;
       flex-wrap: wrap;
       gap: 7px;
-      padding: 10px 12px 0;
+      padding: 10px 12px;
+      border-top: 1px solid #edf1e9;
       background: #fff;
     }
 
@@ -270,12 +312,21 @@
       color: #20482f;
     }
 
+    .destination-guide-button {
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    .footer-guide-button {
+      padding-left: 0;
+    }
+
     @media (max-width: 480px) {
       .mb-guide-panel {
         right: 8px;
         bottom: 75px;
         width: calc(100vw - 16px);
-        height: min(630px, calc(100dvh - 95px));
+        height: min(650px, calc(100dvh - 95px));
       }
 
       .mb-guide-launcher {
@@ -287,10 +338,9 @@
 
   document.head.appendChild(css);
 
-  /* BACK TO TOP */
-  const footer = document.querySelector(
-    ".site-footer, .footer, footer"
-  );
+  /* -------------------- BACK TO TOP -------------------- */
+
+  const footer = document.querySelector(".site-footer, .footer, footer");
 
   if (footer && !footer.querySelector(".mb-back-top")) {
     const wrap = document.createElement("div");
@@ -304,8 +354,7 @@
     link.addEventListener("click", event => {
       event.preventDefault();
 
-      const reduceMotion =
-        window.matchMedia &&
+      const reduceMotion = window.matchMedia &&
         window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
       window.scrollTo({
@@ -318,26 +367,22 @@
     footer.appendChild(wrap);
   }
 
-  /* FLOATING GUIDE BUTTON */
-  const launcher = document.createElement("button");
+  /* -------------------- GUIDE LAUNCHER -------------------- */
 
+  const launcher = document.createElement("button");
   launcher.type = "button";
   launcher.className = "mb-guide-launcher";
   launcher.textContent = "🌱 Buyer + Farmer Guide";
   launcher.setAttribute("aria-expanded", "false");
   launcher.setAttribute("aria-controls", "mbGuidePanel");
 
-  /* GUIDE WINDOW */
   const panel = document.createElement("section");
-
   panel.id = "mbGuidePanel";
   panel.className = "mb-guide-panel";
   panel.hidden = true;
   panel.setAttribute("role", "dialog");
-  panel.setAttribute(
-    "aria-label",
-    "MavunoBridge buyer and farmer guide"
-  );
+  panel.setAttribute("aria-modal", "false");
+  panel.setAttribute("aria-label", "MavunoBridge buyer and farmer guide");
 
   panel.innerHTML = `
     <div class="mb-guide-head">
@@ -366,8 +411,8 @@
       </button>
 
       <button class="mb-guide-chip" type="button"
-        data-question="I'm a buyer. How do I find and check a product?">
-        I'm a buyer
+        data-question="What should I check before buying?">
+        Buying checklist
       </button>
 
       <button class="mb-guide-chip" type="button"
@@ -376,18 +421,33 @@
       </button>
 
       <button class="mb-guide-chip" type="button"
-        data-question="What should I check before buying?">
-        Buying checklist
+        data-go="listing">
+        Create listing
       </button>
 
       <button class="mb-guide-chip" type="button"
-        data-question="How do I use Smart Assist?">
-        Smart Assist
+        data-go="smart-assist">
+        Open Smart Assist
       </button>
 
       <button class="mb-guide-chip" type="button"
-        data-question="How does the demo cart work?">
-        Cart help
+        data-go="sacco">
+        Open SACCO Hub
+      </button>
+
+      <button class="mb-guide-chip" type="button"
+        data-go="requests">
+        Buyer Requests
+      </button>
+
+      <button class="mb-guide-chip" type="button"
+        data-go="messages">
+        Messages
+      </button>
+
+      <button class="mb-guide-chip" type="button"
+        data-go="marketplace">
+        Marketplace
       </button>
     </div>
 
@@ -399,14 +459,14 @@
         maxlength="1000"
         required
         aria-label="Ask the buyer and farmer guide"
-        placeholder="Ask a question..."
+        placeholder="Ask a question or type Smart Assist..."
       ></textarea>
 
       <button class="mb-guide-send" type="submit">Ask</button>
     </form>
 
     <p class="mb-guide-status" id="mbGuideStatus">
-      Offline website help is ready. Generative AI is optional.
+      Offline website help is ready.
     </p>
   `;
 
@@ -418,10 +478,56 @@
   const sendButton = panel.querySelector(".mb-guide-send");
   const status = panel.querySelector("#mbGuideStatus");
 
-  /* SAFELY DISPLAY A MESSAGE */
+  /* -------------------- OPEN / CLOSE GUIDE -------------------- */
+
+  function openGuide() {
+    panel.hidden = false;
+    launcher.setAttribute("aria-expanded", "true");
+
+    if (!messageArea.childElementCount) {
+      addMessage(
+        `Sasa! I can guide you around MavunoBridge. You're on ${pageName}. Choose a destination below, or type what you want to do. If you ask for Smart Assist, SACCO Hub, Messages or Buyer Requests, I'll open that page for you.`,
+        "assistant"
+      );
+    }
+
+    input.focus();
+  }
+
+  function closeGuide() {
+    panel.hidden = true;
+    launcher.setAttribute("aria-expanded", "false");
+  }
+
+  launcher.addEventListener("click", () => {
+    if (panel.hidden) openGuide();
+    else closeGuide();
+  });
+
+  panel.querySelector(".mb-guide-close").addEventListener(
+    "click",
+    closeGuide
+  );
+
+  /* Open guide from buttons in index.html. */
+  [
+    "#openGuideButton",
+    "#openGuideFromFeatures",
+    "#openGuideFooterButton"
+  ].forEach(selector => {
+    document.querySelector(selector)?.addEventListener("click", () => {
+      openGuide();
+    });
+  });
+
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape" && !panel.hidden) closeGuide();
+  });
+
+  /* -------------------- SAFE MESSAGE DISPLAY -------------------- */
+
   function addMessage(text, role, note = "") {
     const bubble = document.createElement("div");
-
     bubble.className = `mb-guide-bubble ${role}`;
     bubble.textContent = text;
 
@@ -435,51 +541,146 @@
     messageArea.scrollTop = messageArea.scrollHeight;
   }
 
-  function openGuide() {
-    panel.hidden = false;
-    launcher.setAttribute("aria-expanded", "true");
+  /* -------------------- REDIRECT / NAVIGATION -------------------- */
 
-    if (!messageArea.childElementCount) {
-      addMessage(
-        `Sasa! I can help buyers and farmers use MavunoBridge. You're on ${pageName}. Ask me about listing produce, finding items, checking a seller, the cart, Smart Assist, SACCO Hub, Buyer Requests or Messages.`,
-        "assistant"
-      );
+  function navigateTo(destination) {
+    const target = destinations[destination];
+
+    if (!target) {
+      status.textContent = "I couldn't find that destination.";
+      return;
     }
 
-    input.focus();
+    closeGuide();
+
+    /* Listing is a modal on the marketplace page. */
+    if (destination === "listing") {
+      if (currentPage === "index.html") {
+        const marketplace = document.getElementById("marketplace");
+        marketplace?.scrollIntoView({ behavior: "smooth", block: "start" });
+
+        window.setTimeout(() => {
+          document.getElementById("sellButton")?.click();
+        }, 100);
+      } else {
+        window.location.href = target.url;
+      }
+      return;
+    }
+
+    /* Stay on the page if the visitor is already there. */
+    if (destination === "marketplace" && currentPage === "index.html") {
+      window.location.hash = "marketplace";
+      document.getElementById("marketplace")?.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+      return;
+    }
+
+    if (target.page === currentPage) {
+      if (destination === "marketplace") {
+        document.getElementById("marketplace")?.scrollIntoView({
+          behavior: "smooth",
+          block: "start"
+        });
+      }
+      return;
+    }
+
+    window.location.href = target.url;
   }
 
-  function closeGuide() {
-    panel.hidden = true;
-    launcher.setAttribute("aria-expanded", "false");
-    launcher.focus();
+  /* Button destinations work directly, without needing to type a question. */
+  panel.querySelectorAll("[data-go]").forEach(button => {
+    button.addEventListener("click", () => {
+      navigateTo(button.dataset.go);
+    });
+  });
+
+  /* "Take me there" buttons on the main page. */
+  document.querySelectorAll("[data-guide-go]").forEach(button => {
+    button.addEventListener("click", () => {
+      navigateTo(button.dataset.guideGo);
+    });
+  });
+
+  /*
+   * Recognize direct requests to open a page.
+   * Asking to open Smart Assist takes the visitor there, rather than
+   * merely describing what Smart Assist does.
+   */
+  function destinationForQuestion(question) {
+    const q = String(question || "").toLowerCase().trim();
+
+    if (
+      /\bsmart[\s-]*assist\b/.test(q) ||
+      /\bopen weather\b/.test(q) ||
+      /\bopen crop (help|assistant|advice)\b/.test(q)
+    ) {
+      return "smart-assist";
+    }
+
+    if (
+      /\bsacco\b/.test(q) ||
+      /\bsavings group(s)?\b/.test(q) ||
+      /\bopen savings\b/.test(q)
+    ) {
+      return "sacco";
+    }
+
+    if (
+      /\bbuyer requests?\b/.test(q) ||
+      /\brequest board\b/.test(q) ||
+      /\bopen requests?\b/.test(q)
+    ) {
+      return "requests";
+    }
+
+    if (
+      /\bmessages?\b/.test(q) ||
+      /\bopen chat\b/.test(q) ||
+      /\bmessage centre\b/.test(q)
+    ) {
+      return "messages";
+    }
+
+    if (
+      /\bsign in\b/.test(q) ||
+      /\blog ?in\b/.test(q) ||
+      /\bopen account\b/.test(q)
+    ) {
+      return "signin";
+    }
+
+    if (
+      /\b(create|make|publish|open)\s+(a\s+)?listing\b/.test(q) ||
+      /\bsell (my |your )?(produce|products|crops)\b/.test(q) ||
+      /\bi want to sell\b/.test(q) ||
+      /\blist my produce\b/.test(q)
+    ) {
+      return "listing";
+    }
+
+    if (
+      /\bopen marketplace\b/.test(q) ||
+      /\btake me to (the )?marketplace\b/.test(q) ||
+      /\bgo to (the )?marketplace\b/.test(q) ||
+      /\bshow me (the )?marketplace\b/.test(q)
+    ) {
+      return "marketplace";
+    }
+
+    return null;
   }
 
-  launcher.addEventListener("click", () => {
-    if (panel.hidden) {
-      openGuide();
-    } else {
-      closeGuide();
-    }
-  });
+  /* -------------------- OFFLINE GUIDE ANSWERS -------------------- */
 
-  panel.querySelector(".mb-guide-close").addEventListener(
-    "click",
-    closeGuide
-  );
-
-  document.addEventListener("keydown", event => {
-    if (event.key === "Escape" && !panel.hidden) {
-      closeGuide();
-    }
-  });
-
-  /* BUILT-IN OFFLINE HELP */
   function offlineAnswer(question) {
     const q = String(question || "").toLowerCase();
 
     if (/farmer|sell|list|publish|create listing|upload|add product/.test(q)) {
-      return "Farmer guide: On Marketplace, click + Create listing. Enter the product or service name, choose the correct category and county, add quantity, price and unit, sale type, farm name and contact number. Add a clear product photo if you have one, then click Publish listing. Demo listings you create are stored in that browser, so they won't automatically appear on another person's device.";
+      return "Farmer guide: On Marketplace, click + Create listing. Enter the product or service name, choose the correct category and county, add quantity, price and unit, sale type, farm name and contact number. Add a clear product photo if you have one, then click Publish listing. Demo listings you create are saved in that browser only, so they won't automatically appear on another person's device.";
     }
 
     if (/buyer|buying checklist|before buying|check a product|seller|quality|verify/.test(q)) {
@@ -494,20 +695,16 @@
       return "Tap Add to cart on a product card, then open Cart in the header to review or remove items. This is a demonstration cart only: it does not collect money, reserve stock or place a real order. Confirm availability and terms directly with the seller.";
     }
 
-    if (/smart assist|crop|plant|pest|weather|farm plan|disease/.test(q)) {
-      return "Open Smart Assist and choose the relevant county, crop or farm issue. The current project is a demo and does not automatically confirm live weather or local pest outbreaks. Treat guidance as general information and contact an agricultural extension officer for important crop-protection decisions.";
-    }
-
     if (/sacco|saving group|savings|loan|opportun/.test(q)) {
-      return "Open SACCO Hub to explore sample savings groups and agricultural opportunities. Check eligibility, fees and terms directly with the real organisation before sharing personal information or making payments; the samples in this demo are not verified applications.";
+      return "SACCO Hub has sample savings-group and agricultural-opportunity information. Check eligibility, fees and terms directly with the real organisation before sharing personal information or making payments. The sample entries are not verified applications.";
     }
 
     if (/buyer request|request board|request a product|post a request/.test(q)) {
-      return "Open Buyer Requests and fill in the item you need, quantity, location and contact details. This is a demonstration board; posting a request here does not guarantee that farmers receive it or that an order will be fulfilled.";
+      return "Buyer Requests is where a buyer can describe an item, quantity and location. This demo does not guarantee that farmers receive a request or that an order will be fulfilled.";
     }
 
     if (/message|chat|contact|call/.test(q)) {
-      return "Use the chat/contact option on a listing to open the Messages page or the seller's contact option. Messaging in this browser-only demo may not reach another visitor's device. Confirm the deal details directly before arranging collection.";
+      return "Use the chat/contact option on a listing to open Messages or the seller's contact option. Messaging in this browser-only demo may not reach another visitor's device. Confirm the deal details directly before arranging collection.";
     }
 
     if (/sign.?in|login|account|password/.test(q)) {
@@ -519,13 +716,14 @@
     }
 
     if (/photo|image|picture/.test(q)) {
-      return "When publishing a listing, use the Product photo field to choose a clear image from your device. Make sure the photo actually shows the item being sold. Sample listing photos are illustrative, and an image problem should never be solved by displaying a different crop's photo.";
+      return "When publishing a listing, use the Product photo field to choose a clear image from your device. Make sure the photo actually shows the item being sold. Sample listing photos are illustrative.";
     }
 
-    return "I can help with two main tasks: farmers can publish produce or services; buyers can search, compare listings and check details before agreeing. I can also explain filters, the demo cart, Smart Assist, SACCO Hub, Buyer Requests and Messages. Tell me which part you're using.";
+    return "I can guide you to Marketplace, Create listing, Smart Assist, SACCO Hub, Buyer Requests, Messages or Sign in. Type the destination's name or choose one of the buttons above. You can also ask for help with filters, the demo cart or checking a listing.";
   }
 
-  /* OPTIONAL GENERATIVE AI ENDPOINT */
+  /* -------------------- OPTIONAL AI GUIDE -------------------- */
+
   async function getAnswer(question) {
     const endpoint = String(
       window.MAVUNO_AI_ENDPOINT || ""
@@ -539,9 +737,9 @@
     }
 
     const prompt = [
-      "You are the MavunoBridge buyer and farmer website guide for a Kenyan agriculture marketplace demonstration.",
+      "You are the MavunoBridge buyer and farmer website guide for a Kenyan agriculture marketplace demo.",
       `The visitor is on ${pageName} (${currentPage}).`,
-      "Explain website navigation first. Sample listings and price ranges are illustrative, not verified live offers. User-created listings, cart and demo session data are browser-local and are not automatically shared across devices. Do not claim live weather, market prices, verified sellers or real payments. Never ask for passwords, PINs or sensitive personal information. Use clear English with light Kenyan Swahili where helpful.",
+      "Explain navigation first. Sample listings, prices and reviews are illustrative, not verified live offers. New listings and demo cart data are browser-local, not shared automatically across devices. Do not claim verified sellers, real payments, live weather or live prices. Never ask for passwords, PINs or sensitive personal information. Use clear English with light Kenyan Swahili where helpful.",
       `Visitor question: ${question}`
     ].join("\n\n");
 
@@ -573,6 +771,8 @@
     };
   }
 
+  /* -------------------- ASK THE GUIDE -------------------- */
+
   async function ask(question) {
     const text = String(question || "").trim().slice(0, 1000);
 
@@ -581,6 +781,24 @@
     addMessage(text, "user");
 
     input.value = "";
+
+    const destination = destinationForQuestion(text);
+
+    if (destination) {
+      const target = destinations[destination];
+
+      addMessage(
+        `Opening ${target.label} for you…`,
+        "assistant",
+        "Taking you to the requested section"
+      );
+
+      status.textContent = `Opening ${target.label}…`;
+
+      window.setTimeout(() => navigateTo(destination), 250);
+      return;
+    }
+
     sendButton.disabled = true;
     status.textContent = "Checking the guide…";
 
@@ -596,7 +814,7 @@
       status.textContent =
         result.source === "Connected AI guide"
           ? "AI connected. Verify important details before making a deal."
-          : "Offline help is active. Set the Worker URL for generative AI.";
+          : "Offline help is active. You can also choose a destination above.";
 
     } catch (error) {
       console.warn("MavunoBridge guide fallback:", error);
