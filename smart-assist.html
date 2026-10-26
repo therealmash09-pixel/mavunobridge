@@ -1,136 +1,727 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#183522">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#21432d">
+  <meta name="description" content="MavunoBridge Smart Assist: Kenyan crop guides, symptom matching, farm reports and multilingual farming support.">
+  <meta name="color-scheme" content="light">
 
   <title>Smart Assist | MavunoBridge</title>
 
-  <link rel="stylesheet" href="style.css?v=13">
-  <link rel="stylesheet" href="pages.css?v=2">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-  <script src="language.js?v=2" defer></script>
-  <script src="smart-assist.js?v=2" defer></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  >
+
+  <link rel="stylesheet" href="style.css?v=16">
+  <link rel="stylesheet" href="smart-assist.css?v=1">
+
+  <!-- Load configuration before the Smart Assist script. -->
+  <script src="ai-config.js?v=2" defer></script>
+  <script src="smart-assist.js?v=3" defer></script>
+  <script src="buyer-guide.js?v=3" defer></script>
 </head>
+
 <body>
-  <header class="topbar">
-    <a class="brand" href="index.html">
-      <span class="brand-mark">M</span>
-      <span>Mavuno<span class="brand-light">Bridge</span><small>FARMING. CONNECTED.</small></span>
+  <a class="sa-skip" href="#farmPlanner">Skip to farm planner</a>
+
+  <!-- ===================== HEADER ===================== -->
+
+  <header class="topbar" id="top">
+    <a class="brand" href="index.html" aria-label="MavunoBridge home">
+      <span class="brand-mark" aria-hidden="true">M</span>
+      <span class="brand-name">
+        Mavuno<span class="brand-green">Bridge</span>
+      </span>
     </a>
-    <div class="top-actions">
-      <label class="language-picker">
-        <span class="sr-only">Choose language</span>
-        <select id="languageSelect" aria-label="Choose language">
-          <option value="mix">Sheng + Kiswahili</option>
+
+    <button
+      id="menuButton"
+      class="menu-button"
+      type="button"
+      aria-label="Open navigation"
+      aria-expanded="false"
+      aria-controls="mainNav"
+    >
+      <span aria-hidden="true">☰</span>
+    </button>
+
+    <nav class="main-nav" id="mainNav" aria-label="Main navigation">
+      <a href="index.html#marketplace">Marketplace</a>
+      <a href="smart-assist.html" aria-current="page">Smart Assist</a>
+      <a href="sacco.html">SACCO Hub</a>
+      <a href="buyer-requests.html">Buyer Requests</a>
+      <a href="messages.html">Messages</a>
+    </nav>
+
+    <div class="header-actions">
+      <div class="language-control">
+        <label class="language-label" for="languageSelect">
+          Response language
+        </label>
+
+        <select id="languageSelect" aria-label="Choose response language">
+          <option value="mix">Sheng + English</option>
           <option value="en">English</option>
           <option value="sw">Kiswahili</option>
         </select>
-      </label>
-      <a href="index.html" class="text-link">← Marketplace</a>
+      </div>
+
+      <a href="index.html#marketplace" class="outline-btn">
+        ← Marketplace
+      </a>
+
+      <button
+        type="button"
+        id="openGuideButton"
+        class="outline-btn"
+      >
+        Help Guide
+      </button>
     </div>
   </header>
 
-  <main class="page-shell">
-    <section class="page-hero smart-hero">
-      <p class="eyebrow">YOUR DIGITAL FARMING COMPANION</p>
-      <h1>Smarter decisions.<br>Better harvests.</h1>
-      <p>Get practical crop-planning ideas, pest guidance and farming tips tailored to your selected Kenyan county.</p>
-      <span class="demo-label">DEMO MODE · NOT A LIVE WEATHER FORECAST</span>
+  <main class="sa-main">
+
+    <!-- ===================== HERO ===================== -->
+
+    <section class="sa-hero">
+      <div class="sa-hero-copy">
+        <span class="sa-eyebrow" id="heroEyebrow">
+          YOUR FARM, YOUR PLAN
+        </span>
+
+        <h1 id="heroTitle">
+          Grow with a plan.
+          <br>
+          <span>Harvest with confidence.</span>
+        </h1>
+
+        <p id="heroDescription">
+          Chagua crop, county na hali ya shamba. Pata practical growing tips,
+          possible pest and disease matches, and a report you can save or print.
+        </p>
+
+        <div class="sa-hero-points">
+          <span>✓ 22 crop profiles</span>
+          <span>✓ 3 response languages</span>
+          <span>✓ Printable farm reports</span>
+        </div>
+
+        <p class="sa-demo-notice" id="heroNotice">
+          Demo guidance only. This is not a live weather forecast or confirmed
+          pest or disease diagnosis.
+        </p>
+      </div>
+
+      <div class="sa-hero-art" aria-hidden="true">
+        <div class="sa-art-sun"></div>
+        <div class="sa-art-hill sa-art-hill-back"></div>
+        <div class="sa-art-hill sa-art-hill-front"></div>
+
+        <div class="sa-art-card">
+          <span class="sa-art-symbol">🌱</span>
+          <span>
+            <strong>Smart farming starts here</strong>
+            <small>Crop tips · Farm reports · Local context</small>
+          </span>
+        </div>
+      </div>
     </section>
 
-    <section class="section page-section">
-      <div class="section-heading">
+    <!-- ===================== FARM PLANNER ===================== -->
+
+    <section
+      class="sa-section"
+      id="farmPlanner"
+      aria-labelledby="plannerTitle"
+    >
+      <div class="sa-section-head">
         <div>
-          <p class="eyebrow">PERSONALISED FARM PLANNER</p>
-          <h2>Tell us about your farm</h2>
-          <p class="muted">Chagua county and crop to get a tailored starting point.</p>
+          <span class="sa-eyebrow">
+            PERSONALISED FARM PLANNER
+          </span>
+
+          <h2 id="plannerTitle">Tell us about your farm</h2>
+
+          <p id="plannerDescription">
+            Add the details you know. Optional fields can be left blank.
+          </p>
         </div>
+
+        <span class="sa-step-tag">01 / PLAN</span>
       </div>
 
-      <form id="assistForm" class="assist-form">
-        <label>County
-          <select id="assistCounty" required>
-            <option value="Nakuru">Nakuru</option>
-            <option value="Kiambu">Kiambu</option>
-            <option value="Uasin Gishu">Uasin Gishu</option>
-            <option value="Meru">Meru</option>
-            <option value="Machakos">Machakos</option>
-            <option value="Kisumu">Kisumu</option>
-            <option value="Nyandarua">Nyandarua</option>
-            <option value="Bungoma">Bungoma</option>
-          </select>
-        </label>
+      <form id="smartPlanForm" class="sa-planner-card">
+        <div class="sa-form-grid">
 
-        <label>Crop or plant
-          <select id="assistCrop" required>
-            <option value="Maize">Maize</option>
-            <option value="Beans">Beans</option>
-            <option value="Tomatoes">Tomatoes</option>
-            <option value="Potatoes">Potatoes</option>
-            <option value="Avocados">Avocados</option>
-            <option value="Green grams">Green grams</option>
-            <option value="Kale">Kale / Sukuma wiki</option>
-            <option value="Bananas">Bananas</option>
-          </select>
-        </label>
+          <label class="sa-field">
+            <span id="countyLabel">County *</span>
+            <select id="saCounty" name="county" required>
+              <option value="Nakuru">Nakuru</option>
+            </select>
+          </label>
 
-        <label>Farm condition
-          <select id="assistCondition">
-            <option value="normal">Normal conditions</option>
-            <option value="dry">Soil is dry</option>
-            <option value="wet">Heavy rain / wet soil</option>
-            <option value="pests">Noticed pests or crop damage</option>
-          </select>
-        </label>
+          <label class="sa-field">
+            <span id="areaLabel">Town / area (optional)</span>
+            <input
+              id="saArea"
+              name="area"
+              type="text"
+              maxlength="80"
+              placeholder="e.g. Njoro"
+            >
+          </label>
 
-        <button class="button button-green" type="submit">Generate farm tips →</button>
+          <label class="sa-field">
+            <span id="cropLabel">Crop *</span>
+            <select id="saCrop" name="crop" required>
+              <option value="maize">Maize</option>
+            </select>
+          </label>
+
+          <label class="sa-field">
+            <span id="stageLabel">Growth stage</span>
+            <select id="saStage" name="stage">
+              <option value="planning">Planning / before planting</option>
+              <option value="seedling">Seeds / seedlings</option>
+              <option value="vegetative">Leaf and stem growth</option>
+              <option value="flowering">Flowering / fruiting</option>
+              <option value="harvest">Harvest / storage</option>
+            </select>
+          </label>
+
+          <label class="sa-field">
+            <span id="issueLabel">Main concern</span>
+            <select id="saIssue" name="issue">
+              <option value="normal">General crop planning</option>
+              <option value="dry">Dry soil / water shortage</option>
+              <option value="wet">Heavy rain / waterlogged soil</option>
+              <option value="pests">Pests or insect damage</option>
+              <option value="disease">Possible disease symptoms</option>
+              <option value="yellow">Yellowing or weak growth</option>
+              <option value="harvest">Harvest / storage problem</option>
+              <option value="soil">Soil fertility question</option>
+            </select>
+          </label>
+
+          <label class="sa-field">
+            <span id="soilLabel">Soil type (if known)</span>
+            <select id="saSoil" name="soil">
+              <option value="unknown">Not sure</option>
+              <option value="loam">Loam</option>
+              <option value="clay">Clay / heavy soil</option>
+              <option value="sandy">Sandy / light soil</option>
+              <option value="volcanic">Volcanic / dark soil</option>
+            </select>
+          </label>
+
+          <label class="sa-field">
+            <span id="waterLabel">Water access</span>
+            <select id="saWater" name="water">
+              <option value="rain">Mainly rainfall</option>
+              <option value="irrigation">Irrigation available</option>
+              <option value="limited">Limited water</option>
+              <option value="uncertain">Not sure</option>
+            </select>
+          </label>
+
+          <label class="sa-field">
+            <span id="farmSizeLabel">Farm size in acres (optional)</span>
+            <input
+              id="saFarmSize"
+              name="farmSize"
+              type="number"
+              min="0.01"
+              step="0.01"
+              placeholder="e.g. 0.5"
+            >
+          </label>
+
+          <!-- SYMPTOM CHECKLIST: generated from smart-assist.js -->
+          <fieldset class="sa-symptom-field sa-field-wide">
+            <legend id="symptomLegend">
+              Visible signs or symptoms
+            </legend>
+
+            <p id="symptomHelp">
+              Select any signs you can see on the crop.
+            </p>
+
+            <div id="saSymptomChecks" class="sa-symptom-checks">
+              <span class="sa-muted-note">
+                Loading symptom choices...
+              </span>
+            </div>
+          </fieldset>
+
+          <!-- WRITTEN SYMPTOMS -->
+          <label class="sa-field sa-field-wide">
+            <span id="symptomsLabel">Describe the problem</span>
+
+            <textarea
+              id="saSymptoms"
+              name="symptoms"
+              rows="3"
+              maxlength="800"
+              placeholder="e.g. small holes on leaves, insects underneath, yellow patches..."
+            ></textarea>
+
+            <small>
+              Describe where it appears and whether the problem is spreading.
+            </small>
+          </label>
+
+          <!-- PHOTO UPLOAD -->
+          <label class="sa-field sa-field-wide">
+            <span id="photoLabel">Upload a crop photo (optional)</span>
+
+            <input
+              id="saPhoto"
+              name="photo"
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+            >
+
+            <small id="photoHelp">
+              Choose a clear photo of the affected leaf, stem, fruit or root.
+              Do not include people or private information in the photo.
+            </small>
+          </label>
+
+          <!-- PHOTO PREVIEW -->
+          <div
+            id="saPhotoPreview"
+            class="sa-photo-preview sa-field-wide"
+            hidden
+          >
+            <img
+              id="saPhotoPreviewImage"
+              alt="Preview of the crop photo you selected"
+            >
+
+            <div class="sa-photo-details">
+              <strong id="saPhotoName">Selected photo</strong>
+
+              <p id="saPhotoMessage">
+                Photo preview only. An image-analysis service is required
+                for actual visual matching.
+              </p>
+
+              <button
+                type="button"
+                class="sa-remove-photo"
+                id="saRemovePhoto"
+              >
+                Remove photo
+              </button>
+            </div>
+          </div>
+
+          <!-- EXTRA FARM NOTES -->
+          <label class="sa-field sa-field-wide">
+            <span id="notesLabel">Extra farm details (optional)</span>
+
+            <textarea
+              id="saNotes"
+              name="notes"
+              rows="2"
+              maxlength="600"
+              placeholder="When did it begin? Is one plant or are many plants affected?"
+            ></textarea>
+          </label>
+        </div>
+
+        <div class="sa-form-actions">
+          <button
+            class="sa-button sa-button-primary"
+            type="submit"
+            id="generateReportButton"
+          >
+            Generate my farm report →
+          </button>
+
+          <button
+            class="sa-button sa-button-secondary"
+            type="reset"
+            id="resetPlanButton"
+          >
+            Clear form
+          </button>
+        </div>
+
+        <p class="sa-form-footnote" id="plannerFootnote">
+          This demo compares your selected signs and description with a
+          built-in starter library. It does not establish the actual cause
+          of a crop problem.
+        </p>
       </form>
+    </section>
 
-      <div id="assistResults" class="assist-results" aria-live="polite">
-        <div class="assist-placeholder">
-          <h3>Your farm plan will appear here</h3>
-          <p>Choose your county and crop, then select “Generate farm tips”.</p>
+    <!-- ===================== FARM REPORT ===================== -->
+
+    <section
+      class="sa-section sa-report-section"
+      id="reportSection"
+      aria-labelledby="reportTitle"
+    >
+      <div class="sa-section-head">
+        <div>
+          <span class="sa-eyebrow">
+            YOUR PERSONAL FARM REPORT
+          </span>
+
+          <h2 id="reportTitle">Your farm report</h2>
+
+          <p id="reportSubhead">
+            Your selected crop, observations and recommended next steps.
+          </p>
+        </div>
+
+        <span class="sa-step-tag">02 / REPORT</span>
+      </div>
+
+      <div id="saReportOutput" aria-live="polite">
+        <div class="sa-empty-report">
+          <span class="sa-empty-icon" aria-hidden="true">📋</span>
+
+          <h3 id="emptyReportTitle">Your report will appear here</h3>
+
+          <p id="emptyReportDescription">
+            Complete the farm planner and select Generate my farm report.
+          </p>
+        </div>
+      </div>
+
+      <div class="sa-report-actions" id="saReportActions" hidden>
+        <button
+          type="button"
+          class="sa-button sa-button-primary"
+          id="saveReportButton"
+        >
+          Save report on this device
+        </button>
+
+        <button
+          type="button"
+          class="sa-button sa-button-secondary"
+          id="downloadReportButton"
+        >
+          Download text report
+        </button>
+
+        <button
+          type="button"
+          class="sa-button sa-button-secondary"
+          id="printReportButton"
+        >
+          Print / Save as PDF
+        </button>
+      </div>
+
+      <p class="sa-status" id="saReportStatus" role="status" aria-live="polite"></p>
+    </section>
+
+    <!-- ===================== FARM ASSISTANT ===================== -->
+
+    <section
+      class="sa-section"
+      id="farmAssistant"
+      aria-labelledby="assistantTitle"
+    >
+      <div class="sa-section-head">
+        <div>
+          <span class="sa-eyebrow">ASK A FARM QUESTION</span>
+
+          <h2 id="assistantTitle">Farm Assistant</h2>
+
+          <p id="assistantDescription">
+            Ask a follow-up about your selected crop or report.
+          </p>
+        </div>
+
+        <span class="sa-step-tag">03 / ASK</span>
+      </div>
+
+      <div class="sa-assistant-layout">
+        <aside class="sa-assistant-intro">
+          <div class="sa-assistant-avatar" aria-hidden="true">🌿</div>
+
+          <h3 id="assistantWelcome">Habari, farmer!</h3>
+
+          <p id="assistantWelcomeText">
+            Ask about growing practices, watering, soil care, symptom matching
+            and harvesting in English, Sheng + English, or Kiswahili.
+          </p>
+
+          <div class="sa-assistant-reminder" id="assistantReminder">
+            Similar symptoms can have different causes. For serious or
+            spreading crop damage, contact a local agricultural extension
+            officer before choosing a treatment.
+          </div>
+        </aside>
+
+        <div class="sa-chat-panel">
+          <div
+            id="saChatMessages"
+            class="sa-chat-messages"
+            aria-live="polite"
+          >
+            <div class="sa-chat-message sa-chat-bot" id="saChatWelcome">
+              Sasa! Generate your farm report, then ask a follow-up about
+              your chosen crop.
+            </div>
+          </div>
+
+          <div class="sa-quick-questions" id="saQuickQuestions">
+            <button
+              type="button"
+              class="sa-chip"
+              data-question="How should I manage water for this crop?"
+            >
+              Water management
+            </button>
+
+            <button
+              type="button"
+              class="sa-chip"
+              data-question="What should I check when scouting for pests?"
+            >
+              Pest scouting
+            </button>
+
+            <button
+              type="button"
+              class="sa-chip"
+              data-question="How do I improve soil health for this crop?"
+            >
+              Soil health
+            </button>
+
+            <button
+              type="button"
+              class="sa-chip"
+              data-question="How should I prepare for harvest and storage?"
+            >
+              Harvest and storage
+            </button>
+          </div>
+
+          <form id="saQuestionForm" class="sa-chat-form">
+            <label class="sa-sr-only" for="saQuestionInput" id="questionInputLabel">
+              Ask a farm question
+            </label>
+
+            <textarea
+              id="saQuestionInput"
+              rows="2"
+              maxlength="700"
+              required
+              placeholder="Ask about pests, symptoms, water, soil or harvest..."
+            ></textarea>
+
+            <button
+              type="submit"
+              class="sa-button sa-button-primary"
+              id="askQuestionButton"
+            >
+              Ask
+            </button>
+          </form>
+
+          <p class="sa-chat-footnote" id="chatFootnote">
+            Offline assistant. Responses use built-in crop guidance, not a
+            live agronomist.
+          </p>
         </div>
       </div>
     </section>
 
-    <section class="section page-section">
-      <p class="eyebrow">QUICK LEARNING</p>
-      <h2>Farm knowledge corner</h2>
-      <div class="knowledge-grid">
-        <article class="knowledge-card">
-          <span class="knowledge-number">01</span>
-          <h3>Soil health</h3>
-          <p>Improve soil with suitable organic matter, protect it from erosion and consider a soil test before applying fertiliser.</p>
-        </article>
-        <article class="knowledge-card">
-          <span class="knowledge-number">02</span>
-          <h3>Pest scouting</h3>
-          <p>Check both sides of leaves and inspect several plants. Note affected areas before choosing a control method.</p>
-        </article>
-        <article class="knowledge-card">
-          <span class="knowledge-number">03</span>
-          <h3>Water management</h3>
-          <p>Check soil moisture before watering. Avoid waterlogging and use mulch where appropriate to reduce evaporation.</p>
-        </article>
+    <!-- ===================== CROP LIBRARY ===================== -->
+
+    <section
+      class="sa-section"
+      id="cropLibrary"
+      aria-labelledby="cropLibraryTitle"
+    >
+      <div class="sa-section-head">
+        <div>
+          <span class="sa-eyebrow">LEARN BY CROP</span>
+
+          <h2 id="cropLibraryTitle">Kenyan crop guide library</h2>
+
+          <p id="libraryDescription">
+            Search crop groups, read growing tips and select a crop for a
+            personalised report.
+          </p>
+        </div>
+
+        <span class="sa-step-tag">22 CROPS</span>
+      </div>
+
+      <div class="sa-library-controls">
+        <label class="sa-field">
+          <span id="librarySearchLabel">Find a crop</span>
+
+          <input
+            id="saCropSearch"
+            type="search"
+            placeholder="Search maize, coffee, cassava..."
+          >
+        </label>
+
+        <label class="sa-field">
+          <span id="libraryTypeLabel">Crop group</span>
+
+          <select id="saCropGroup">
+            <option value="all">All crop groups</option>
+            <option value="Cereals">Cereals</option>
+            <option value="Legumes">Legumes</option>
+            <option value="Horticulture">Vegetables and fruits</option>
+            <option value="Roots">Root crops</option>
+            <option value="Cash crops">Cash crops</option>
+            <option value="Other crops">Other crops</option>
+          </select>
+        </label>
+
+        <label class="sa-field">
+          <span id="libraryCountyLabel">County context</span>
+
+          <select id="saLibraryCounty">
+            <option value="all">All counties</option>
+          </select>
+        </label>
+      </div>
+
+      <div id="saCropLibraryGrid" class="sa-crop-library-grid">
+        <p class="sa-muted-note">Loading crop guides...</p>
+      </div>
+
+      <p class="sa-status" id="saLibraryStatus" aria-live="polite"></p>
+    </section>
+
+    <!-- ===================== SAVED REPORTS ===================== -->
+
+    <section
+      class="sa-section"
+      id="savedReportsSection"
+      aria-labelledby="savedReportsTitle"
+    >
+      <div class="sa-section-head">
+        <div>
+          <span class="sa-eyebrow">YOUR FARM NOTES</span>
+
+          <h2 id="savedReportsTitle">Saved farm reports</h2>
+
+          <p id="savedDescription">
+            Reports stay in this browser. They aren't automatically uploaded
+            or shared across devices.
+          </p>
+        </div>
+      </div>
+
+      <div id="saSavedReports" class="sa-saved-reports">
+        <p class="sa-muted-note" id="noSavedReports">
+          No reports saved yet. Generate a report and select Save report
+          on this device.
+        </p>
       </div>
     </section>
 
-    <div class="page-cta">
-      <div>
-        <h2>Need farm equipment or inputs?</h2>
-        <p>Find tools, inputs and products in the marketplace.</p>
+    <!-- ===================== AGRICULTURAL RESOURCES ===================== -->
+
+    <section
+      class="sa-section sa-reference-section"
+      aria-labelledby="referenceTitle"
+    >
+      <div class="sa-section-head">
+        <div>
+          <span class="sa-eyebrow">KEEP LEARNING</span>
+
+          <h2 id="referenceTitle">Agricultural learning resources</h2>
+
+          <p id="referenceDescription">
+            Use crop manuals and local extension advice to check
+            recommendations before acting.
+          </p>
+        </div>
       </div>
-      <a href="index.html#categories" class="button button-light">Explore products →</a>
-    </div>
+
+      <div class="sa-reference-grid">
+        <a
+          class="sa-reference-card"
+          href="https://keep.kalro.org/good-agricultural-practices/Maize"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <strong>KALRO · Good Agricultural Practices</strong>
+          <span>Explore crop-specific growing and management guides →</span>
+        </a>
+
+        <a
+          class="sa-reference-card"
+          href="https://www.afa.go.ke/resources-horticulture-growers-manuals/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <strong>AFA · Horticulture Growers Manuals</strong>
+          <span>Explore horticulture crop manuals →</span>
+        </a>
+
+        <a
+          class="sa-reference-card"
+          href="https://www.kalro.org/navcdp/index.php/information-resoures/publications/training-manuals23"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <strong>KALRO · Training Manuals</strong>
+          <span>Explore agricultural training resources →</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- ===================== MARKETPLACE CTA ===================== -->
+
+    <section class="sa-bottom-cta">
+      <div>
+        <span class="sa-eyebrow">NEXT STEP</span>
+
+        <h2 id="marketCtaTitle">Turn your plan into action</h2>
+
+        <p id="marketCtaText">
+          Explore farm inputs, tools, produce and services on MavunoBridge.
+        </p>
+      </div>
+
+      <a
+        href="index.html#marketplace"
+        class="sa-button sa-button-light"
+        id="marketCtaButton"
+      >
+        Explore marketplace →
+      </a>
+    </section>
   </main>
 
-  <footer class="footer">
-    <a href="index.html">MavunoBridge Marketplace</a>
-    <p>Demo planning tips are general guidance, not live weather or a diagnosis of crop disease.</p>
+  <!-- ===================== FOOTER ===================== -->
+
+  <footer class="sa-footer">
+    <a href="index.html" class="sa-footer-brand">
+      ← MavunoBridge Marketplace
+    </a>
+
+    <p id="footerNotice">
+      General demonstration guidance only. Confirm important crop-health
+      and treatment decisions with a qualified local agricultural adviser.
+    </p>
+
+    <a href="#top" class="sa-back-top">
+      ↑ Back to top
+    </a>
   </footer>
 </body>
 </html>
