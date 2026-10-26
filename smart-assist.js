@@ -1,114 +1,193 @@
+/* ============================================================
+   MAVUNOBRIDGE SMART ASSIST v3
+   - Kenyan crop guide
+   - Symptom-based pest/disease matching
+   - Image upload and preview
+   - Optional connected image-analysis endpoint
+   - Farm report, saved reports and printable report
+   - English / Sheng + English / Kiswahili
+   - Offline-first demo; no Supabase required
+============================================================ */
 
-"use strict";
+(() => {
+  "use strict";
 
-const assistForm = document.querySelector("#assistForm");
-const assistResults = document.querySelector("#assistResults");
+  if (window.__MAVUNO_SMART_ASSIST_V3__) return;
+  window.__MAVUNO_SMART_ASSIST_V3__ = true;
 
-const cropGuidance = {
-  "Maize": {
-    planting: "Use certified seed suited to your area's altitude and rainfall. Check spacing and planting depth on the seed packet.",
-    pests: "Scout for fall armyworm, especially in the leaf whorl. Check for fresh damage and get local agricultural guidance before treating.",
-    harvest: "Check grain maturity and moisture before harvesting and storing. Keep harvested grain dry and protected from pests."
-  },
-  "Beans": {
-    planting: "Choose a variety suited to your area and use well-drained soil. Avoid planting into waterlogged ground.",
-    pests: "Inspect leaves, stems and pods regularly for chewing damage, aphids and disease symptoms.",
-    harvest: "Harvest when pods are mature and dry the crop safely before storage."
-  },
-  "Tomatoes": {
-    planting: "Use healthy seedlings, maintain good spacing and provide support where appropriate. Avoid leaving leaves wet for long periods.",
-    pests: "Check leaf undersides and new growth for whiteflies, aphids, caterpillars and unusual spots. Confirm the cause before applying a treatment.",
-    harvest: "Harvest at the maturity stage your buyer needs. Handle fruit carefully to prevent bruising."
-  },
-  "Potatoes": {
-    planting: "Use healthy certified seed potatoes and rid soil around plants. Rotate away from potatoes and related crops when possible.",
-    pests: "Scout for late-blight symptoms and insect damage. If disease is spreading, seek advice from a local agricultural officer quickly.",
-    harvest: "Avoid harvesting into very wet soil. Cure and store tubers according to recommended local practices."
-  },
-  "Avocados": {
-    planting: "Use a healthy tree suited to your conditions. Good drainage and careful moisture management are important.",
-    pests: "Inspect new shoots, leaves and fruit for damage. Seek local advice if you find symptoms you cannot identify.",
-    harvest: "Follow maturity guidance for your avocado variety and market. Harvest carefully to avoid bruises."
-  },
-  "Green grams": {
-    planting: "Select a locally recommended variety and use well-drained soil. Avoid excessive waterlogging.",
-    pests: "Check leaves and pods for insect damage and look out for yellowing or unusual spots.",
-    harvest: "Harvest mature pods promptly and dry the grain properly before storage."
-  },
-  "Kale": {
-    planting: "Use healthy seedlings and keep consistent moisture without waterlogging. Plant spacing helps air move through the crop.",
-    pests: "Inspect leaf undersides for caterpillars and aphids. Use locally recommended control methods once the pest is identified.",
-    harvest: "Harvest outer leaves carefully and continue checking plants for pests and nutrient issues."
-  },
-  "Bananas": {
-    planting: "Use healthy planting material and maintain soil moisture. Organic mulch can help conserve water where appropriate.",
-    pests: "Check leaves, stems and fruit for damage. Remove diseased plant material using local agricultural guidance.",
-    harvest: "Handle bunches gently and harvest at the maturity stage needed for your intended market."
-  }
-};
+  const $ = selector => document.querySelector(selector);
+  const $$ = selector => [...document.querySelectorAll(selector)];
 
-const countyNotes = {
-  "Nakuru": "Conditions vary between locations in Nakuru County. Check your local rainfall and soil before planting.",
-  "Kiambu": "Elevation and conditions differ across Kiambu. Match crop varieties to your specific area.",
-  "Uasin Gishu": "Plan planting around local rainfall and soil conditions; avoid relying on county-wide assumptions.",
-  "Meru": "Conditions vary with altitude and location. Confirm the recommended varieties for your part of Meru.",
-  "Machakos": "Some areas experience dry spells. Plan water use carefully and consider locally recommended drought-tolerant varieties.",
-  "Kisumu": "Account for local rainfall, humidity and drainage. Avoid assuming every part of the county has the same conditions.",
-  "Nyandarua": "Local temperature and altitude can affect crop suitability. Consult nearby agricultural extension services.",
-  "Bungoma": "Use local rainfall patterns and soil conditions to plan planting and crop management."
-};
-
-function escapeAssist(value) {
-  return String(value).replace(/[&<>"']/g, (character) => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
-  })[character]);
-}
-
-function createTips(county, crop, condition) {
-  const guidance = cropGuidance[crop] || cropGuidance["Maize"];
-  const tips = [guidance.planting, guidance.pests, guidance.harvest];
-
-  if (condition === "dry") {
-    tips.unshift("Dry soil selected: check moisture below the surface before watering, mulch where appropriate, and seek local advice on water-efficient methods.");
-  } else if (condition === "wet") {
-    tips.unshift("Wet soil selected: check field drainage and avoid working saturated soil. Watch for increased disease pressure after prolonged wet conditions.");
-  } else if (condition === "pests") {
-    tips.unshift("Crop damage selected: photograph affected plants, inspect several locations and confirm the pest or disease before applying a treatment.");
-  }
-
-  return {
-    county: countyNotes[county] || "Check local soil and rainfall information before making farm decisions.",
-    tips
+  const STORAGE = {
+    reports: "mavunobridge_crop_health_reports_v1",
+    languageV1: "mavunobridge_language_v1",
+    languageV2: "mavunobridge_language_v2"
   };
-}
 
-assistForm?.addEventListener("submit", (event) => {
-  event.preventDefault();
-  if (!assistForm.reportValidity()) return;
+  const MAX_PHOTO_BYTES = 8 * 1024 * 1024;
+  const MAX_PHOTO_DIMENSION = 1100;
 
-  const county = document.querySelector("#assistCounty").value;
-  const crop = document.querySelector("#assistCrop").value;
-  const condition = document.querySelector("#assistCondition").value;
-  const result = createTips(county, crop, condition);
+  let currentLanguage = "mix";
+  let currentReport = null;
+  let currentPhotoData = "";
+  let currentPhotoName = "";
+  let currentMatches = [];
+  let isGenerating = false;
 
-  assistResults.innerHTML = `
-    <div class="assist-result-heading">
-      <p class="eyebrow">YOUR FARMING GUIDE</p>
-      <h2>${escapeAssist(crop)} · ${escapeAssist(county)} County</h2>
-      <p>${escapeAssist(result.county)}</p>
-    </div>
-    <div class="tip-grid">
-      ${result.tips.map((tip, index) => `
-        <article class="tip-card">
-          <span class="tip-index">${String(index + 1).padStart(2, "0")}</span>
-          <p>${escapeAssist(tip)}</p>
-        </article>`).join("")}
-    </div>
-    <p class="assist-disclaimer">These are general, rule-based demo suggestions. They do not use live weather data or identify a pest from an image. Confirm advice with your local agricultural extension officer.</p>
-    <button class="button button-green" id="assistAgainButton" type="button">Update my farm plan</button>
-  `;
+  /* -------------------- LANGUAGES -------------------- */
 
-  document.querySelector("#assistAgainButton")?.addEventListener("click", () => {
-    assistForm.scrollIntoView({ behavior: "smooth", block: "center" });
-  });
-});
+  const TEXT = {
+    en: {
+      heroEyebrow: "YOUR FARM, YOUR PLAN",
+      heroDescription: "Choose a crop, county and farm condition. Get practical tips, possible symptom matches and a report you can save.",
+      heroNotice: "Demo guidance only. No live weather feed or automatic diagnosis unless an analysis service is connected.",
+      plannerEyebrow: "PERSONALISED FARM PLANNER",
+      plannerTitle: "Tell us about your farm",
+      plannerDescription: "More details help make your rule-based demo report more relevant.",
+      county: "County *",
+      area: "Town / area (optional)",
+      crop: "Crop *",
+      stage: "Growth stage",
+      issue: "Main concern",
+      soil: "Soil type (if known)",
+      water: "Water access",
+      farmSize: "Farm size in acres (optional)",
+      notes: "Extra farm details (optional)",
+      symptomLegend: "Visible signs or symptoms (select any)",
+      symptomHelp: "Select what you can see on the plant.",
+      symptoms: "Describe the problem",
+      photo: "Upload a crop photo (optional)",
+      photoHelp: "Choose a clear photo of the affected leaf, stem, fruit or root.",
+      photoAttached: "Photo attached as supporting evidence.",
+      photoNotAnalysed: "No image-analysis service is connected; this demo does not identify pests from pixels.",
+      removePhoto: "Remove photo",
+      generate: "Generate my farm report →",
+      generating: "Preparing report…",
+      clear: "Clear form",
+      reportEyebrow: "YOUR PERSONAL FARM REPORT",
+      reportTitle: "Your farm report",
+      reportSubhead: "Your selected crop, observations and next steps.",
+      emptyReportTitle: "Your report will appear here",
+      emptyReportDescription: "Complete the farm planner and select Generate my farm report.",
+      context: "Farm context",
+      nextSteps: "Recommended next steps",
+      cropTips: "Growing tips",
+      possibleMatches: "Possible pest or disease matches",
+      noMatch: "No close match was found from the symptoms entered.",
+      noMatchExplain: "That does not rule out a pest or disease. Add more details, select other signs or consult a local agricultural extension officer.",
+      possibleOnly: "Possible match only — not a diagnosis.",
+      matchDisclaimer: "Different problems can produce similar symptoms. A photo or a short description cannot reliably confirm every disease.",
+      photoEvidence: "Photo evidence",
+      imageNotAnalysed: "The photo is attached for reference but has not been visually analysed by this offline demo.",
+      imageServiceReady: "Image-analysis service connected. Suggested visual matches still need local confirmation.",
+      save: "Save report on this device",
+      download: "Download text report",
+      print: "Print / Save as PDF",
+      saved: "Report saved in this browser.",
+      savedFail: "Could not save the report in this browser.",
+      downloaded: "Text report prepared.",
+      removed: "Photo removed.",
+      questionTitle: "Farm Assistant",
+      questionIntro: "Ask a follow-up about this crop or the report above.",
+      questionPlaceholder: "Ask about pests, symptoms, water, soil or harvest...",
+      ask: "Ask",
+      responding: "Checking your farm notes…",
+      offline: "Offline assistant. Replies are based on built-in crop guidance, not a live agronomist.",
+      answerPrefix: "Here is a starting point based on your farm details:",
+      needSymptoms: "Choose at least one visible sign or describe the symptoms to improve matching.",
+      symptomMatches: "Possible matches based on your selected signs",
+      urgent: "Important: if the problem is spreading quickly, affects many plants, or may be a serious disease, contact a county agricultural extension officer promptly. Avoid moving suspect planting material.",
+      sourcesTitle: "Reference material",
+      libraryTitle: "Kenyan crop guide library",
+      libraryDescription: "Search crop groups and read general tips for common Kenyan crops.",
+      noCrops: "No crops match that filter.",
+      useCrop: "Use this crop",
+      plantTip: "Growing tip",
+      watchTip: "What to watch for",
+      harvestTip: "Harvest and handling",
+      countyNote: "County selected for context",
+      localVariation: "Conditions differ by ward, altitude, farm and season. This county selection does not establish live weather or farm conditions.",
+      generatedAt: "Report prepared",
+      reportSaved: "Saved report",
+      viewReport: "View report",
+      deleteReport: "Delete",
+      noSaved: "No reports saved yet. Generate a report and save it on this device.",
+      deleteSaved: "Saved report deleted.",
+      allGroups: "All crop groups",
+      searchCrop: "Search maize, coffee, cassava...",
+      chooseCounty: "All counties",
+      cropGroup: "Crop group",
+      symptomWord: "Symptoms entered",
+      photoName: "Selected photo",
+      badPhoto: "Please choose a valid image file under 8 MB.",
+      photoReadFail: "Could not read this photo. Try another image.",
+      endpointFail: "Visual analysis could not complete. Showing the local symptom matches instead.",
+      noActiveReport: "Generate a farm report first so I can answer about your selected crop.",
+      noDiagnosis: "I cannot confirm a pest or disease from symptoms alone. Here are possible matches; compare the signs and get local confirmation.",
+      waterAdvice: "Check soil moisture before watering. Avoid waterlogging; mulch and conserve water where suitable.",
+      dryAdvice: "Check moisture below the surface. Water management, mulch and locally suitable varieties may help, but choose actions for your crop and conditions.",
+      wetAdvice: "Check drainage and avoid working saturated soil. Prolonged wetness may encourage some diseases.",
+      pestAdvice: "Inspect several plants and both sides of leaves. Photograph the affected parts and confirm the cause before choosing a control measure.",
+      diseaseAdvice: "Record which plant parts are affected and how quickly symptoms are spreading. Do not assume every spot or wilt is the same disease.",
+      yellowAdvice: "Yellowing may be caused by water stress, nutrients, root damage, pests or disease. Check soil moisture, roots and the pattern of affected leaves.",
+      soilAdvice: "A soil test is more reliable than guessing fertiliser needs from leaf colour alone. Check pH and nutrient recommendations locally.",
+      harvestAdvice: "Handle produce gently, separate damaged items and follow crop-specific maturity and storage guidance.",
+      unknownQuestion: "Ask about the crop selected in your report, symptoms, watering, soil health, pest scouting or harvest. For diagnosis or treatment decisions, check with a qualified local agricultural adviser."
+    },
+
+    mix: {
+      heroEyebrow: "SHAMBA YAKO, PLAN YAKO",
+      heroDescription: "Chagua crop, county na hali ya shamba. Pata tips, possible symptom matches na report ya kuhifadhi.",
+      heroNotice: "Demo guidance tu. Hakuna live weather au automatic diagnosis bila analysis service kuunganishwa.",
+      plannerEyebrow: "PERSONALISED FARM PLANNER",
+      plannerTitle: "Tuambie kuhusu shamba lako",
+      plannerDescription: "Details zaidi zinasaidia report ya demo iwe relevant zaidi.",
+      county: "County *",
+      area: "Town / area (si lazima)",
+      crop: "Crop *",
+      stage: "Growth stage",
+      issue: "Main concern",
+      soil: "Soil type (ukijua)",
+      water: "Water access",
+      farmSize: "Ukubwa wa shamba kwa acres (si lazima)",
+      notes: "Maelezo mengine ya shamba (si lazima)",
+      symptomLegend: "Dalili unazoona (chagua zote zinazofaa)",
+      symptomHelp: "Chagua signs unazoona kwa plant.",
+      symptoms: "Describe tatizo",
+      photo: "Weka picha ya crop (si lazima)",
+      photoHelp: "Chagua picha clear ya leaf, stem, fruit au root iliyoathirika.",
+      photoAttached: "Picha imeongezwa kama supporting evidence.",
+      photoNotAnalysed: "Hakuna image-analysis service. Demo hii haiwezi kutambua pest kutoka pixels pekee.",
+      removePhoto: "Ondoa picha",
+      generate: "Tengeneza farm report →",
+      generating: "Inatengeneza report…",
+      clear: "Clear form",
+      reportEyebrow: "REPORT YA SHAMBA LAKO",
+      reportTitle: "Farm report yako",
+      reportSubhead: "Crop yako, observations na steps za kufuata.",
+      emptyReportTitle: "Report yako itaonekana hapa",
+      emptyReportDescription: "Jaza planner kisha bonyeza Tengeneza farm report.",
+      context: "Farm context",
+      nextSteps: "Next steps zinazopendekezwa",
+      cropTips: "Growing tips",
+      possibleMatches: "Possible pest au disease matches",
+      noMatch: "Hakuna close match iliyopatikana kwa dalili ulizoandika.",
+      noMatchExplain: "Haimaanishi kwamba hakuna pest au disease. Ongeza details, chagua signs zaidi au ongea na agricultural extension officer.",
+      possibleOnly: "Possible match tu — si diagnosis.",
+      matchDisclaimer: "Matatizo tofauti yanaweza kuonyesha dalili zinazofanana. Picha au description fupi haiwezi kuthibitisha kila disease.",
+      photoEvidence: "Photo evidence",
+      imageNotAnalysed: "Picha iko kwa reference lakini haijafanyiwa visual analysis na offline demo hii.",
+      imageServiceReady: "Image-analysis service imeunganishwa. Matches bado zinahitaji kuthibitishwa locally.",
+      save: "Save report kwa kifaa hiki",
+      download: "Download text report",
+      print: "Print / Save as PDF",
+      saved: "Report imehifadhiwa kwa browser hii.",
+      savedFail: "Imeshindikana kuhifadhi report kwa browser hii.",
+      downloaded: "Text report iko tayari.",
+      removed: "Picha imeondolewa.",
+      questionTitle: "Farm Assistant",
+      questionIntro: "Uliza follow-up kuhusu crop hii au report iliyo juu.",
+      questionPlaceholder: "Uliza kuhusu pests, symptoms, maji, soil au harvest...",
+      ask: "Uliza",
+      responding: "Inaangalia maelezo ya shamba…",
+      offline: "Offline assistant. Majibu yan
