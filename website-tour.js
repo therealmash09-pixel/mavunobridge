@@ -2528,12 +2528,11 @@
 
     const completed = readStorage(STORAGE.completed, "no");
 
-    if (completed !== "yes") {
-      setTimeout(() => {
-        if (!document.hidden) startTour(false);
-      }, 900);
-    }
-  }
+    // Load the website first. Start the tour only when requested.
+if (completed !== "yes") {
+  // The Website Tour button remains available.
+}
+  
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init, { once: true });
