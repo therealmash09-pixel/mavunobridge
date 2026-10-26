@@ -1,37 +1,55 @@
-/* ==========================================================
-   MAVUNOBRIDGE — WEBSITE TOUR + ANIMATED FARMER ASSISTANT
-   COMPLETE REPLACEMENT
+/* ============================================================
+   MAVUNOBRIDGE — COMPLETE WEBSITE TOUR + FARMER ASSISTANT
+   File: website-tour.js
 
-   Added:
-   - Random farmer emotes
-   - Farmer eyes follow cursor
-   - Farmer reacts to mobile taps
-   - Wave / nod / talk / happy / sad animations
-   - Celebration when tutorial finishes
-   - Sad reaction when tutorial is skipped
-   - Transparent guide speech panel
-   - Improved mobile tutorial layout
-   - Responsive farmer assistant
-   - Reduced-motion support
-   ========================================================== */
+   FEATURES
+   ✓ Automatic first-visit tutorial
+   ✓ Skip, Back, Next and Finish buttons
+   ✓ Website section spotlight
+   ✓ Animated farmer mascot inspired by your reference image
+   ✓ Random farmer emotes
+   ✓ Buyer + Farmer Guide avatar
+   ✓ Smart Assist avatar
+   ✓ English, Sheng + English, Kiswahili
+   ✓ Translucent tutorial card
+   ✓ Responsive mobile layout
+   ✓ Reduced-motion accessibility
+   ✓ Keyboard controls
+   ✓ No external libraries
+   ✓ No external image dependencies
+   ✓ Safe handling of missing website sections
+
+   IMPORTANT
+   This file does not replace app.js, style.css or other pages.
+   It adds the tour and enhances existing assistant avatars.
+   ============================================================ */
 
 (() => {
   "use strict";
 
-  if (window.__MAVUNO_WEBSITE_TOUR_V4__) return;
-  window.__MAVUNO_WEBSITE_TOUR_V4__ = true;
+  /* ============================================================
+     1. PREVENT DUPLICATE INITIALIZATION
+     ============================================================ */
+
+  if (window.__MAVUNOBRIDGE_WEBSITE_TOUR_V4__) return;
+
+  window.__MAVUNOBRIDGE_WEBSITE_TOUR_V4__ = true;
 
   const PAGE = (
-    location.pathname.split("/").pop() || "index.html"
+    window.location.pathname.split("/").pop() || "index.html"
   ).toLowerCase();
 
   const STORAGE_KEY = "mavunobridge_tour_completed_v4";
+  const PREVIOUS_STORAGE_KEY = "mavunobridge_tour_completed_v3";
 
   const $ = (selector, root = document) =>
     root.querySelector(selector);
 
   const $$ = (selector, root = document) =>
-    [...root.querySelectorAll(selector)];
+    Array.from(root.querySelectorAll(selector));
+
+  const reducedMotion = () =>
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   const phrase = (en, mix, sw) => ({ en, mix, sw });
 
@@ -41,15 +59,15 @@
     description
   });
 
-  /* ==========================================================
-     LANGUAGE
-     ========================================================== */
+  /* ============================================================
+     2. LANGUAGE SUPPORT
+     ============================================================ */
 
-  function language() {
-    const selected = $("#languageSelect")?.value;
+  function getLanguage() {
+    const select = $("#languageSelect");
 
-    if (["en", "mix", "sw"].includes(selected)) {
-      return selected;
+    if (select && ["en", "mix", "sw"].includes(select.value)) {
+      return select.value;
     }
 
     try {
@@ -60,7 +78,9 @@
       if (["en", "mix", "sw"].includes(saved)) {
         return saved;
       }
-    } catch {}
+    } catch (error) {
+      // Continue with the default language.
+    }
 
     return "mix";
   }
@@ -68,629 +88,707 @@
   function translate(value) {
     if (typeof value === "string") return value;
 
-    return (
-      value?.[language()] ||
-      value?.mix ||
-      value?.en ||
-      ""
-    );
+    const lang = getLanguage();
+
+    return value?.[lang] || value?.mix || value?.en || "";
   }
 
-  /* ==========================================================
-     FARMER SVG
-     ========================================================== */
+  /* ============================================================
+     3. FARMER MASCOT SVG
+     Inspired by the uploaded gardener figurine:
+     green hat, brown shirt, green overalls, boots and tools.
+     ============================================================ */
 
   const FARMER_SVG = `
-    <svg class="mb-farmer-art"
+    <svg
+      class="mb-farmer-art"
       xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 120 120"
-      aria-hidden="true">
+      viewBox="0 0 120 140"
+      role="presentation"
+      focusable="false"
+    >
+      <defs>
+        <linearGradient id="mbFarmerSkin" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#f3a16a"/>
+          <stop offset="100%" stop-color="#c7683b"/>
+        </linearGradient>
 
-      <circle cx="60" cy="60" r="59" fill="#e6f5e8"/>
+        <linearGradient id="mbFarmerHat" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#46804a"/>
+          <stop offset="100%" stop-color="#174329"/>
+        </linearGradient>
 
-      <path d="M13 91 Q7 66 24 58 Q30 78 13 91Z"
-        fill="#83bf83"/>
+        <linearGradient id="mbFarmerOveralls" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#276e48"/>
+          <stop offset="100%" stop-color="#123e2b"/>
+        </linearGradient>
 
-      <path d="M101 92 Q119 69 102 57 Q91 79 101 92Z"
-        fill="#a5d59a"/>
+        <linearGradient id="mbFarmerBoots" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#51402f"/>
+          <stop offset="100%" stop-color="#241d17"/>
+        </linearGradient>
+      </defs>
 
-      <!-- BODY -->
-      <path d="M26 120 Q28 86 47 79 L74 79
-        Q94 87 96 120Z"
-        fill="#246548"/>
+      <!-- Ground shadow -->
+      <ellipse
+        cx="59"
+        cy="133"
+        rx="35"
+        ry="5"
+        fill="#183d28"
+        opacity=".15"
+      />
 
-      <path d="M49 83 L60 96 L71 83"
-        fill="none"
-        stroke="#d2ead0"
-        stroke-width="3"
-        stroke-linecap="round"/>
+      <!-- Garden tool behind the body -->
+      <g class="mb-farmer-tool">
+        <path
+          d="M27 42 L30 104"
+          stroke="#89552e"
+          stroke-width="5"
+          stroke-linecap="round"
+        />
 
-      <!-- NECK -->
-      <path d="M49 65 L49 82
-        Q60 91 72 81 L71 65Z"
-        fill="#9b5937"/>
+        <path
+          d="M22 43 L34 43 L36 51 L27 56 L20 51 Z"
+          fill="#636d66"
+          stroke="#414c44"
+          stroke-width="1.5"
+        />
 
-      <!-- WAVING ARM -->
-      <g class="mb-farmer-wave">
-        <path d="M80 88 Q87 74 92 59 L98 43
-          Q101 36 107 40 Q112 43 108 51
-          L102 70 Q99 88 90 98Z"
-          fill="#9b5937"/>
-
-        <path d="M98 45 Q91 37 95 32
-          Q99 29 103 37
-          Q107 28 111 33
-          Q114 37 108 44"
-          fill="#a96843"/>
+        <path
+          d="M27 47 L33 47"
+          stroke="#a8b1a8"
+          stroke-width="1.5"
+        />
       </g>
 
-      <!-- EARS -->
-      <circle cx="37" cy="52" r="7" fill="#a96843"/>
-      <circle cx="83" cy="52" r="7" fill="#a96843"/>
+      <!-- Legs -->
+      <path
+        d="M37 91 L56 91 L55 116 L36 116 Z"
+        fill="url(#mbFarmerOveralls)"
+      />
 
-      <!-- FACE -->
-      <ellipse cx="60" cy="51"
+      <path
+        d="M63 91 L82 91 L81 116 L64 116 Z"
+        fill="url(#mbFarmerOveralls)"
+      />
+
+      <!-- Boots -->
+      <g class="mb-farmer-boots">
+        <path
+          d="M36 111 L54 111 L56 125
+             Q55 132 32 130
+             Q27 129 31 122 Z"
+          fill="url(#mbFarmerBoots)"
+        />
+
+        <path
+          d="M65 111 L82 111 L89 124
+             Q94 131 70 131
+             Q64 130 64 124 Z"
+          fill="url(#mbFarmerBoots)"
+        />
+
+        <path
+          d="M32 126 Q43 129 55 126"
+          fill="none"
+          stroke="#78624a"
+          stroke-width="2"
+          stroke-linecap="round"
+        />
+
+        <path
+          d="M68 126 Q78 129 88 126"
+          fill="none"
+          stroke="#78624a"
+          stroke-width="2"
+          stroke-linecap="round"
+        />
+      </g>
+
+      <!-- Shirt -->
+      <path
+        d="M43 43 L77 43 L89 72
+           L79 84 L41 84 L31 72 Z"
+        fill="#8a482d"
+      />
+
+      <!-- Neck -->
+      <path
+        d="M49 36 L49 49
+           Q60 56 71 48 L71 36 Z"
+        fill="url(#mbFarmerSkin)"
+      />
+
+      <!-- Overalls -->
+      <path
+        d="M34 58 L86 58 L82 100
+           Q60 108 38 100 Z"
+        fill="url(#mbFarmerOveralls)"
+      />
+
+      <!-- Shoulder straps -->
+      <path
+        d="M42 45 L52 45 L56 74 L44 74 Z"
+        fill="#246443"
+      />
+
+      <path
+        d="M68 45 L78 45 L76 74 L64 74 Z"
+        fill="#246443"
+      />
+
+      <!-- Brass buttons -->
+      <circle cx="47" cy="49" r="2.7" fill="#e8bd62"/>
+      <circle cx="73" cy="49" r="2.7" fill="#e8bd62"/>
+
+      <!-- Overall pocket -->
+      <path
+        d="M47 70 L72 70 L72 84
+           Q60 89 47 84 Z"
+        fill="#1d593b"
+        stroke="#39815a"
+        stroke-width="1.4"
+      />
+
+      <path
+        d="M51 74 L68 74"
+        stroke="#3f8059"
+        stroke-width="1.4"
+        stroke-linecap="round"
+      />
+
+      <!-- Ears -->
+      <ellipse cx="35" cy="34" rx="6" ry="8" fill="#c96f42"/>
+      <ellipse cx="85" cy="34" rx="6" ry="8" fill="#c96f42"/>
+
+      <!-- Face -->
+      <ellipse
+        cx="60"
+        cy="34"
         rx="25"
         ry="29"
-        fill="#b8754d"/>
+        fill="url(#mbFarmerSkin)"
+      />
 
-      <!-- HAIR -->
-      <path d="M35 47 Q32 23 57 22
-        Q81 21 85 46
-        L77 39 L44 39Z"
-        fill="#3d3025"/>
+      <!-- Cheeks -->
+      <ellipse cx="44" cy="41" rx="5" ry="3" fill="#e99165" opacity=".55"/>
+      <ellipse cx="76" cy="41" rx="5" ry="3" fill="#e99165" opacity=".55"/>
 
-      <!-- EYES -->
+      <!-- Hair -->
+      <path
+        d="M36 28 Q34 9 54 7
+           Q76 5 85 27
+           L77 22 L48 19 Z"
+        fill="#35271d"
+      />
+
+      <!-- Eyes -->
       <g class="mb-farmer-eyes">
-        <ellipse cx="50" cy="52"
-          rx="2.5"
-          ry="3.2"
-          fill="#29251f"/>
+        <ellipse cx="50" cy="33" rx="3" ry="4" fill="#29211b"/>
+        <ellipse cx="70" cy="33" rx="3" ry="4" fill="#29211b"/>
 
-        <ellipse cx="70" cy="52"
-          rx="2.5"
-          ry="3.2"
-          fill="#29251f"/>
+        <circle cx="51" cy="32" r="1" fill="#ffffff"/>
+        <circle cx="71" cy="32" r="1" fill="#ffffff"/>
       </g>
 
-      <!-- SMILE -->
-      <path d="M51 64 Q60 72 70 63"
+      <!-- Eyebrows -->
+      <path
+        d="M45 26 Q50 23 55 26"
         fill="none"
-        stroke="#6c3229"
-        stroke-width="2.6"
-        stroke-linecap="round"/>
+        stroke="#493025"
+        stroke-width="2.5"
+        stroke-linecap="round"
+      />
 
-      <!-- HAT -->
-      <path d="M34 35 Q36 12 60 12
-        Q82 13 86 35Z"
-        fill="#367d4b"/>
-
-      <ellipse cx="60" cy="35"
-        rx="34"
-        ry="7"
-        fill="#205e3b"/>
-
-      <path d="M49 19 Q57 6 69 17
-        Q61 16 58 27
-        Q55 20 49 19Z"
-        fill="#a6d969"/>
-
-      <path d="M59 26 Q62 18 69 17"
+      <path
+        d="M65 26 Q70 23 75 26"
         fill="none"
-        stroke="#e2f6c8"
+        stroke="#493025"
+        stroke-width="2.5"
+        stroke-linecap="round"
+      />
+
+      <!-- Nose -->
+      <ellipse cx="60" cy="40" rx="5" ry="4.5" fill="#bc603b"/>
+
+      <ellipse cx="59" cy="39" rx="2" ry="1.5" fill="#e99b6d" opacity=".8"/>
+
+      <!-- Smile -->
+      <g class="mb-farmer-mouth">
+        <path
+          d="M49 47 Q60 57 72 46"
+          fill="none"
+          stroke="#713820"
+          stroke-width="2.8"
+          stroke-linecap="round"
+        />
+      </g>
+
+      <!-- Hat crown -->
+      <path
+        d="M37 23 Q39 2 60 2
+           Q82 2 85 23 Z"
+        fill="url(#mbFarmerHat)"
+      />
+
+      <!-- Hat crown highlight -->
+      <path
+        d="M48 11 Q59 5 71 10"
+        fill="none"
+        stroke="#77a56a"
         stroke-width="2"
-        stroke-linecap="round"/>
+        stroke-linecap="round"
+        opacity=".8"
+      />
 
-      <!-- PLANT -->
-      <circle cx="60" cy="105"
-        r="9"
-        fill="#d7efaa"/>
+      <!-- Wide hat brim -->
+      <path
+        d="M17 24
+           Q59 9 103 24
+           Q98 35 77 34
+           L43 34
+           Q23 34 17 24 Z"
+        fill="#19462b"
+      />
 
-      <path d="M60 111 Q59 102 64 99
-        M60 106 Q54 100 52 103"
+      <path
+        d="M27 24 Q60 15 93 24"
         fill="none"
-        stroke="#246548"
+        stroke="#477b48"
         stroke-width="2"
-        stroke-linecap="round"/>
+        stroke-linecap="round"
+      />
+
+      <!-- Animated waving arm -->
+      <g class="mb-farmer-wave">
+        <path
+          d="M81 53 Q88 63 91 75"
+          fill="none"
+          stroke="#8a482d"
+          stroke-width="12"
+          stroke-linecap="round"
+        />
+
+        <path
+          d="M81 53 Q88 63 91 75"
+          fill="none"
+          stroke="#d77c49"
+          stroke-width="9"
+          stroke-linecap="round"
+        />
+
+        <path
+          d="M91 75 L95 83"
+          fill="none"
+          stroke="#d77c49"
+          stroke-width="9"
+          stroke-linecap="round"
+        />
+
+        <g class="mb-farmer-hand">
+          <circle cx="96" cy="84" r="6" fill="#e69a64"/>
+
+          <path
+            d="M94 81 L92 75
+               M97 80 L97 73
+               M100 82 L102 77"
+            fill="none"
+            stroke="#e69a64"
+            stroke-width="3"
+            stroke-linecap="round"
+          />
+        </g>
+      </g>
+
+      <!-- Small watering can -->
+      <g class="mb-farmer-can">
+        <path
+          d="M87 101 L105 101 L103 124
+             Q96 129 89 124 Z"
+          fill="#285c3e"
+        />
+
+        <ellipse cx="96" cy="101" rx="9" ry="3.5" fill="#49865a"/>
+
+        <path
+          d="M90 102 Q91 92 99 93 Q105 94 104 102"
+          fill="none"
+          stroke="#204d33"
+          stroke-width="3"
+        />
+
+        <path
+          d="M104 107 L113 103 L115 107 L104 112 Z"
+          fill="#3b7650"
+        />
+
+        <path
+          d="M91 114 L102 114"
+          stroke="#5d9869"
+          stroke-width="1.5"
+          stroke-linecap="round"
+        />
+      </g>
+
+      <!-- Tiny plant detail -->
+      <g class="mb-farmer-plant">
+        <path
+          d="M60 102 L60 111"
+          stroke="#a5ce69"
+          stroke-width="2"
+          stroke-linecap="round"
+        />
+
+        <path
+          d="M60 106 Q52 96 48 102
+             Q53 109 60 106 Z"
+          fill="#a5ce69"
+        />
+
+        <path
+          d="M60 104 Q67 94 72 99
+             Q69 106 60 104 Z"
+          fill="#76b456"
+        />
+      </g>
     </svg>
   `;
 
-  /* ==========================================================
-     TOUR CONTENT
-     ========================================================== */
+  /* ============================================================
+     4. TOUR CONTENT — ENGLISH, SHENG + ENGLISH, KISWAHILI
+     ============================================================ */
 
   const TOURS = {
-
     "index.html": [
-
       makeStep(
-        ".topbar",
+        [".topbar", ".navbar", "header"],
+        phrase("Welcome to MavunoBridge!", "Karibu MavunoBridge! 🌱", "Karibu MavunoBridge!"),
         phrase(
-          "Welcome to MavunoBridge",
-          "Karibu MavunoBridge!",
-          "Karibu MavunoBridge!"
-        ),
-        phrase(
-          "Use the navigation to explore Marketplace, Smart Assist, SACCO Hub, Buyer Requests and Messages. Choose your preferred language from the header.",
-          "Tumia navigation kufungua Marketplace, Smart Assist, SACCO Hub, Buyer Requests na Messages. Chagua lugha unayopendelea.",
-          "Tumia menyu kufungua Marketplace, Smart Assist, SACCO Hub, Buyer Requests na Messages. Chagua lugha unayopendelea."
+          "I'm your farming buddy. I'll show you how to explore the marketplace, find products, and connect with farmers.",
+          "Niko hapa kukushow vile MavunoBridge inawork. Let's find fresh produce and connect na farmers!",
+          "Mimi ni msaidizi wako. Nitakuonyesha jinsi ya kutafuta bidhaa na kuwasiliana na wakulima."
         )
       ),
-
       makeStep(
-        ["#categoryGrid .category-card", "#categories"],
+        ["#categoryGrid", ".category-grid", "#categories"],
+        phrase("Explore product categories", "Chagua category yako", "Chagua aina ya bidhaa"),
         phrase(
-          "Explore product categories",
-          "Chagua category ya bidhaa unataka.",
-          "Chagua kundi la bidhaa."
-        ),
-        phrase(
-          "Choose All Products or a category such as fruits, vegetables, grains, legumes, livestock, farm tools or agricultural services.",
-          "Chagua All Products ama category kama fruits, vegetables, grains, livestock, farm tools ama agricultural services.",
-          "Chagua bidhaa zote au kundi kama matunda, mboga, nafaka, mifugo, zana au huduma za kilimo."
+          "Browse fruits, vegetables, grains, cereals, legumes, nuts, spices, livestock, farm inputs, and more.",
+          "Hapa kuna fruits, veggies, grains, cereals, legumes, livestock na farm tools. Chagua unataka nini!",
+          "Tafuta matunda, mboga, nafaka, kunde, mifugo, pembejeo na bidhaa nyingine."
         )
       ),
-
       makeStep(
-        ".filters",
+        [".search-bar", "#searchInput", "#searchBar", 'input[type="search"]'],
+        phrase("Search for products", "Tafuta bidhaa haraka", "Tafuta bidhaa"),
         phrase(
-          "Search and filter",
-          "Tafuta bidhaa na upunguze results.",
-          "Tafuta na uchuje bidhaa."
-        ),
-        phrase(
-          "Search by name, select a category or county, filter retail/bulk sales and sort your results.",
-          "Search kwa jina, chagua category ama county, filter retail/bulk na sort results zako.",
-          "Tafuta kwa jina, chagua kundi au kaunti, chuja retail/bulk na panga matokeo."
+          "Type a product name, such as tomatoes, maize, potatoes, or avocados, to find matching listings.",
+          "Type jina ya product, kama tomatoes ama maize, upate listings zinazofanana.",
+          "Andika jina la bidhaa unayotafuta ili kuona matangazo yanayolingana."
         )
       ),
-
       makeStep(
-        ["#listingGrid .product-card", "#listingGrid"],
+        [".filters", "#filterPanel", ".market-filters"],
+        phrase("Use filters", "Tumia filters", "Tumia vichujio"),
         phrase(
-          "Explore product listings",
-          "Angalia details za listing kabla ya kununua.",
-          "Linganisha matangazo."
-        ),
-        phrase(
-          "Review the product, seller, location, quantity and price. Listing cards may offer Call, Message or Add to cart.",
-          "Angalia product, seller, location, quantity na bei. Unaweza kuona Call, Message ama Add to cart.",
-          "Kagua bidhaa, muuzaji, eneo, kiasi na bei. Kadi zinaweza kuwa na Call, Message au Add to cart."
+          "Filter listings by county, price, sale type, or sorting options when those controls are available.",
+          "Tumia filters kuchagua county, sale type na kupanga listings kulingana na options zilizopo.",
+          "Tumia vichujio kuchagua kaunti, aina ya mauzo na mpangilio wa bidhaa."
         )
       ),
-
       makeStep(
-        "#sellButton",
+        ["#listingGrid", ".listing-grid", ".product-grid", ".products-grid"],
+        phrase("Explore farmer listings", "Angalia bidhaa za farmers", "Angalia bidhaa za wakulima"),
         phrase(
-          "Create a listing",
-          "Farmer? Weka bidhaa yako sokoni hapa.",
-          "Tengeneza tangazo."
-        ),
-        phrase(
-          "Enter your product details, category, county, quantity, price and sale type. Add a clear product photo when available.",
-          "Weka product details, category, county, quantity, bei na sale type. Ongeza picha clear kama iko.",
-          "Weka maelezo ya bidhaa, kundi, kaunti, kiasi, bei na aina ya mauzo. Ongeza picha iliyo wazi."
+          "Compare products, prices, quantities, locations, and available details before deciding what to buy.",
+          "Compare bei, quantity na location. Angalia details za product kabla uamue kununua.",
+          "Linganisha bei, kiasi, eneo na maelezo ya bidhaa kabla ya kununua."
         )
       ),
-
       makeStep(
-        "#cartButton",
+        ["#sellButton", "#heroSellButton", "#addListingButton", 'a[href*="sell"]'],
+        phrase("List your farm products", "Uza bidhaa zako", "Weka bidhaa zako sokoni"),
         phrase(
-          "Your cart",
-          "Cart inakusaidia ku-review ulizochagua.",
-          "Kikapu chako."
-        ),
-        phrase(
-          "Open Cart to review or remove items. The demo cart does not take payments or submit real orders.",
-          "Fungua Cart kuona ama kuondoa products. Demo cart haichukui malipo wala kuweka order halisi.",
-          "Fungua kikapu kukagua au kuondoa bidhaa. Kikapu cha demo hakipokei malipo wala kuweka oda halisi."
+          "Farmers can use the listing form to add product details, prices, quantities, categories, and photos when supported.",
+          "Wewe ni farmer? Tumia listing form kuweka bidhaa, category, quantity, bei na picha.",
+          "Wakulima wanaweza kuweka bidhaa zao, bei, kiasi, aina na picha kupitia fomu ya matangazo."
         )
       ),
-
       makeStep(
-        'a[href="smart-assist.html"]',
+        ["#cartButton", "#cartIcon", ".cart-button", 'a[href*="cart"]'],
+        phrase("Your shopping cart", "Shopping cart yako", "Kikapu chako"),
         phrase(
-          "Smart Assist",
-          "Pata crop guidance na farm report.",
-          "Msaidizi wa kilimo."
-        ),
-        phrase(
-          "Explore crop planning, symptoms, farm reports, questions and crop guides.",
-          "Explore crop planning, symptoms, farm reports, questions na crop guides.",
-          "Chunguza mipango ya mazao, dalili, ripoti, maswali na miongozo."
+          "If the cart feature is available, use it to review the products you have added before continuing.",
+          "Ukiadd products kwa cart, unaweza kuziangalia tena kabla ya kuendelea.",
+          "Tumia kikapu kuangalia bidhaa ulizoongeza kabla ya kuendelea."
         )
       ),
-
       makeStep(
-        'a[href="sacco.html"]',
+        ['a[href="smart-assist.html"]', 'a[href*="smart-assist"]', "#smartAssistLink"],
+        phrase("Meet Smart Assist", "Kutana na Smart Assist", "Kutana na Smart Assist"),
         phrase(
-          "SACCO Hub",
-          "Explore sample farmer groups na opportunities.",
-          "SACCO Hub."
-        ),
-        phrase(
-          "Explore sample farmer groups and agricultural opportunities.",
-          "Explore sample farmer groups na agricultural opportunities.",
-          "Chunguza mifano ya vikundi na fursa za kilimo."
+          "Open Smart Assist for farming guidance, crop planning, and other tools provided by the demo.",
+          "Smart Assist inakusaidia na crop planning na farming tips kulingana na features zilizopo.",
+          "Fungua Smart Assist kupata mwongozo wa kilimo na kupanga mazao."
         )
       ),
-
       makeStep(
-        'a[href="buyer-requests.html"]',
+        ['a[href="sacco.html"]', 'a[href*="sacco"]', "#saccoLink"],
+        phrase("Explore SACCO Hub", "Tembelea SACCO Hub", "Tembelea SACCO Hub"),
         phrase(
-          "Buyer Requests",
-          "Wanunuzi wanaweza kuweka wanachohitaji.",
-          "Maombi ya wanunuzi."
-        ),
-        phrase(
-          "Buyers can describe the produce they need, location and quantity.",
-          "Buyers wanaweza kuweka product, location na quantity wanahitaji.",
-          "Wanunuzi wanaweza kueleza bidhaa, eneo na kiasi wanachohitaji."
+          "Explore the available SACCO and farming opportunity information. Check the details before applying or joining.",
+          "Angalia SACCOs na opportunities zilizowekwa. Soma requirements kabla ya kujiunga.",
+          "Angalia taarifa za SACCO na fursa za kilimo. Hakikisha umesoma masharti."
         )
       ),
-
       makeStep(
-        'a[href="messages.html"]',
+        ['a[href="buyer-requests.html"]', 'a[href*="buyer-requests"]', "#buyerRequestsLink"],
+        phrase("Buyer requests", "Buyer requests", "Maombi ya wanunuzi"),
         phrase(
-          "Messages",
-          "Jaribu demo chat hapa.",
-          "Ujumbe."
-        ),
-        phrase(
-          "Choose a sample contact and try the messaging interface.",
-          "Chagua sample contact na ujaribu chat.",
-          "Chagua mtu wa mfano na ujaribu mazungumzo."
+          "Where available, buyers can describe what they need so farmers can review their requests.",
+          "Buyers wanaweza kuweka wanachotafuta ili farmers waone requests hizo.",
+          "Wanunuzi wanaweza kueleza bidhaa wanazohitaji ili wakulima waone maombi hayo."
         )
       ),
-
       makeStep(
-        ".demo-note",
+        ['a[href="messages.html"]', 'a[href*="messages"]', "#messagesLink"],
+        phrase("Messages and support", "Messages na support", "Ujumbe na usaidizi"),
         phrase(
-          "Remember: this is a demo",
-          "Kumbuka hii ni demo.",
-          "Kumbuka: huu ni mfano."
-        ),
+          "Use the messaging or support area if it is available to find help or communicate about a listing.",
+          "Ukipata swali kuhusu listing, angalia sehemu ya messages au support.",
+          "Tumia sehemu ya ujumbe au usaidizi ikiwa inapatikana."
+        )
+      ),
+      makeStep(
+        [".demo-note", "#demoNotice", ".demo-banner", "footer"],
+        phrase("You're ready to explore!", "Uko ready kuanza!", "Uko tayari kuanza!"),
         phrase(
-          "Some data is saved only in this browser. Prices and messages may be demonstration data.",
-          "Data fulani hubaki kwa browser hii. Bei na messages zinaweza kuwa demo data.",
-          "Baadhi ya data huhifadhiwa kwenye kivinjari hiki. Bei na ujumbe unaweza kuwa data ya mfano."
+          "This is a demo, so some actions may use sample data or browser storage. Enjoy exploring MavunoBridge!",
+          "Kumbuka hii ni demo. Baadhi ya features zinatumia sample data kwa browser yako. Explore MavunoBridge!",
+          "Hii ni demo. Baadhi ya vipengele vinaweza kutumia data ya mfano iliyohifadhiwa kwenye kivinjari."
         )
       )
     ],
 
     "smart-assist.html": [
-
       makeStep(
-        ".sa-hero",
+        [".sa-hero", ".page-hero", "main h1"],
+        phrase("Welcome to Smart Assist", "Karibu Smart Assist", "Karibu Smart Assist"),
         phrase(
-          "Welcome to Smart Assist",
-          "Karibu kwa Smart Assist!",
-          "Karibu Smart Assist!"
-        ),
-        phrase(
-          "Explore the farm planner, crop symptoms, reports, questions and crop library.",
-          "Explore farm planner, crop symptoms, reports, questions na crop library.",
-          "Chunguza mpango wa shamba, dalili, ripoti, maswali na mwongozo wa mazao."
+          "I'm your farming buddy. Let's explore the farming guidance tools available on this page.",
+          "Hapa ndio farm buddy wako! Tuchunguze tools za farming zilizo available.",
+          "Mimi ni msaidizi wako wa kilimo. Tuchunguze zana za mwongozo zilizopo."
         )
       ),
-
       makeStep(
-        "#farmPlanner",
+        ["#farmPlanner", ".farm-planner"],
+        phrase("Plan your farming", "Panga kilimo chako", "Panga shughuli zako za kilimo"),
         phrase(
-          "Describe your farm",
-          "Chagua county, crop na hali ya shamba.",
-          "Eleza shamba lako."
-        ),
-        phrase(
-          "Choose your county and crop, then add the information you know about the farm.",
-          "Chagua county na crop, kisha ongeza details unazojua kuhusu shamba.",
-          "Chagua kaunti na zao, kisha ongeza maelezo unayojua kuhusu shamba."
+          "Use the planner to explore crop or farm planning options provided by the demo.",
+          "Tumia planner kupanga mazao na shughuli zako kulingana na options zilizopo.",
+          "Tumia kipangaji kuchunguza chaguo za kupanga mazao na shughuli za shamba."
         )
       ),
-
       makeStep(
-        [".sa-symptom-field", "#saSymptomChecks"],
+        [".sa-symptom-field", "#saSymptomChecks", "#symptomChecks"],
+        phrase("Describe crop symptoms", "Eleza shida ya mmea", "Eleza dalili za mmea"),
         phrase(
-          "Select symptoms",
-          "Tick dalili unazoona kwa crop.",
-          "Chagua dalili."
-        ),
-        phrase(
-          "Select visible signs and describe the crop problem.",
-          "Tick symptoms na ueleze tatizo la crop.",
-          "Chagua dalili zinazoonekana na ueleze tatizo la zao."
+          "If a crop looks unhealthy, choose the symptoms you can observe. Treat results as guidance, not a confirmed diagnosis.",
+          "Mmea ukiwa na shida, chagua symptoms unazoona. Ushauri wa demo si diagnosis ya uhakika.",
+          "Ikiwa mmea unaonekana kuwa na shida, chagua dalili unazoona. Matokeo si utambuzi wa uhakika."
         )
       ),
-
       makeStep(
-        "#saPhoto",
+        ["#saPhoto", "#cropPhoto", 'input[type="file"]'],
+        phrase("Add a crop photo", "Weka picha ya mmea", "Ongeza picha ya mmea"),
         phrase(
-          "Add a crop photo",
-          "Weka picha clear ya crop.",
-          "Ongeza picha ya zao."
-        ),
-        phrase(
-          "Choose a clear photo of the affected crop area so you can review it with your farm notes.",
-          "Upload picha clear ya sehemu ya crop imeathirika.",
-          "Pakia picha iliyo wazi ya sehemu ya zao iliyoathirika."
+          "If photo upload is supported, add a clear crop photo to provide extra context.",
+          "Ikiwa upload inafanya kazi, weka picha safi ya mmea ili kuongeza maelezo.",
+          "Ikiwa upakiaji wa picha unapatikana, ongeza picha iliyo wazi ya mmea."
         )
       ),
-
       makeStep(
-        ["#generateReportButton", "#reportSection"],
+        ["#generateReportButton", "#reportSection", "#analyzeButton"],
+        phrase("Review your farming report", "Angalia farming report", "Angalia ripoti ya kilimo"),
         phrase(
-          "Generate your report",
-          "Generate report upate tips.",
-          "Tengeneza ripoti."
-        ),
-        phrase(
-          "Generate your farm report and review the suggested next steps.",
-          "Generate farm report kisha angalia next steps.",
-          "Tengeneza ripoti ya shamba na ukague hatua zinazopendekezwa."
+          "Use the available action to view the guidance generated by the demo. Verify important advice with a qualified local agricultural adviser.",
+          "Bonyeza action iliyopo kuona report. Kwa maamuzi muhimu, uliza agricultural officer wa eneo lako.",
+          "Tumia kitufe kilichopo kuona mwongozo. Thibitisha ushauri muhimu na mtaalamu wa kilimo."
         )
       ),
-
       makeStep(
-        "#saQuestionForm",
+        ["#saQuestionForm", "#assistantQuestionForm"],
+        phrase("Ask the assistant", "Uliza assistant", "Uliza msaidizi"),
         phrase(
-          "Ask the farm assistant",
-          "Uliza swali kuhusu shamba.",
-          "Uliza msaidizi."
-        ),
-        phrase(
-          "Ask about crops, pests, soil, water or harvesting.",
-          "Uliza kuhusu crops, pests, soil, maji ama harvest.",
-          "Uliza kuhusu mazao, wadudu, udongo, maji au mavuno."
+          "If the question form is enabled, type a farming question and use the available submit control.",
+          "Kama question form iko active, type swali yako ya farming na utume.",
+          "Ikiwa fomu inafanya kazi, andika swali lako la kilimo kisha ulitume."
         )
       ),
-
       makeStep(
-        [".sa-library-controls", "#saCropLibraryGrid"],
+        [".sa-library-controls", "#saCropLibraryGrid", "#cropLibrary"],
+        phrase("Explore the crop library", "Angalia crop library", "Angalia maktaba ya mazao"),
         phrase(
-          "Explore crop guides",
-          "Search crops na filter.",
-          "Chunguza miongozo."
-        ),
-        phrase(
-          "Search and explore crop information from the built-in library.",
-          "Search na explore crop information kutoka library.",
-          "Tafuta na uchunguze maelezo ya mazao kutoka kwenye maktaba."
+          "Browse the crop information available in the demo and open the entries relevant to your farm.",
+          "Explore crop library uone information za mazao zilizowekwa.",
+          "Chunguza taarifa za mazao zilizopo na uchague zinazohusiana na shamba lako."
         )
       ),
-
       makeStep(
-        "#savedReportsSection",
+        ["#savedReportsSection", "#savedReports"],
+        phrase("Saved reports", "Reports zilizohifadhiwa", "Ripoti zilizohifadhiwa"),
         phrase(
-          "Saved reports",
-          "Reports ulizohifadhi ziko hapa.",
-          "Ripoti zilizohifadhiwa."
-        ),
-        phrase(
-          "Review reports saved in this browser.",
-          "Angalia reports ulizohifadhi kwa browser hii.",
-          "Kagua ripoti ulizohifadhi kwenye kivinjari hiki."
+          "If saving is enabled, revisit reports stored by the demo in your browser.",
+          "Kama saving iko active, unaweza kurudi kuona reports ulizohifadhi.",
+          "Ikiwa uhifadhi unapatikana, unaweza kufungua tena ripoti zilizohifadhiwa kwenye kivinjari."
         )
       )
     ],
 
     "sacco.html": [
-
       makeStep(
-        ".page-hero",
+        [".page-hero", "main h1"],
+        phrase("Welcome to SACCO Hub", "Karibu SACCO Hub", "Karibu SACCO Hub"),
         phrase(
-          "Welcome to SACCO Hub",
-          "Karibu SACCO Hub!",
-          "Karibu SACCO Hub!"
-        ),
-        phrase(
-          "Explore sample farmer groups and agricultural opportunities.",
-          "Explore sample farmer groups na agricultural opportunities.",
-          "Chunguza mifano ya vikundi vya wakulima na fursa za kilimo."
+          "Explore the SACCO information and agricultural opportunities listed in this demo.",
+          "Hapa unaweza kuchunguza SACCOs na opportunities za kilimo zilizowekwa.",
+          "Chunguza taarifa za SACCO na fursa za kilimo zilizowekwa kwenye demo."
         )
       ),
-
       makeStep(
-        ".sacco-controls",
+        [".sacco-controls", "#saccoFilters", ".filter-bar"],
+        phrase("Find relevant opportunities", "Tafuta opportunities zinazokufaa", "Tafuta fursa zinazokufaa"),
         phrase(
-          "Search opportunities",
-          "Tafuta kwa jina ama county.",
-          "Tafuta fursa."
-        ),
-        phrase(
-          "Search and filter the available demonstration opportunities.",
-          "Search na filter sample opportunities.",
-          "Tafuta na uchuje fursa za mfano."
+          "Use the available search or filter controls to narrow down the displayed options.",
+          "Tumia search au filters zilizopo kupata options zinazokufaa.",
+          "Tumia utafutaji au vichujio kuchagua fursa zinazokufaa."
         )
       ),
-
       makeStep(
-        ["#saccoGrid .sacco-card", "#saccoGrid"],
+        ["#saccoGrid", ".sacco-grid", ".sacco-list"],
+        phrase("Review SACCO cards", "Angalia SACCO cards", "Angalia kadi za SACCO"),
         phrase(
-          "Explore groups",
-          "Angalia groups zinazopatikana.",
-          "Chunguza vikundi."
-        ),
-        phrase(
-          "Read the cards and explore the information provided.",
-          "Soma cards na explore information.",
-          "Soma kadi na uchunguze maelezo."
+          "Read each entry carefully and confirm eligibility, fees, and requirements directly with the organisation.",
+          "Soma details na uhakikishe eligibility, fees na requirements na organisation husika.",
+          "Soma maelezo na uthibitishe masharti na ada moja kwa moja kwa taasisi husika."
         )
       ),
-
       makeStep(
-        ".interest-panel",
+        [".interest-panel", "#interestForm", "#joinSaccoForm"],
+        phrase("Express your interest", "Onyesha interest yako", "Onyesha nia yako"),
         phrase(
-          "Saved interests",
-          "Hapa utaona interests zako.",
-          "Fursa ulizohifadhi."
-        ),
-        phrase(
-          "Review the opportunities you have saved.",
-          "Angalia opportunities ulizosave.",
-          "Kagua fursa ulizohifadhi."
+          "If an interest form is available, use it to explore the demo's contact or enquiry flow.",
+          "Kama form iko, itumie kuonyesha interest yako kwenye demo.",
+          "Ikiwa fomu inapatikana, itumie kuwasilisha nia yako kwenye demo."
         )
       )
     ],
 
     "buyer-requests.html": [
-
       makeStep(
-        ".page-hero",
+        [".page-hero", "main h1"],
+        phrase("Welcome to Buyer Requests", "Karibu Buyer Requests", "Karibu kwenye maombi ya wanunuzi"),
         phrase(
-          "Welcome to Buyer Requests",
-          "Karibu Buyer Requests!",
-          "Karibu Buyer Requests!"
-        ),
-        phrase(
-          "Buyers can describe the produce they need.",
-          "Buyer anaweza kuweka products anahitaji.",
-          "Wanunuzi wanaweza kueleza bidhaa wanazohitaji."
+          "This page helps buyers describe products they are looking for when the demo's request feature is available.",
+          "Hapa buyers wanaweza kueleza products wanazotafuta ikiwa feature hii inafanya kazi.",
+          "Hapa wanunuzi wanaweza kueleza bidhaa wanazotafuta ikiwa kipengele hiki kinapatikana."
         )
       ),
-
       makeStep(
-        "#demandForm",
+        ["#demandForm", "#buyerRequestForm"],
+        phrase("Create a request", "Weka request yako", "Weka ombi lako"),
         phrase(
-          "Post a request",
-          "Weka product, county na quantity.",
-          "Weka ombi."
-        ),
-        phrase(
-          "Enter the product, location, quantity and other useful details.",
-          "Weka product, location, quantity na details zingine.",
-          "Weka bidhaa, eneo, kiasi na maelezo mengine."
+          "Enter the product details requested by the form and review them before submitting.",
+          "Weka details za product form inauliza, kisha uzikague kabla ya kutuma.",
+          "Jaza maelezo ya bidhaa yanayohitajika na uyakague kabla ya kutuma."
         )
       ),
-
       makeStep(
-        "#demandList",
+        ["#demandList", "#buyerRequestList", ".demand-list"],
+        phrase("Review buyer requests", "Angalia buyer requests", "Angalia maombi ya wanunuzi"),
         phrase(
-          "Browse requests",
-          "Angalia requests zilizopo.",
-          "Vinjari maombi."
-        ),
-        phrase(
-          "Review the buyer requests available on the demo page.",
-          "Angalia buyer requests zilizopo kwa demo.",
-          "Kagua maombi ya wanunuzi yaliyopo kwenye demo."
+          "Browse the requests shown and check product details before responding.",
+          "Angalia requests zilizopo na details zake kabla ya kujibu.",
+          "Angalia maombi yaliyoonyeshwa na ukague maelezo kabla ya kujibu."
         )
       ),
-
       makeStep(
-        "#supportForm",
+        ["#supportForm", "#supportSection"],
+        phrase("Get support", "Pata support", "Pata usaidizi"),
         phrase(
-          "Support",
-          "Weka reminder ama swali.",
-          "Msaada."
-        ),
-        phrase(
-          "Use the support area for a simple note or reminder.",
-          "Tumia support area kwa note ama reminder.",
-          "Tumia sehemu ya msaada kwa dokezo au kikumbusho."
+          "Use the support form if you need help with the demo.",
+          "Ukipata shida, tumia support form ikiwa inapatikana.",
+          "Ikiwa unahitaji msaada, tumia fomu ya usaidizi ikiwa ipo."
         )
       )
     ],
 
     "messages.html": [
-
       makeStep(
-        ".messages-notice",
+        [".messages-notice", ".page-hero", "main h1"],
+        phrase("Welcome to Messages", "Karibu Messages", "Karibu kwenye Ujumbe"),
         phrase(
-          "Messages demo",
-          "Kumbuka replies ni simulated.",
-          "Ujumbe wa demo."
-        ),
-        phrase(
-          "This page demonstrates the messaging experience.",
-          "Hii page inaonyesha messaging experience ya demo.",
-          "Ukurasa huu unaonyesha mfano wa mfumo wa ujumbe."
+          "This page is designed to organise conversations supported by the demo.",
+          "Hapa ndipo sehemu ya kuangalia conversations zinazoungwa mkono na demo.",
+          "Ukurasa huu umeundwa kupanga mazungumzo yanayoungwa mkono na demo."
         )
       ),
-
       makeStep(
         [".conversation-sidebar", "#conversationList"],
+        phrase("Choose a conversation", "Chagua conversation", "Chagua mazungumzo"),
         phrase(
-          "Choose a conversation",
-          "Chagua sample contact.",
-          "Chagua mazungumzo."
-        ),
-        phrase(
-          "Choose a conversation from the list.",
-          "Chagua conversation kutoka list.",
-          "Chagua mazungumzo kutoka kwenye orodha."
+          "Select an available conversation to review its contents.",
+          "Chagua conversation iliyopo ili kuangalia messages zake.",
+          "Chagua mazungumzo yaliyopo ili kuona ujumbe wake."
         )
       ),
-
       makeStep(
-        ".conversation-panel",
+        [".conversation-panel", "#conversationPanel"],
+        phrase("Review the conversation", "Angalia messages", "Angalia mazungumzo"),
         phrase(
-          "Read messages",
-          "Messages zitaonekana hapa.",
-          "Soma ujumbe."
-        ),
-        phrase(
-          "Review the selected conversation.",
-          "Angalia conversation uliyochagua.",
-          "Kagua mazungumzo uliyochagua."
+          "Check the conversation details and the other participant's information before sharing personal details.",
+          "Angalia messages na details kabla ya kushare personal information.",
+          "Kagua ujumbe na maelezo kabla ya kushiriki taarifa binafsi."
         )
       ),
-
       makeStep(
-        "#messageForm",
+        ["#messageForm", "#sendMessageForm"],
+        phrase("Write a message", "Andika message", "Andika ujumbe"),
         phrase(
-          "Write a message",
-          "Andika message kisha Send.",
-          "Andika ujumbe."
-        ),
-        phrase(
-          "Type your message and press Send.",
-          "Andika message yako kisha bonyeza Send.",
-          "Andika ujumbe wako kisha bonyeza Tuma."
+          "If messaging is enabled, write your message and use the available send button.",
+          "Kama messaging iko active, andika message yako na utume.",
+          "Ikiwa ujumbe unatumika, andika ujumbe wako kisha utume."
         )
       )
     ],
 
     "login.html": [
-
       makeStep(
-        ".auth-visual",
+        [".auth-visual", ".login-hero", "main h1"],
+        phrase("Welcome to MavunoBridge", "Karibu MavunoBridge", "Karibu MavunoBridge"),
         phrase(
-          "Welcome to sign-in",
-          "Karibu kwa demo ya sign-in.",
-          "Karibu kwenye mfano wa kuingia."
-        ),
-        phrase(
-          "This page demonstrates a sign-in experience.",
-          "Hii ni demo ya sign-in experience.",
-          "Ukurasa huu unaonyesha mfano wa kuingia."
+          "This page demonstrates the available sign-in experience.",
+          "Hapa unaona login experience ya demo.",
+          "Hapa unaweza kuona mfano wa kuingia kwenye akaunti."
         )
       ),
-
       makeStep(
-        "#demoLoginForm",
+        ["#demoLoginForm", "#loginForm", "form"],
+        phrase("Explore the sign-in form", "Angalia login form", "Angalia fomu ya kuingia"),
         phrase(
-          "Demo account",
-          "Tumia details za mfano pekee.",
-          "Akaunti ya mfano."
-        ),
-        phrase(
-          "Use demonstration information only. Never enter a real password or payment PIN.",
-          "Tumia demo information pekee. Usiweke password ama payment PIN halisi.",
-          "Tumia taarifa za mfano pekee. Usiweke nenosiri au PIN ya malipo halisi."
+          "Review the fields and follow the instructions displayed by your demo.",
+          "Angalia fields na ufuate instructions zilizoonyeshwa.",
+          "Kagua sehemu za fomu na ufuate maelekezo yaliyoonyeshwa."
         )
       ),
-
       makeStep(
-        "#googleDemoButton",
+        ["#googleDemoButton", "#googleSignInButton"],
+        phrase("Demo sign-in options", "Login options", "Chaguo za kuingia"),
         phrase(
-          "Google-style button",
-          "Hii ni button ya demo.",
-          "Kitufe cha mfano."
-        ),
-        phrase(
-          "This demonstrates the interface and does not create a real Google login.",
-          "Hii ni interface ya demo na haifungui Google login halisi.",
-          "Hiki ni kiolesura cha mfano na hakifanyi kuingia kwa Google halisi."
+          "If a sign-in button is displayed, check its demo status before relying on it for a real account.",
+          "Kama login button iko, kumbuka hii ni demo na inaweza isiwe connected na account halisi.",
+          "Ikiwa kitufe cha kuingia kipo, kumbuka kuwa demo huenda isiwe imeunganishwa na akaunti halisi."
         )
       )
     ]
@@ -698,30 +796,21 @@
 
   const FALLBACK_TOUR = [
     makeStep(
-      ".topbar",
+      ["header", ".topbar", ".navbar"],
+      phrase("Welcome to MavunoBridge!", "Karibu MavunoBridge!", "Karibu MavunoBridge!"),
       phrase(
-        "Welcome to MavunoBridge",
-        "Karibu MavunoBridge!",
-        "Karibu MavunoBridge!"
-      ),
-      phrase(
-        "Use the navigation to explore MavunoBridge.",
-        "Tumia navigation kuchunguza MavunoBridge.",
-        "Tumia menyu kuchunguza MavunoBridge."
+        "I'm your farming buddy. Let's explore this page together.",
+        "Mimi ni farm buddy wako. Tuchunguze page hii pamoja!",
+        "Mimi ni msaidizi wako wa kilimo. Tuchunguze ukurasa huu pamoja."
       )
     ),
-
     makeStep(
-      "main",
+      ["main", "#app", "body"],
+      phrase("Explore this page", "Explore page hii", "Chunguza ukurasa huu"),
       phrase(
-        "Explore this page",
-        "Angalia features za page hii.",
-        "Chunguza ukurasa huu."
-      ),
-      phrase(
-        "Use the buttons and tools available on this page.",
-        "Tumia buttons na tools zilizopo hapa.",
-        "Tumia vitufe na zana zilizopo hapa."
+        "Look through the available features. You can reopen this tour whenever you need help.",
+        "Angalia features zilizopo. Unaweza kufungua tour hii tena ukihitaji help.",
+        "Angalia vipengele vilivyopo. Unaweza kufungua mwongozo huu tena unapohitaji msaada."
       )
     )
   ];
@@ -730,481 +819,335 @@
     return TOURS[PAGE] || FALLBACK_TOUR;
   }
 
-  /* ==========================================================
-     ANIMATION CSS
-     ========================================================== */
+  /* ============================================================
+     5. STYLES
+     ============================================================ */
 
   const style = document.createElement("style");
 
+  style.id = "mavunobridge-tour-styles";
+
   style.textContent = `
-
-    /* ========================================================
-       TOUR LAUNCHER
-       ======================================================== */
-
+    /* Keep the tour above ordinary page content */
+    .mb-tour-layer,
     .mb-tour-launcher {
-      position: fixed;
-      z-index: 10030;
-      left: 18px;
-      bottom: 18px;
-      max-width: calc(100vw - 28px);
-      padding: 12px 16px;
-      border: 1px solid #d4e7d9;
-      border-radius: 999px;
-      background: #fff;
-      color: #134c39;
-      font: 800 12px/1.2 system-ui,sans-serif;
-      box-shadow: 0 8px 26px #142d1b2b;
-      cursor: pointer;
-      transition: transform .2s ease, background .2s ease;
+      font-family: inherit;
+      box-sizing: border-box;
     }
 
-    .mb-tour-launcher:hover {
-      transform: translateY(-3px);
-      background: #f0f8f1;
+    .mb-tour-layer *,
+    .mb-tour-launcher * {
+      box-sizing: border-box;
     }
 
-    .mb-tour-launcher[hidden],
-    .mb-tour-layer[hidden] {
+    .mb-tour-layer[hidden],
+    .mb-tour-launcher[hidden] {
       display: none !important;
     }
 
-    /* ========================================================
-       TOUR LAYER
-       ======================================================== */
+    /* Floating launch button */
+    .mb-tour-launcher {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 2147483000;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 44px;
+      max-width: calc(100vw - 28px);
+      padding: 11px 17px;
+      border: 1px solid rgba(255,255,255,.35);
+      border-radius: 999px;
+      background: linear-gradient(135deg,#285f3d,#173c29);
+      color: #fff;
+      box-shadow: 0 8px 25px rgba(20,55,34,.28);
+      font-size: 13px;
+      font-weight: 750;
+      cursor: pointer;
+      transition: transform .2s ease, box-shadow .2s ease;
+    }
 
+    .mb-tour-launcher:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba(20,55,34,.34);
+    }
+
+    .mb-tour-launcher:focus-visible,
+    .mb-tour-btn:focus-visible,
+    .mb-tour-close:focus-visible {
+      outline: 3px solid #e2b65d;
+      outline-offset: 3px;
+    }
+
+    /* Main tour overlay */
     .mb-tour-layer {
       position: fixed;
-      z-index: 10020;
       inset: 0;
+      z-index: 2147483001;
+      overflow: hidden;
       pointer-events: none;
     }
 
+    /* Four separate shade panels create a spotlight */
     .mb-tour-shade {
       position: fixed;
-      background: rgba(5,25,17,.64);
+      background: rgba(8,20,13,.60);
       pointer-events: auto;
+      transition:
+        top .22s ease,
+        left .22s ease,
+        width .22s ease,
+        height .22s ease;
     }
 
     .mb-tour-focus {
       position: fixed;
-      z-index: 10021;
-      border: 3px solid #91e7a4;
-      border-radius: 12px;
+      z-index: 1;
+      border: 2px solid #a8d67c;
       box-shadow:
-        0 0 0 2px #fff,
-        0 0 28px rgba(145,231,164,.3);
+        0 0 0 4px rgba(168,214,124,.16),
+        0 0 24px rgba(168,214,124,.28);
       pointer-events: none;
-      transition:
-        top .2s ease,
-        left .2s ease,
-        width .2s ease,
-        height .2s ease;
+      transition: all .22s ease;
     }
 
-    /* ========================================================
-       TRANSPARENT SPEECH / GUIDE PANEL
-       ======================================================== */
+    .mb-tour-focus[hidden] {
+      display: none !important;
+    }
 
+    /* Translucent glass tutorial panel */
     .mb-tour-card {
       position: fixed;
-      z-index: 10022;
-
+      z-index: 3;
       left: 50%;
-      bottom: max(16px,env(safe-area-inset-bottom));
-
-      width: min(590px,calc(100vw - 24px));
-      max-height: min(390px,calc(100dvh - 28px));
-
+      top: 50%;
+      transform: translate(-50%,-50%);
+      width: min(540px,calc(100vw - 32px));
+      max-height: min(650px,calc(100dvh - 32px));
       overflow-y: auto;
-
-      transform: translateX(-50%);
-
-      padding: 15px 17px 13px;
-
-      border: 1px solid rgba(207,230,211,.78);
-      border-radius: 20px;
-
-      /*
-       * IMPORTANT:
-       * The white is intentionally translucent so
-       * the farmer remains visible behind the guide.
-       */
-      background: rgba(255,255,255,.72);
-
-      backdrop-filter: blur(5px);
-      -webkit-backdrop-filter: blur(5px);
-
-      color: #1b3226;
-
-      box-shadow:
-        0 18px 70px rgba(0,0,0,.25),
-        inset 0 1px 0 rgba(255,255,255,.7);
-
-      font-family:
-        system-ui,
-        -apple-system,
-        "Segoe UI",
-        sans-serif;
-
+      overscroll-behavior: contain;
+      border: 1px solid rgba(255,255,255,.68);
+      border-radius: 23px;
+      background: rgba(249,252,246,.78);
+      color: #1a3424;
+      box-shadow: 0 20px 70px rgba(0,0,0,.25);
+      -webkit-backdrop-filter: blur(15px) saturate(130%);
+      backdrop-filter: blur(15px) saturate(130%);
+      padding: 18px;
       pointer-events: auto;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(45,94,57,.4) transparent;
+      animation: mbTourCardEnter .28s ease-out;
     }
 
-    .mb-tour-card * {
-      box-sizing: border-box;
+    @keyframes mbTourCardEnter {
+      from {
+        opacity: 0;
+        transform: translate(-50%,-47%) scale(.97);
+      }
+      to {
+        opacity: 1;
+        transform: translate(-50%,-50%) scale(1);
+      }
     }
 
     .mb-tour-top {
       display: flex;
       align-items: center;
-      gap: 10px;
-      margin-bottom: 9px;
+      gap: 9px;
+      min-width: 0;
+      margin-bottom: 13px;
     }
 
     .mb-tour-brand {
       display: flex;
       align-items: center;
       gap: 8px;
+      min-width: 0;
+      flex: 1;
+      font-size: 12px;
+      font-weight: 800;
+      color: #20482f;
+    }
 
-      color: #266144;
-
-      font-size: 9px;
-      font-weight: 850;
-      letter-spacing: .9px;
-      text-transform: uppercase;
+    .mb-tour-brand > span:last-child {
+      overflow-wrap: anywhere;
     }
 
     .mb-tour-mark {
+      width: 30px;
+      height: 30px;
+      flex: 0 0 30px;
       display: grid;
-      width: 27px;
-      height: 27px;
       place-items: center;
-
-      border-radius: 9px;
-      background: rgba(230,245,233,.86);
-
-      color: #175338;
+      border-radius: 10px;
+      color: white;
+      background: linear-gradient(145deg,#4b8a50,#205435);
       font-size: 15px;
+      font-weight: 900;
     }
 
     .mb-tour-count {
-      margin-left: auto;
-
-      color: #607668;
-      font-size: 10px;
+      flex: 0 0 auto;
+      color: #45654c;
+      font-size: 11px;
       font-weight: 750;
       white-space: nowrap;
     }
 
+    .mb-tour-close {
+      flex: 0 0 32px;
+      width: 32px;
+      height: 32px;
+      display: grid;
+      place-items: center;
+      padding: 0;
+      border: 0;
+      border-radius: 10px;
+      background: rgba(32,72,47,.09);
+      color: #24432e;
+      font-size: 23px;
+      cursor: pointer;
+    }
+
     .mb-tour-progress {
+      width: 100%;
       height: 5px;
+      margin-bottom: 17px;
       overflow: hidden;
-      margin-bottom: 13px;
-      border-radius: 99px;
-      background: rgba(232,240,233,.8);
+      border-radius: 999px;
+      background: rgba(35,80,48,.13);
     }
 
     .mb-tour-progress span {
       display: block;
       width: 0;
       height: 100%;
-      border-radius: 99px;
-
-      background:
-        linear-gradient(
-          90deg,
-          #47a966,
-          #9bdc83
-        );
-
+      border-radius: inherit;
+      background: linear-gradient(90deg,#2d7143,#92c96a);
       transition: width .25s ease;
     }
 
-    /* ========================================================
-       FARMER GUIDE
-       ======================================================== */
-
+    /* Avatar and text layout */
     .mb-tour-guide-row {
       display: grid;
-
-      grid-template-columns:
-        83px
-        minmax(0,1fr);
-
+      grid-template-columns: 100px minmax(0,1fr);
       align-items: center;
-
-      gap: 14px;
+      gap: 17px;
+      min-width: 0;
     }
 
     .mb-tour-farmer,
     .mb-guide-farmer {
-      position: relative;
-
       display: grid;
-
-      flex: 0 0 auto;
-
       place-items: center;
-
+      min-width: 0;
       overflow: visible;
-
-      border: 1px solid #bfe2c6;
-      border-radius: 21px;
-
-      background:
-        linear-gradient(
-          145deg,
-          #eff9e9,
-          #cce9d0
-        );
-
-      box-shadow:
-        0 6px 18px rgba(25,91,52,.12);
-
-      transform-origin: center bottom;
-
-      animation:
-        mbFarmerFloat 3s ease-in-out infinite;
+      isolation: isolate;
     }
 
     .mb-tour-farmer {
-      width: 83px;
-      height: 83px;
+      width: 100px;
+      height: 112px;
+      justify-self: center;
+      border-radius: 25px;
+      background:
+        radial-gradient(ellipse at 50% 80%,rgba(120,172,96,.22),transparent 65%);
     }
 
     .mb-farmer-art {
       display: block;
       width: 100%;
       height: 100%;
+      overflow: visible;
     }
 
-    /* ========================================================
-       FARMER RANDOM EMOTES
-       ======================================================== */
-
-    .mb-farmer-wave {
-      transform-box: view-box;
-      transform-origin: 91px 88px;
-
-      animation:
-        mbFarmerWave 2.8s ease-in-out infinite;
+    .mb-tour-guide-copy {
+      min-width: 0;
     }
-
-    .mb-farmer-eyes {
-      transform-box: fill-box;
-      transform-origin: center;
-
-      transition:
-        transform .12s ease-out;
-
-      animation:
-        mbFarmerBlink 5s infinite;
-    }
-
-    .mb-farmer-happy {
-      animation:
-        mbHappyBounce .65s ease-in-out 2 !important;
-    }
-
-    .mb-farmer-talking {
-      animation:
-        mbFarmerTalk .55s ease-in-out 2 !important;
-    }
-
-    .mb-farmer-nod {
-      animation:
-        mbFarmerNod .65s ease-in-out 2 !important;
-    }
-
-    .mb-farmer-celebrate {
-      animation:
-        mbFarmerCelebrate .75s ease-in-out 4 !important;
-    }
-
-    .mb-farmer-sad {
-      animation:
-        mbFarmerSad .85s ease-in-out 1 !important;
-
-      filter: saturate(.65);
-    }
-
-    .mb-farmer-wiggle {
-      animation:
-        mbFarmerWiggle .6s ease-in-out 2 !important;
-    }
-
-    /* ========================================================
-       RANDOM EMOTE BUBBLE
-       ======================================================== */
-
-    .mb-farmer-emote {
-      position: absolute;
-
-      z-index: 5;
-
-      top: -13px;
-      right: -12px;
-
-      display: grid;
-
-      min-width: 30px;
-      height: 30px;
-
-      place-items: center;
-
-      padding: 3px 7px;
-
-      border:
-        1px solid
-        rgba(255,255,255,.8);
-
-      border-radius: 999px;
-
-      background:
-        rgba(255,255,255,.88);
-
-      box-shadow:
-        0 5px 14px rgba(0,0,0,.15);
-
-      font-size: 15px;
-
-      pointer-events: none;
-
-      animation:
-        mbEmotePop .65s ease-out forwards;
-    }
-
-    .mb-farmer-sparkles {
-      position: absolute;
-
-      inset: -15px;
-
-      z-index: 6;
-
-      display: flex;
-
-      align-items: center;
-      justify-content: center;
-
-      color: #e6a928;
-
-      font-size: 16px;
-      font-weight: 900;
-
-      pointer-events: none;
-
-      animation:
-        mbSparklePop 1s ease-out forwards;
-    }
-
-    /* ========================================================
-       GUIDE SPEECH
-       ======================================================== */
 
     .mb-tour-speaking {
-      display: inline-block;
-
-      margin-bottom: 5px;
-
-      color: #258052;
-
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      margin-bottom: 7px;
+      color: #44764b;
       font-size: 9px;
-      font-weight: 800;
+      font-weight: 900;
+      letter-spacing: .09em;
+    }
 
-      letter-spacing: 1px;
+    .mb-tour-speaking::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      flex: 0 0 6px;
+      border-radius: 50%;
+      background: #5eab59;
+      animation: mbTourPulse 1.7s ease-in-out infinite;
     }
 
     .mb-tour-card h2 {
-      margin: 0 0 7px;
-
-      color: #143e2e;
-
-      font:
-        800
-        clamp(18px,2.6vw,22px)/1.25
-        system-ui,
-        sans-serif;
-
-      letter-spacing: -.45px;
+      margin: 0 0 9px;
+      color: #173d27;
+      font-size: clamp(19px,3vw,25px);
+      font-weight: 850;
+      line-height: 1.18;
+      overflow-wrap: anywhere;
     }
 
     .mb-tour-card p {
       margin: 0;
-
-      color: #435b4c;
-
-      font:
-        12px/1.65
-        system-ui,
-        sans-serif;
-
+      color: #294633;
+      font-size: 13px;
+      font-weight: 500;
+      line-height: 1.65;
       overflow-wrap: anywhere;
     }
 
-    /* ========================================================
-       CONTROLS
-       ======================================================== */
-
+    /* Navigation controls */
     .mb-tour-controls {
       display: flex;
-
       align-items: center;
       justify-content: space-between;
-
-      gap: 9px;
-
-      margin-top: 14px;
-      padding-top: 11px;
-
-      border-top:
-        1px solid
-        rgba(220,232,222,.75);
+      gap: 10px;
+      margin-top: 20px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(40,81,48,.13);
     }
 
     .mb-tour-left,
     .mb-tour-right {
       display: flex;
       align-items: center;
-      gap: 7px;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .mb-tour-right {
+      margin-left: auto;
     }
 
     .mb-tour-btn {
-      display: inline-flex;
-
-      min-height: 37px;
-
-      align-items: center;
-      justify-content: center;
-
-      padding: 9px 12px;
-
-      border:
-        1px solid
-        rgba(212,226,214,.9);
-
-      border-radius: 9px;
-
-      background:
-        rgba(255,255,255,.72);
-
-      color: #244b33;
-
-      font:
-        750
-        11px/1.2
-        system-ui,
-        sans-serif;
-
+      min-height: 39px;
+      padding: 9px 13px;
+      border: 1px solid rgba(37,79,47,.18);
+      border-radius: 11px;
+      background: rgba(255,255,255,.68);
+      color: #254630;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 750;
+      line-height: 1.2;
       cursor: pointer;
-
-      transition:
-        transform .15s ease,
-        background .15s ease;
+      transition: background .15s ease, transform .15s ease;
     }
 
-    .mb-tour-btn:hover {
+    .mb-tour-btn:hover:not(:disabled) {
+      background: rgba(225,241,218,.9);
       transform: translateY(-1px);
-      background: rgba(242,248,242,.9);
     }
 
     .mb-tour-btn:disabled {
@@ -1213,1397 +1156,773 @@
     }
 
     .mb-tour-next {
-      border-color: #174d37;
-
-      background:
-        rgba(23,77,55,.94);
-
+      border-color: #235b37;
+      background: #235b37;
       color: #fff;
     }
 
-    .mb-tour-next:hover {
-      background: #0b3d2b;
-      color: #fff;
-    }
-
-    .mb-tour-close {
-      display: grid;
-
-      width: 31px;
-      height: 31px;
-
-      flex: 0 0 auto;
-
-      place-items: center;
-
-      border:
-        1px solid
-        rgba(224,233,225,.9);
-
-      border-radius: 50%;
-
-      background:
-        rgba(255,255,255,.72);
-
-      color: #516a59;
-
-      font-size: 18px;
-
-      cursor: pointer;
+    .mb-tour-next:hover:not(:disabled) {
+      background: #17452b;
     }
 
     /* ========================================================
-       EXISTING FARMER GUIDE
+       FARMER ANIMATIONS
        ======================================================== */
 
-    .mb-guide-head {
+    .mb-tour-farmer,
+    .mb-guide-farmer,
+    .mb-smart-farmer-avatar {
+      perspective: 600px;
+    }
+
+    .mb-tour-farmer .mb-farmer-art,
+    .mb-guide-farmer .mb-farmer-art,
+    .mb-smart-farmer-avatar .mb-farmer-art {
+      transform-origin: center bottom;
+      animation: mbFarmerFloat 3.2s ease-in-out infinite;
+    }
+
+    .mb-farmer-wave {
+      transform-box: view-box;
+      transform-origin: 83px 55px;
+      animation: mbFarmerWave 3.5s ease-in-out infinite;
+    }
+
+    .mb-farmer-eyes {
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: mbFarmerBlink 4.8s infinite;
+    }
+
+    .mb-farmer-can {
+      transform-box: fill-box;
+      transform-origin: top center;
+      animation: mbFarmerCan 3.5s ease-in-out infinite;
+    }
+
+    .mb-farmer-tool {
+      transform-box: fill-box;
+      transform-origin: bottom center;
+      animation: mbFarmerTool 4s ease-in-out infinite;
+    }
+
+    .mb-farmer-mouth {
+      transform-box: fill-box;
+      transform-origin: center;
+    }
+
+    .mb-farmer-hand {
+      transform-box: fill-box;
+      transform-origin: center;
+    }
+
+    @keyframes mbFarmerFloat {
+      0%,100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-3px) rotate(.7deg); }
+    }
+
+    @keyframes mbFarmerWave {
+      0%,70%,100% { transform: rotate(0deg); }
+      76% { transform: rotate(-9deg); }
+      82% { transform: rotate(8deg); }
+      88% { transform: rotate(-6deg); }
+      94% { transform: rotate(3deg); }
+    }
+
+    @keyframes mbFarmerBlink {
+      0%,43%,47%,87%,91%,100% { transform: scaleY(1); }
+      45%,89% { transform: scaleY(.12); }
+    }
+
+    @keyframes mbFarmerCan {
+      0%,100% { transform: rotate(0deg); }
+      50% { transform: rotate(-3deg); }
+    }
+
+    @keyframes mbFarmerTool {
+      0%,100% { transform: rotate(0deg); }
+      50% { transform: rotate(2deg); }
+    }
+
+    @keyframes mbTourPulse {
+      0%,100% { opacity: 1; transform: scale(1); }
+      50% { opacity: .45; transform: scale(.78); }
+    }
+
+    /* Random mood classes */
+    .mb-farmer-mood-talk .mb-farmer-mouth {
+      animation: mbFarmerTalk .25s ease-in-out infinite alternate;
+    }
+
+    .mb-farmer-mood-nod .mb-farmer-art {
+      animation: mbFarmerNod .65s ease-in-out 2;
+    }
+
+    .mb-farmer-mood-curious .mb-farmer-art {
+      animation: mbFarmerCurious .8s ease-in-out 1;
+    }
+
+    .mb-farmer-mood-celebrate .mb-farmer-art {
+      animation: mbFarmerCelebrate .8s ease-in-out 2;
+    }
+
+    .mb-farmer-mood-wave .mb-farmer-wave {
+      animation: mbFarmerWaveNow .85s ease-in-out 3;
+    }
+
+    .mb-farmer-mood-happy .mb-farmer-mouth {
+      animation: mbFarmerSmile .45s ease-out 1;
+    }
+
+    @keyframes mbFarmerTalk {
+      from { transform: scaleY(.75); }
+      to { transform: scaleY(1.25); }
+    }
+
+    @keyframes mbFarmerNod {
+      0%,100% { transform: rotate(0); }
+      30% { transform: rotate(7deg); }
+      65% { transform: rotate(-5deg); }
+    }
+
+    @keyframes mbFarmerCurious {
+      0%,100% { transform: rotate(0); }
+      40% { transform: rotate(-5deg) translateY(-2px); }
+      70% { transform: rotate(3deg); }
+    }
+
+    @keyframes mbFarmerCelebrate {
+      0%,100% { transform: translateY(0) rotate(0); }
+      30% { transform: translateY(-8px) rotate(-5deg); }
+      60% { transform: translateY(-2px) rotate(5deg); }
+    }
+
+    @keyframes mbFarmerWaveNow {
+      0%,100% { transform: rotate(0); }
+      25% { transform: rotate(-14deg); }
+      50% { transform: rotate(12deg); }
+      75% { transform: rotate(-9deg); }
+    }
+
+    @keyframes mbFarmerSmile {
+      from { transform: scale(1); }
+      to { transform: scale(1.13); }
+    }
+
+    /* ========================================================
+       BUYER + FARMER GUIDE AVATAR
+       ======================================================== */
+
+    .mb-guide-panel .mb-guide-head {
+      display: flex;
+      align-items: center;
       gap: 10px !important;
+      min-width: 0;
     }
 
     .mb-guide-farmer {
-      width: 52px;
-      height: 52px;
-
-      border-radius: 15px;
+      flex: 0 0 48px;
+      width: 48px;
+      height: 48px;
+      padding: 2px;
+      border: 1px solid rgba(51,106,62,.16);
+      border-radius: 14px;
+      background: #e8f4e6;
     }
 
     .mb-guide-head .mb-guide-head-copy {
-      flex: 1;
+      flex: 1 1 auto;
       min-width: 0;
     }
 
     /* ========================================================
-       SMART ASSIST FARMER
+       SMART ASSIST AVATAR
        ======================================================== */
 
     .sa-assistant-avatar.mb-smart-farmer-avatar {
-      position: relative;
-
       display: grid;
-
-      width: 88px;
-      height: 88px;
-
-      flex: 0 0 auto;
-
       place-items: center;
-
+      flex: 0 0 68px;
+      width: 68px;
+      height: 68px;
+      padding: 2px;
       overflow: visible;
-
-      border:
-        2px solid
-        #bde2c6;
-
-      border-radius: 24px;
-
-      background:
-        linear-gradient(
-          145deg,
-          #eff9e9,
-          #cce9d0
-        );
-
-      box-shadow:
-        0 7px 19px rgba(25,91,52,.12);
-
-      animation:
-        mbFarmerFloat 3s ease-in-out infinite;
+      border: 1px solid rgba(51,106,62,.17);
+      border-radius: 18px;
+      background: #e8f4e6;
     }
 
-    .sa-assistant-avatar.mb-smart-farmer-avatar
-    .mb-farmer-art {
+    .sa-assistant-avatar.mb-smart-farmer-avatar .mb-farmer-art {
       width: 100%;
       height: 100%;
     }
 
-    .sa-smart-farmer-status,
-    .mb-smart-farmer-status {
+    .sa-assistant-intro .mb-smart-farmer-status {
       display: inline-flex;
-
       align-items: center;
-
       gap: 6px;
-
-      width: fit-content;
-
-      margin: 0 0 8px;
-
-      padding: 5px 8px;
-
-      border:
-        1px solid
-        #d3ead7;
-
-      border-radius: 999px;
-
-      background:
-        rgba(242,250,244,.82);
-
-      color: #26724c;
-
+      margin: 0 0 5px;
+      color: #397345;
       font-size: 9px;
-      font-weight: 800;
-
-      letter-spacing: .45px;
+      font-weight: 900;
+      letter-spacing: .07em;
     }
 
-    .sa-smart-farmer-status::before,
     .mb-smart-farmer-status::before {
       content: "";
-
-      width: 7px;
-      height: 7px;
-
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      flex: 0 0 6px;
       border-radius: 50%;
-
-      background: #49b876;
-
-      box-shadow:
-        0 0 0 3px
-        rgba(73,184,118,.13);
-
-      animation:
-        mbStatusPulse 1.8s ease-in-out infinite;
+      background: #62ad5c;
     }
 
     /* ========================================================
-       ANIMATIONS
+       MOBILE LAYOUT
        ======================================================== */
 
-    @keyframes mbFarmerFloat {
-      0%,100% {
-        transform: translateY(0);
-      }
-
-      50% {
-        transform: translateY(-5px);
-      }
-    }
-
-    @keyframes mbFarmerWave {
-      0%,100% {
-        transform: rotate(0deg);
-      }
-
-      20% {
-        transform: rotate(-9deg);
-      }
-
-      45% {
-        transform: rotate(7deg);
-      }
-
-      65% {
-        transform: rotate(-6deg);
-      }
-
-      80% {
-        transform: rotate(3deg);
-      }
-    }
-
-    @keyframes mbFarmerBlink {
-      0%,43%,47%,83%,87%,100% {
-        transform: scaleY(1);
-      }
-
-      45%,85% {
-        transform: scaleY(.12);
-      }
-    }
-
-    @keyframes mbHappyBounce {
-      0%,100% {
-        transform:
-          translateY(0)
-          rotate(0)
-          scale(1);
-      }
-
-      25% {
-        transform:
-          translateY(-11px)
-          rotate(-5deg)
-          scale(1.04);
-      }
-
-      50% {
-        transform:
-          translateY(0)
-          rotate(0)
-          scale(1);
-      }
-
-      75% {
-        transform:
-          translateY(-7px)
-          rotate(5deg)
-          scale(1.03);
-      }
-    }
-
-    @keyframes mbFarmerTalk {
-      0%,100% {
-        transform:
-          rotate(0)
-          translateY(0);
-      }
-
-      30% {
-        transform:
-          rotate(-4deg)
-          translateY(-3px);
-      }
-
-      65% {
-        transform:
-          rotate(4deg)
-          translateY(0);
-      }
-    }
-
-    @keyframes mbFarmerNod {
-      0%,100% {
-        transform:
-          rotate(0)
-          translateY(0);
-      }
-
-      35% {
-        transform:
-          rotate(-4deg)
-          translateY(2px);
-      }
-
-      70% {
-        transform:
-          rotate(4deg)
-          translateY(0);
-      }
-    }
-
-    @keyframes mbFarmerCelebrate {
-      0%,100% {
-        transform:
-          translateY(0)
-          rotate(0)
-          scale(1);
-      }
-
-      20% {
-        transform:
-          translateY(-18px)
-          rotate(-8deg)
-          scale(1.08);
-      }
-
-      40% {
-        transform:
-          translateY(0)
-          rotate(0)
-          scale(1);
-      }
-
-      60% {
-        transform:
-          translateY(-14px)
-          rotate(8deg)
-          scale(1.07);
-      }
-
-      80% {
-        transform:
-          translateY(0)
-          rotate(0)
-          scale(1);
-      }
-    }
-
-    @keyframes mbFarmerSad {
-      0%,100% {
-        transform:
-          translateY(0)
-          rotate(0);
-      }
-
-      35% {
-        transform:
-          translateY(4px)
-          rotate(-5deg);
-      }
-
-      70% {
-        transform:
-          translateY(1px)
-          rotate(4deg);
-      }
-    }
-
-    @keyframes mbFarmerWiggle {
-      0%,100% {
-        transform: rotate(0);
-      }
-
-      25% {
-        transform: rotate(-7deg);
-      }
-
-      50% {
-        transform: rotate(7deg);
-      }
-
-      75% {
-        transform: rotate(-4deg);
-      }
-    }
-
-    @keyframes mbEmotePop {
-      0% {
-        opacity: 0;
-        transform:
-          translateY(7px)
-          scale(.45);
-      }
-
-      45% {
-        opacity: 1;
-        transform:
-          translateY(-2px)
-          scale(1.12);
-      }
-
-      100% {
-        opacity: 0;
-        transform:
-          translateY(-15px)
-          scale(.85);
-      }
-    }
-
-    @keyframes mbSparklePop {
-      0% {
-        opacity: 0;
-        transform:
-          scale(.4)
-          rotate(-20deg);
-      }
-
-      35% {
-        opacity: 1;
-        transform:
-          scale(1.2)
-          rotate(12deg);
-      }
-
-      100% {
-        opacity: 0;
-        transform:
-          scale(.8)
-          translateY(-12px);
-      }
-    }
-
-    @keyframes mbStatusPulse {
-      0%,100% {
-        opacity: 1;
-      }
-
-      50% {
-        opacity: .45;
-      }
-    }
-
-    /* ========================================================
-       MOBILE
-       ======================================================== */
-
-    @media(max-width:520px) {
-
+    @media (max-width: 600px) {
       .mb-tour-launcher {
-        left: 10px;
-        bottom: 10px;
-
-        padding:
-          10px 12px;
-
-        font-size: 11px;
+        right: 12px;
+        bottom: max(12px,env(safe-area-inset-bottom));
+        min-height: 42px;
+        padding: 10px 13px;
+        font-size: 12px;
       }
 
-      /*
-       * Mobile card is intentionally transparent.
-       * This prevents the guide from hiding the farmer.
-       */
       .mb-tour-card {
-        left: 50%;
+        top: auto;
+        bottom: max(8px,env(safe-area-inset-bottom));
+        left: 8px;
+        transform: none;
+        width: calc(100vw - 16px);
+        max-height: min(43dvh,390px);
+        padding: 11px 12px 10px;
+        border-radius: 17px;
+        background: rgba(249,252,246,.76);
+        -webkit-backdrop-filter: blur(11px) saturate(125%);
+        backdrop-filter: blur(11px) saturate(125%);
+        animation: mbTourMobileEnter .2s ease-out;
+      }
 
-        bottom:
-          max(
-            8px,
-            env(safe-area-inset-bottom)
-          );
-
-        width:
-          calc(100vw - 18px);
-
-        max-height:
-          43dvh;
-
-        overflow-y:
-          auto;
-
-        padding:
-          10px 11px 9px;
-
-        border-radius:
-          16px;
-
-        background:
-          rgba(255,255,255,.68);
-
-        backdrop-filter:
-          blur(4px);
-
-        -webkit-backdrop-filter:
-          blur(4px);
+      @keyframes mbTourMobileEnter {
+        from {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
       }
 
       .mb-tour-top {
         gap: 6px;
-        margin-bottom: 6px;
-      }
-
-      .mb-tour-mark {
-        width: 23px;
-        height: 23px;
-
-        border-radius: 7px;
-
-        font-size: 12px;
-      }
-
-      .mb-tour-brand {
-        font-size: 7px;
-        letter-spacing: .5px;
-      }
-
-      .mb-tour-count {
-        font-size: 8px;
-      }
-
-      .mb-tour-progress {
-        height: 4px;
         margin-bottom: 8px;
       }
 
-      /*
-       * Farmer remains visible and gets its own space.
-       */
-      .mb-tour-guide-row {
-        grid-template-columns:
-          53px
-          minmax(0,1fr);
-
-        gap: 8px;
-
-        align-items: center;
-      }
-
-      .mb-tour-farmer {
-        width: 53px;
-        height: 53px;
-
-        border-radius: 15px;
-      }
-
-      .mb-tour-speaking {
-        margin-bottom: 2px;
-
-        font-size: 7px;
-        letter-spacing: .6px;
-      }
-
-      .mb-tour-card h2 {
-        margin-bottom: 3px;
-
-        font-size: 14px;
-        line-height: 1.18;
-      }
-
-      .mb-tour-card p {
-        font-size: 9.5px;
-        line-height: 1.35;
-      }
-
-      .mb-tour-controls {
-        gap: 5px;
-
-        margin-top: 8px;
-        padding-top: 7px;
-      }
-
-      .mb-tour-left,
-      .mb-tour-right {
-        gap: 4px;
-      }
-
-      .mb-tour-btn {
-        min-height: 31px;
-
-        padding:
-          6px 8px;
-
+      .mb-tour-mark {
+        width: 25px;
+        height: 25px;
+        flex-basis: 25px;
         border-radius: 8px;
+        font-size: 13px;
+      }
 
+      .mb-tour-brand {
+        gap: 6px;
+        font-size: 10px;
+      }
+
+      .mb-tour-count {
         font-size: 9px;
       }
 
       .mb-tour-close {
-        width: 26px;
-        height: 26px;
-
-        font-size: 15px;
+        flex-basis: 27px;
+        width: 27px;
+        height: 27px;
+        font-size: 20px;
       }
 
-      .mb-guide-farmer {
-        width: 43px;
-        height: 43px;
-
-        border-radius: 13px;
-      }
-
-      .sa-assistant-avatar.mb-smart-farmer-avatar {
-        width: 68px;
-        height: 68px;
-
-        border-radius: 19px;
-      }
-    }
-
-    @media(max-width:380px) {
-
-      .mb-tour-card {
-        max-height: 39dvh;
-
-        padding:
-          8px 9px 8px;
+      .mb-tour-progress {
+        height: 4px;
+        margin-bottom: 9px;
       }
 
       .mb-tour-guide-row {
-        grid-template-columns:
-          45px
-          minmax(0,1fr);
+        grid-template-columns: 63px minmax(0,1fr);
+        gap: 9px;
+        align-items: center;
+      }
 
+      .mb-tour-farmer {
+        width: 63px;
+        height: 80px;
+        border-radius: 13px;
+      }
+
+      .mb-tour-speaking {
+        margin-bottom: 4px;
+        font-size: 8px;
+      }
+
+      .mb-tour-card h2 {
+        margin-bottom: 5px;
+        font-size: clamp(15px,4.4vw,19px);
+        line-height: 1.18;
+      }
+
+      .mb-tour-card p {
+        font-size: 11px;
+        line-height: 1.42;
+      }
+
+      .mb-tour-controls {
+        gap: 5px;
+        margin-top: 10px;
+        padding-top: 8px;
+      }
+
+      .mb-tour-left,
+      .mb-tour-right {
+        gap: 5px;
+      }
+
+      .mb-tour-btn {
+        min-height: 34px;
+        padding: 7px 9px;
+        border-radius: 9px;
+        font-size: 10px;
+      }
+
+      .mb-guide-farmer {
+        flex-basis: 39px;
+        width: 39px;
+        height: 39px;
+        border-radius: 11px;
+      }
+
+      .sa-assistant-avatar.mb-smart-farmer-avatar {
+        flex-basis: 56px;
+        width: 56px;
+        height: 56px;
+        border-radius: 14px;
+      }
+    }
+
+    @media (max-width: 360px) {
+      .mb-tour-card {
+        left: 5px;
+        bottom: max(5px,env(safe-area-inset-bottom));
+        width: calc(100vw - 10px);
+        max-height: 46dvh;
+        padding: 9px;
+      }
+
+      .mb-tour-guide-row {
+        grid-template-columns: 49px minmax(0,1fr);
         gap: 7px;
       }
 
       .mb-tour-farmer {
-        width: 45px;
-        height: 45px;
-
-        border-radius: 13px;
+        width: 49px;
+        height: 66px;
       }
 
       .mb-tour-card h2 {
-        font-size: 12px;
+        font-size: 15px;
       }
 
       .mb-tour-card p {
-        font-size: 8.5px;
-        line-height: 1.3;
+        font-size: 10px;
       }
 
       .mb-tour-btn {
-        min-height: 29px;
-
-        padding:
-          5px 6px;
-
-        font-size: 8px;
+        padding: 7px;
+        font-size: 9px;
       }
     }
 
-    /* ========================================================
-       REDUCED MOTION
-       ======================================================== */
+    /* Short landscape screens */
+    @media (max-height: 500px) and (orientation: landscape) {
+      .mb-tour-card {
+        max-height: calc(100dvh - 12px);
+        padding: 9px 13px;
+      }
 
-    @media(prefers-reduced-motion:reduce) {
+      .mb-tour-guide-row {
+        grid-template-columns: 57px minmax(0,1fr);
+        gap: 10px;
+      }
 
+      .mb-tour-farmer {
+        width: 57px;
+        height: 66px;
+      }
+
+      .mb-tour-card p {
+        font-size: 11px;
+        line-height: 1.4;
+      }
+
+      .mb-tour-controls {
+        margin-top: 8px;
+        padding-top: 7px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .mb-tour-layer *,
       .mb-tour-launcher,
-      .mb-tour-focus,
-      .mb-tour-progress span,
-      .mb-tour-farmer,
-      .mb-farmer-wave,
-      .mb-farmer-eyes,
-      .mb-guide-farmer,
-      .sa-assistant-avatar.mb-smart-farmer-avatar,
-      .mb-smart-farmer-status::before,
-      .sa-smart-farmer-status::before,
-      .mb-farmer-emote,
-      .mb-farmer-sparkles {
+      .mb-tour-farmer *,
+      .mb-guide-farmer *,
+      .mb-smart-farmer-avatar *,
+      .mb-tour-card {
         animation: none !important;
         transition: none !important;
+        scroll-behavior: auto !important;
       }
     }
   `;
 
-  document.head.appendChild(style);
-
-  /* ==========================================================
-     FARMER AVATAR HELPERS
-     ========================================================== */
-
-  function farmerAvatars() {
-    return [
-      ...$$(
-        ".mb-tour-farmer, " +
-        ".mb-guide-farmer, " +
-        ".mb-smart-farmer-avatar"
-      )
-    ];
+  if (!$("#mavunobridge-tour-styles")) {
+    document.head.appendChild(style);
   }
 
-  function farmerEyes() {
-    return [
-      ...$$(".mb-farmer-eyes")
-    ];
-  }
-
-  function clearFarmerMood(avatar) {
-    avatar.classList.remove(
-      "mb-farmer-happy",
-      "mb-farmer-talking",
-      "mb-farmer-nod",
-      "mb-farmer-celebrate",
-      "mb-farmer-sad",
-      "mb-farmer-wiggle"
-    );
-  }
-
-  function farmerMood(mood) {
-
-    const avatars = farmerAvatars();
-
-    avatars.forEach(avatar => {
-
-      clearFarmerMood(avatar);
-
-      if (!mood) return;
-
-      void avatar.offsetWidth;
-
-      avatar.classList.add(
-        `mb-farmer-${mood}`
-      );
-
-      if (mood === "celebrate") {
-
-        const sparkles =
-          document.createElement("span");
-
-        sparkles.className =
-          "mb-farmer-sparkles";
-
-        sparkles.textContent =
-          "✦ ✨ ✦";
-
-        sparkles.setAttribute(
-          "aria-hidden",
-          "true"
-        );
-
-        avatar.appendChild(sparkles);
-
-        window.setTimeout(() => {
-          sparkles.remove();
-        }, 1100);
-      }
-    });
-
-    window.setTimeout(() => {
-
-      farmerAvatars().forEach(
-        clearFarmerMood
-      );
-
-    }, mood === "celebrate" ? 3000 : 1400);
-  }
-
-  /* ==========================================================
-     RANDOM EMOTES
-     ========================================================== */
-
-  const RANDOM_EMOTES = [
-    {
-      mood: "happy",
-      icon: "😊"
-    },
-    {
-      mood: "talking",
-      icon: "💬"
-    },
-    {
-      mood: "nod",
-      icon: "👍"
-    },
-    {
-      mood: "wiggle",
-      icon: "👋"
-    },
-    {
-      mood: "happy",
-      icon: "🌱"
-    },
-    {
-      mood: "nod",
-      icon: "🌾"
-    },
-    {
-      mood: "talking",
-      icon: "🧑🏾‍🌾"
-    }
-  ];
-
-  let randomEmoteTimer = null;
-
-  function showRandomEmote() {
-
-    if (!tourOpen) return;
-
-    const avatars = farmerAvatars();
-
-    if (!avatars.length) return;
-
-    const choice =
-      RANDOM_EMOTES[
-        Math.floor(
-          Math.random() *
-          RANDOM_EMOTES.length
-        )
-      ];
-
-    farmerMood(choice.mood);
-
-    avatars.forEach(avatar => {
-
-      const old =
-        $(".mb-farmer-emote", avatar);
-
-      if (old) old.remove();
-
-      const bubble =
-        document.createElement("span");
-
-      bubble.className =
-        "mb-farmer-emote";
-
-      bubble.textContent =
-        choice.icon;
-
-      bubble.setAttribute(
-        "aria-hidden",
-        "true"
-      );
-
-      avatar.appendChild(bubble);
-
-      window.setTimeout(() => {
-        bubble.remove();
-      }, 800);
-    });
-  }
-
-  function startRandomEmotes() {
-
-    stopRandomEmotes();
-
-    randomEmoteTimer =
-      window.setInterval(() => {
-
-        if (!tourOpen) return;
-
-        /*
-         * Random delay feeling:
-         * the interval itself changes after
-         * every emote.
-         */
-        showRandomEmote();
-
-        stopRandomEmotes();
-
-        const delay =
-          4500 +
-          Math.random() * 5500;
-
-        randomEmoteTimer =
-          window.setTimeout(() => {
-            startRandomEmotes();
-          }, delay);
-
-      }, 5000);
-  }
-
-  function stopRandomEmotes() {
-
-    if (randomEmoteTimer) {
-
-      window.clearInterval(
-        randomEmoteTimer
-      );
-
-      window.clearTimeout(
-        randomEmoteTimer
-      );
-
-      randomEmoteTimer = null;
-    }
-  }
-
-  /* ==========================================================
-     EYES FOLLOW CURSOR
-     ========================================================== */
-
-  function moveEyes(clientX, clientY) {
-
-    const x =
-      (clientX / window.innerWidth - .5) * 5;
-
-    const y =
-      (clientY / window.innerHeight - .5) * 3.5;
-
-    farmerEyes().forEach(eyes => {
-
-      eyes.style.transform =
-        `translate(${x}px, ${y}px)`;
-    });
-  }
-
-  document.addEventListener(
-    "pointermove",
-    event => {
-
-      if (event.pointerType === "touch") {
-        return;
-      }
-
-      moveEyes(
-        event.clientX,
-        event.clientY
-      );
-
-    },
-    { passive: true }
-  );
-
-  /* ==========================================================
-     MOBILE TAP REACTION
-     ========================================================== */
-
-  document.addEventListener(
-    "pointerdown",
-    event => {
-
-      moveEyes(
-        event.clientX,
-        event.clientY
-      );
-
-      if (
-        event.pointerType === "touch" &&
-        tourOpen
-      ) {
-
-        farmerMood("happy");
-
-        window.setTimeout(
-          () => showRandomEmote(),
-          180
-        );
-      }
-
-    },
-    { passive: true }
-  );
-
-  /* ==========================================================
-     ADD FARMER TO GUIDE
-     ========================================================== */
+  /* ============================================================
+     6. ADD FARMER TO THE EXISTING GUIDE
+     ============================================================ */
 
   function addGuideAvatar() {
+    const header = $(".mb-guide-panel .mb-guide-head");
 
-    const header =
-      $(".mb-guide-panel .mb-guide-head");
+    if (!header || $(".mb-guide-farmer", header)) return;
 
-    if (!header) return;
-
-    if (
-      $(".mb-guide-farmer", header)
-    ) {
-      return;
-    }
-
-    const avatar =
-      document.createElement("div");
-
-    avatar.className =
-      "mb-guide-farmer";
-
-    avatar.setAttribute(
-      "role",
-      "img"
-    );
-
-    avatar.setAttribute(
-      "aria-label",
-      "Animated MavunoBridge farmer guide"
-    );
-
-    avatar.innerHTML =
-      FARMER_SVG;
+    const children = Array.from(header.children);
 
     const headingGroup =
-      header.querySelector(
-        ".mb-guide-head-copy"
-      ) ||
-      header.querySelector("div");
+      children.find(child => child.tagName === "DIV") || null;
+
+    const avatar = document.createElement("div");
+
+    avatar.className = "mb-guide-farmer";
+    avatar.setAttribute("role", "img");
+    avatar.setAttribute("aria-label", "Animated farmer guide");
+    avatar.innerHTML = FARMER_SVG;
 
     if (headingGroup) {
-
-      headingGroup.classList.add(
-        "mb-guide-head-copy"
-      );
-
-      header.insertBefore(
-        avatar,
-        headingGroup
-      );
-
+      headingGroup.classList.add("mb-guide-head-copy");
+      header.insertBefore(avatar, headingGroup);
     } else {
-
-      header.prepend(
-        avatar
-      );
+      header.prepend(avatar);
     }
   }
 
-  /* ==========================================================
-     SMART ASSIST FARMER
-     ========================================================== */
+  /* ============================================================
+     7. ADD FARMER TO SMART ASSIST
+     ============================================================ */
 
   function addSmartAssistAvatar() {
+    if (PAGE !== "smart-assist.html") return;
 
-    if (
-      PAGE !== "smart-assist.html"
-    ) {
-      return;
-    }
-
-    const avatar =
-      $(".sa-assistant-avatar");
+    const avatar = $(".sa-assistant-avatar");
 
     if (!avatar) return;
 
-    avatar.classList.add(
-      "mb-smart-farmer-avatar"
-    );
+    // Avoid replacing the avatar repeatedly.
+    if (!avatar.classList.contains("mb-smart-farmer-avatar")) {
+      avatar.classList.add("mb-smart-farmer-avatar");
+      avatar.setAttribute("role", "img");
+      avatar.setAttribute(
+        "aria-label",
+        "Animated MavunoBridge farming assistant"
+      );
 
-    avatar.setAttribute(
-      "role",
-      "img"
-    );
-
-    avatar.setAttribute(
-      "aria-label",
-      "MavunoBridge animated farming assistant"
-    );
-
-    if (
-      !$(".mb-farmer-art", avatar)
-    ) {
-
-      avatar.innerHTML =
-        FARMER_SVG;
+      avatar.innerHTML = FARMER_SVG;
     }
 
-    const intro =
-      $(".sa-assistant-intro");
+    const intro = $(".sa-assistant-intro");
 
-    if (!intro) return;
+    if (!intro || $(".mb-smart-farmer-status", intro)) return;
 
-    if (
-      $(".mb-smart-farmer-status", intro) ||
-      $(".sa-smart-farmer-status", intro)
-    ) {
-      return;
-    }
+    const status = document.createElement("span");
 
-    const status =
-      document.createElement("span");
-
-    status.className =
-      "mb-smart-farmer-status";
+    status.className = "mb-smart-farmer-status";
 
     status.textContent =
-      language() === "sw"
-        ? "MSAIDIZI WA SHAMBA"
-        : language() === "en"
+      getLanguage() === "sw"
+        ? "MSAIDIZI WA KILIMO"
+        : getLanguage() === "en"
           ? "FARM ASSISTANT"
           : "FARM BUDDY · READY";
 
     const heading =
       $("#assistantWelcome", intro) ||
-      $("h3", intro);
+      $("h3", intro) ||
+      $("h2", intro);
 
-    if (heading) {
-
-      heading.parentNode.insertBefore(
-        status,
-        heading
-      );
-
+    if (heading && heading.parentNode) {
+      heading.parentNode.insertBefore(status, heading);
     } else {
-
-      intro.prepend(
-        status
-      );
+      intro.prepend(status);
     }
   }
 
   function setupAvatars() {
-
     addGuideAvatar();
-
     addSmartAssistAvatar();
   }
 
-  /* ==========================================================
-     TOUR UI
-     ========================================================== */
+  /* ============================================================
+     8. RANDOM FARMER EMOTES
+     ============================================================ */
 
-  const launcher =
-    document.createElement("button");
+  const FARMER_MOODS = [
+    "happy",
+    "talk",
+    "nod",
+    "curious",
+    "wave"
+  ];
+
+  let moodTimer = null;
+  let lastMood = "";
+
+  function getFarmerAvatars() {
+    return $$(".mb-tour-farmer, .mb-guide-farmer, .mb-smart-farmer-avatar");
+  }
+
+  function setFarmerMood(mood) {
+    const avatars = getFarmerAvatars();
+
+    avatars.forEach(avatar => {
+      avatar.classList.remove(
+        "mb-farmer-mood-happy",
+        "mb-farmer-mood-talk",
+        "mb-farmer-mood-nod",
+        "mb-farmer-mood-curious",
+        "mb-farmer-mood-wave",
+        "mb-farmer-mood-celebrate"
+      );
+
+      if (mood) {
+        avatar.classList.add(`mb-farmer-mood-${mood}`);
+      }
+    });
+
+    lastMood = mood || "";
+  }
+
+  function randomFarmerMood() {
+    if (reducedMotion()) return;
+
+    const choices = FARMER_MOODS.filter(mood => mood !== lastMood);
+
+    if (!choices.length) return;
+
+    const mood = choices[Math.floor(Math.random() * choices.length)];
+
+    setFarmerMood(mood);
+  }
+
+  function startFarmerEmotes() {
+    if (moodTimer || reducedMotion()) return;
+
+    moodTimer = window.setInterval(() => {
+      randomFarmerMood();
+    }, 4800);
+  }
+
+  function stopFarmerEmotes() {
+    if (moodTimer) {
+      window.clearInterval(moodTimer);
+      moodTimer = null;
+    }
+
+    setFarmerMood("");
+  }
+
+  /* ============================================================
+     9. CREATE TOUR LAUNCH BUTTON
+     ============================================================ */
+
+  const launcher = document.createElement("button");
 
   launcher.type = "button";
+  launcher.className = "mb-tour-launcher";
+  launcher.textContent = "🧭 Website Tour";
+  launcher.setAttribute("aria-label", "Open MavunoBridge website tour");
+  launcher.setAttribute("title", "Open the website guide");
 
-  launcher.className =
-    "mb-tour-launcher";
+  document.body.appendChild(launcher);
 
-  launcher.textContent =
-    "🧭 Website Tour";
+  /* ============================================================
+     10. CREATE TOUR INTERFACE
+     ============================================================ */
 
-  launcher.setAttribute(
-    "aria-label",
-    "Open MavunoBridge website tour"
-  );
+  const layer = document.createElement("div");
 
-  document.body.appendChild(
-    launcher
-  );
-
-  const layer =
-    document.createElement("div");
-
-  layer.className =
-    "mb-tour-layer";
-
+  layer.className = "mb-tour-layer";
   layer.hidden = true;
 
   layer.innerHTML = `
+    <div class="mb-tour-shade" data-shade="top"></div>
+    <div class="mb-tour-shade" data-shade="left"></div>
+    <div class="mb-tour-shade" data-shade="right"></div>
+    <div class="mb-tour-shade" data-shade="bottom"></div>
 
-    <div
-      class="mb-tour-shade"
-      data-shade="top">
-    </div>
-
-    <div
-      class="mb-tour-shade"
-      data-shade="left">
-    </div>
-
-    <div
-      class="mb-tour-shade"
-      data-shade="right">
-    </div>
-
-    <div
-      class="mb-tour-shade"
-      data-shade="bottom">
-    </div>
-
-    <div
-      class="mb-tour-focus"
-      hidden>
-    </div>
+    <div class="mb-tour-focus" hidden></div>
 
     <section
       class="mb-tour-card"
       role="dialog"
       aria-modal="true"
       aria-labelledby="mbTourTitle"
-      aria-describedby="mbTourText">
-
+      aria-describedby="mbTourText"
+      tabindex="-1"
+    >
       <div class="mb-tour-top">
-
         <div class="mb-tour-brand">
-
-          <span class="mb-tour-mark">
-            M
-          </span>
-
-          <span>
-            MavunoBridge · Tour
-          </span>
-
+          <span class="mb-tour-mark">M</span>
+          <span>MavunoBridge · Tour</span>
         </div>
 
-        <span
-          class="mb-tour-count"
-          id="mbTourCount">
-        </span>
+        <span class="mb-tour-count" id="mbTourCount"></span>
 
         <button
           type="button"
           class="mb-tour-close"
           id="mbTourClose"
-          aria-label="Skip tutorial">
-          ×
-        </button>
-
+          aria-label="Close tutorial"
+          title="Close tutorial"
+        >×</button>
       </div>
 
-      <div
-        class="mb-tour-progress"
-        aria-hidden="true">
-
-        <span
-          id="mbTourProgress">
-        </span>
-
+      <div class="mb-tour-progress" aria-hidden="true">
+        <span id="mbTourProgress"></span>
       </div>
 
       <div class="mb-tour-guide-row">
-
         <div
           class="mb-tour-farmer"
           role="img"
-          aria-label="Animated farmer assistant">
+          aria-label="Animated farmer assistant"
+        >${FARMER_SVG}</div>
 
-          ${FARMER_SVG}
-
-        </div>
-
-        <div
-          class="mb-tour-guide-copy">
-
-          <span
-            class="mb-tour-speaking"
-            id="mbTourSpeaking">
-
+        <div class="mb-tour-guide-copy">
+          <span class="mb-tour-speaking" id="mbTourSpeaking">
             YOUR FARMING GUIDE
-
           </span>
 
-          <h2
-            id="mbTourTitle">
-          </h2>
+          <h2 id="mbTourTitle"></h2>
 
-          <p
-            id="mbTourText">
-          </p>
-
+          <p id="mbTourText"></p>
         </div>
-
       </div>
 
       <div class="mb-tour-controls">
-
         <div class="mb-tour-left">
-
           <button
             type="button"
             class="mb-tour-btn"
-            id="mbTourSkip">
-
-            Skip tutorial
-
-          </button>
-
+            id="mbTourSkip"
+          >Skip tutorial</button>
         </div>
 
         <div class="mb-tour-right">
-
           <button
             type="button"
             class="mb-tour-btn"
-            id="mbTourBack">
-
-            Back
-
-          </button>
+            id="mbTourBack"
+          >Back</button>
 
           <button
             type="button"
             class="mb-tour-btn mb-tour-next"
-            id="mbTourNext">
-
-            Next →
-
-          </button>
-
+            id="mbTourNext"
+          >Next →</button>
         </div>
-
       </div>
-
     </section>
   `;
 
-  document.body.appendChild(
-    layer
+  document.body.appendChild(layer);
+
+  const inTour = selector => $(selector, layer);
+
+  const shades = Object.fromEntries(
+    $$(".mb-tour-shade", layer).map(node => [
+      node.dataset.shade,
+      node
+    ])
   );
 
-  const inTour =
-    selector => $(selector, layer);
-
-  const shades =
-    Object.fromEntries(
-      $$(".mb-tour-shade", layer)
-        .map(node => [
-          node.dataset.shade,
-          node
-        ])
-    );
-
-  const focusRing =
-    inTour(".mb-tour-focus");
+  const focusRing = inTour(".mb-tour-focus");
 
   let steps = getSteps();
-
   let index = 0;
-
   let tourOpen = false;
-
   let lastFocused = null;
-
   let animationFrame = 0;
+  let repositionTimer = null;
 
-  /* ==========================================================
-     TARGET FINDER
-     ========================================================== */
+  /* ============================================================
+     11. TARGET SELECTION
+     ============================================================ */
 
   function getTarget(selectors) {
-
-    const list =
-      Array.isArray(selectors)
-        ? selectors
-        : [selectors];
+    const list = Array.isArray(selectors) ? selectors : [selectors];
 
     for (const selector of list) {
-
       if (!selector) continue;
 
       try {
+        const target = $(selector);
 
-        const target =
-          $(selector);
-
-        if (
-          target &&
-          target.getClientRects().length
-        ) {
+        if (target && target.getClientRects().length) {
           return target;
         }
-
       } catch (error) {
-
-        console.warn(
-          "Invalid tour target:",
-          selector
-        );
+        console.warn("MavunoBridge tour: invalid selector.", selector);
       }
     }
 
     return null;
   }
 
-  /* ==========================================================
-     SPOTLIGHT
-     ========================================================== */
+  /* ============================================================
+     12. SPOTLIGHT POSITIONING
+     ============================================================ */
 
-  function setShade(
-    name,
-    left,
-    top,
-    width,
-    height
-  ) {
+  function setShade(name, left, top, width, height) {
+    const node = shades[name];
 
-    const node =
-      shades[name];
+    if (!node) return;
 
-    node.style.left =
-      `${Math.max(0,left)}px`;
-
-    node.style.top =
-      `${Math.max(0,top)}px`;
-
-    node.style.width =
-      `${Math.max(0,width)}px`;
-
-    node.style.height =
-      `${Math.max(0,height)}px`;
+    node.style.left = `${Math.max(0, left)}px`;
+    node.style.top = `${Math.max(0, top)}px`;
+    node.style.width = `${Math.max(0, width)}px`;
+    node.style.height = `${Math.max(0, height)}px`;
   }
 
-  function positionSpotlight(
-    target
-  ) {
-
-    const vw =
-      window.innerWidth;
-
-    const vh =
-      window.innerHeight;
+  function positionSpotlight(target) {
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
 
     if (!target) {
+      setShade("top", 0, 0, vw, vh);
+      setShade("left", 0, 0, 0, 0);
+      setShade("right", 0, 0, 0, 0);
+      setShade("bottom", 0, 0, 0, 0);
 
-      setShade(
-        "top",
-        0,
-        0,
-        vw,
-        vh
-      );
-
-      setShade(
-        "left",
-        0,
-        0,
-        0,
-        0
-      );
-
-      setShade(
-        "right",
-        0,
-        0,
-        0,
-        0
-      );
-
-      setShade(
-        "bottom",
-        0,
-        0,
-        0,
-        0
-      );
-
-      focusRing.hidden =
-        true;
+      focusRing.hidden = true;
 
       return;
     }
 
-    const rect =
-      target.getBoundingClientRect();
+    const rect = target.getBoundingClientRect();
 
     if (
       rect.bottom <= 0 ||
@@ -2611,765 +1930,364 @@
       rect.right <= 0 ||
       rect.left >= vw
     ) {
-
-      positionSpotlight(
-        null
-      );
-
+      positionSpotlight(null);
       return;
     }
 
     const padding = 7;
 
-    const left =
-      Math.max(
-        4,
-        rect.left - padding
-      );
+    const left = Math.max(4, rect.left - padding);
+    const top = Math.max(4, rect.top - padding);
+    const right = Math.min(vw - 4, rect.right + padding);
+    const bottom = Math.min(vh - 4, rect.bottom + padding);
 
-    const top =
-      Math.max(
-        4,
-        rect.top - padding
-      );
+    setShade("top", 0, 0, vw, top);
+    setShade("left", 0, top, left, bottom - top);
+    setShade("right", right, top, vw - right, bottom - top);
+    setShade("bottom", 0, bottom, vw, vh - bottom);
 
-    const right =
-      Math.min(
-        vw - 4,
-        rect.right + padding
-      );
+    focusRing.hidden = false;
+    focusRing.style.left = `${left}px`;
+    focusRing.style.top = `${top}px`;
+    focusRing.style.width = `${right - left}px`;
+    focusRing.style.height = `${bottom - top}px`;
 
-    const bottom =
-      Math.min(
-        vh - 4,
-        rect.bottom + padding
-      );
+    const radius = window.getComputedStyle(target).borderRadius;
 
-    setShade(
-      "top",
-      0,
-      0,
-      vw,
-      top
-    );
-
-    setShade(
-      "left",
-      0,
-      top,
-      left,
-      bottom - top
-    );
-
-    setShade(
-      "right",
-      right,
-      top,
-      vw - right,
-      bottom - top
-    );
-
-    setShade(
-      "bottom",
-      0,
-      bottom,
-      vw,
-      vh - bottom
-    );
-
-    focusRing.hidden =
-      false;
-
-    focusRing.style.left =
-      `${left}px`;
-
-    focusRing.style.top =
-      `${top}px`;
-
-    focusRing.style.width =
-      `${right - left}px`;
-
-    focusRing.style.height =
-      `${bottom - top}px`;
-
-    focusRing.style.borderRadius =
-      getComputedStyle(
-        target
-      ).borderRadius ||
-      "10px";
+    focusRing.style.borderRadius = radius || "10px";
   }
 
   function scheduleReposition() {
+    if (!tourOpen || animationFrame) return;
 
-    if (
-      !tourOpen ||
-      animationFrame
-    ) {
-      return;
-    }
-
-    animationFrame =
-      requestAnimationFrame(() => {
-
-        animationFrame = 0;
-
-        positionSpotlight(
-          getTarget(
-            steps[index]?.target
-          )
-        );
-
-      });
+    animationFrame = window.requestAnimationFrame(() => {
+      animationFrame = 0;
+      positionSpotlight(getTarget(steps[index]?.target));
+    });
   }
 
-  /* ==========================================================
-     LABELS
-     ========================================================== */
+  /* ============================================================
+     13. BUTTON LABELS
+     ============================================================ */
 
   function labels() {
+    const lang = getLanguage();
 
-    if (
-      language() === "sw"
-    ) {
-
+    if (lang === "sw") {
       return {
         step: "Hatua",
         skip: "Ruka mwongozo",
         back: "Nyuma",
         next: "Ifuatayo →",
         finish: "Maliza ✓",
-        speaking:
-          "MSAIDIZI WAKO WA KILIMO"
+        speaking: "MSAIDIZI WAKO WA KILIMO"
       };
     }
 
-    if (
-      language() === "en"
-    ) {
-
+    if (lang === "en") {
       return {
         step: "Step",
         skip: "Skip tutorial",
         back: "Back",
         next: "Next →",
         finish: "Finish ✓",
-        speaking:
-          "YOUR FARMING GUIDE"
+        speaking: "YOUR FARMING GUIDE"
       };
     }
 
     return {
-      step: "Hatua",
-      skip: "Skip tutorial",
+      step: "Step",
+      skip: "Skip tour",
       back: "Back",
       next: "Next →",
-      finish: "Finish ✓",
-      speaking:
-        "FARM BUDDY · READY"
+      finish: "Done ✓",
+      speaking: "FARM BUDDY WAKO"
     };
   }
 
-  /* ==========================================================
-     RENDER STEP
-     ========================================================== */
+  /* ============================================================
+     14. RENDER CURRENT TOUR STEP
+     ============================================================ */
 
-  function renderStep(
-    shouldScroll = true
-  ) {
-
+  function renderStep(shouldScroll = true) {
     if (!steps.length) return;
 
-    index =
-      Math.max(
-        0,
-        Math.min(
-          index,
-          steps.length - 1
-        )
-      );
+    index = Math.max(0, Math.min(index, steps.length - 1));
 
-    const current =
-      steps[index];
+    const current = steps[index];
+    const words = labels();
+    const target = getTarget(current.target);
 
-    const words =
-      labels();
+    inTour("#mbTourTitle").textContent = translate(current.title);
+    inTour("#mbTourText").textContent = translate(current.description);
 
-    const target =
-      getTarget(
-        current.target
-      );
-
-    inTour(
-      "#mbTourTitle"
-    ).textContent =
-      translate(
-        current.title
-      );
-
-    inTour(
-      "#mbTourText"
-    ).textContent =
-      translate(
-        current.description
-      );
-
-    inTour(
-      "#mbTourCount"
-    ).textContent =
+    inTour("#mbTourCount").textContent =
       `${words.step} ${index + 1} / ${steps.length}`;
 
-    inTour(
-      "#mbTourProgress"
-    ).style.width =
+    inTour("#mbTourProgress").style.width =
       `${((index + 1) / steps.length) * 100}%`;
 
-    inTour(
-      "#mbTourSkip"
-    ).textContent =
-      words.skip;
+    inTour("#mbTourSkip").textContent = words.skip;
+    inTour("#mbTourBack").textContent = words.back;
+    inTour("#mbTourBack").disabled = index === 0;
 
-    inTour(
-      "#mbTourBack"
-    ).textContent =
-      words.back;
+    inTour("#mbTourNext").textContent =
+      index === steps.length - 1 ? words.finish : words.next;
 
-    inTour(
-      "#mbTourBack"
-    ).disabled =
-      index === 0;
+    inTour("#mbTourSpeaking").textContent = words.speaking;
 
-    inTour(
-      "#mbTourNext"
-    ).textContent =
-      index === steps.length - 1
-        ? words.finish
-        : words.next;
-
-    inTour(
-      "#mbTourSpeaking"
-    ).textContent =
-      words.speaking;
-
-    /*
-     * Farmer talks/nods every time
-     * the guide changes topic.
-     */
-    farmerMood(
-      index % 2 === 0
-        ? "talking"
-        : "nod"
-    );
-
-    if (
-      shouldScroll &&
-      target
-    ) {
-
-      const reduced =
-        window.matchMedia(
-          "(prefers-reduced-motion: reduce)"
-        ).matches;
-
+    if (shouldScroll && target) {
       target.scrollIntoView({
-        behavior:
-          reduced
-            ? "auto"
-            : "smooth",
-
+        behavior: reducedMotion() ? "auto" : "smooth",
         block: "center",
-
         inline: "nearest"
       });
     }
 
-    window.setTimeout(
-      () => {
+    setFarmerMood(index === steps.length - 1 ? "celebrate" : "talk");
 
-        if (tourOpen) {
+    if (repositionTimer) {
+      window.clearTimeout(repositionTimer);
+    }
 
-          positionSpotlight(
-            getTarget(
-              steps[index]?.target
-            )
-          );
-        }
-
-      },
-      shouldScroll && target
-        ? 350
-        : 0
-    );
+    repositionTimer = window.setTimeout(() => {
+      if (tourOpen) {
+        positionSpotlight(getTarget(steps[index]?.target));
+      }
+    }, shouldScroll && target ? 350 : 0);
   }
 
-  /* ==========================================================
-     STORAGE
-     ========================================================== */
+  /* ============================================================
+     15. TOUR COMPLETION STORAGE
+     ============================================================ */
 
   function completed() {
-
     try {
-
       return (
-        localStorage.getItem(
-          `${STORAGE_KEY}:${PAGE}`
-        ) === "1"
+        localStorage.getItem(`${STORAGE_KEY}:${PAGE}`) === "1" ||
+        localStorage.getItem(`${PREVIOUS_STORAGE_KEY}:${PAGE}`) === "1"
       );
-
-    } catch {
-
+    } catch (error) {
       return false;
     }
   }
 
   function markCompleted() {
-
     try {
-
-      localStorage.setItem(
-        `${STORAGE_KEY}:${PAGE}`,
-        "1"
-      );
-
-    } catch {}
+      localStorage.setItem(`${STORAGE_KEY}:${PAGE}`, "1");
+    } catch (error) {
+      // The tour remains usable when storage is unavailable.
+    }
   }
 
-  /* ==========================================================
-     CLOSE TOUR
-     ========================================================== */
+  /* ============================================================
+     16. OPEN TOUR
+     ============================================================ */
 
-  function closeTour({
-    skipped = false,
-    celebrated = false
-  } = {}) {
+  function openTour() {
+    if (tourOpen) return;
 
-    layer.hidden =
-      true;
+    lastFocused = document.activeElement;
+    steps = getSteps();
+    index = 0;
+    tourOpen = true;
 
-    launcher.hidden =
-      false;
+    layer.hidden = false;
+    launcher.hidden = true;
 
-    tourOpen =
-      false;
+    renderStep(true);
+    startFarmerEmotes();
+
+    window.addEventListener("resize", scheduleReposition);
+    window.addEventListener("scroll", scheduleReposition, true);
+
+    inTour(".mb-tour-card").focus({ preventScroll: true });
+  }
+
+  /* ============================================================
+     17. CLOSE TOUR
+     ============================================================ */
+
+  function closeTour() {
+    if (!tourOpen) return;
+
+    const wasFinished = index === steps.length - 1;
+
+    layer.hidden = true;
+    launcher.hidden = false;
+    tourOpen = false;
 
     markCompleted();
 
-    stopRandomEmotes();
+    window.removeEventListener("resize", scheduleReposition);
+    window.removeEventListener("scroll", scheduleReposition, true);
 
-    window.removeEventListener(
-      "resize",
-      scheduleReposition
-    );
-
-    window.removeEventListener(
-      "scroll",
-      scheduleReposition,
-      true
-    );
-
-    /*
-     * FINISH
-     */
-    if (celebrated) {
-
-      farmerMood(
-        "celebrate"
-      );
-
-      window.setTimeout(
-        () => {
-
-          farmerAvatars()
-            .forEach(avatar => {
-
-              const old =
-                $(".mb-farmer-emote", avatar);
-
-              if (old) old.remove();
-
-              const bubble =
-                document.createElement(
-                  "span"
-                );
-
-              bubble.className =
-                "mb-farmer-emote";
-
-              bubble.textContent =
-                "🎉";
-
-              avatar.appendChild(
-                bubble
-              );
-
-              window.setTimeout(
-                () => bubble.remove(),
-                900
-              );
-
-            });
-
-        },
-        250
-      );
+    if (animationFrame) {
+      window.cancelAnimationFrame(animationFrame);
+      animationFrame = 0;
     }
 
-    /*
-     * SKIP
-     */
-    if (skipped) {
-
-      farmerMood(
-        "sad"
-      );
-
-      farmerAvatars()
-        .forEach(avatar => {
-
-          const bubble =
-            document.createElement(
-              "span"
-            );
-
-          bubble.className =
-            "mb-farmer-emote";
-
-          bubble.textContent =
-            "🥺";
-
-          avatar.appendChild(
-            bubble
-          );
-
-          window.setTimeout(
-            () => bubble.remove(),
-            850
-          );
-
-        });
+    if (repositionTimer) {
+      window.clearTimeout(repositionTimer);
+      repositionTimer = null;
     }
 
-    if (
-      lastFocused &&
-      typeof lastFocused.focus ===
-        "function"
-    ) {
+    if (wasFinished) {
+      setFarmerMood("celebrate");
+    } else {
+      setFarmerMood("");
+    }
 
+    if (lastFocused && typeof lastFocused.focus === "function") {
       try {
-
-        lastFocused.focus({
-          preventScroll: true
-        });
-
-      } catch {}
+        lastFocused.focus({ preventScroll: true });
+      } catch (error) {
+        // Ignore focus restoration failures.
+      }
     }
   }
 
-  /* ==========================================================
-     OPEN TOUR
-     ========================================================== */
+  /* ============================================================
+     18. BUTTON EVENTS
+     ============================================================ */
 
-  function openTour() {
+  launcher.addEventListener("click", openTour);
 
-    lastFocused =
-      document.activeElement;
+  inTour("#mbTourClose").addEventListener("click", closeTour);
+  inTour("#mbTourSkip").addEventListener("click", closeTour);
 
-    steps =
-      getSteps();
-
-    index = 0;
-
-    tourOpen =
-      true;
-
-    layer.hidden =
-      false;
-
-    launcher.hidden =
-      true;
-
-    setupAvatars();
-
-    farmerMood(
-      "happy"
-    );
-
-    renderStep(
-      true
-    );
-
-    window.addEventListener(
-      "resize",
-      scheduleReposition
-    );
-
-    window.addEventListener(
-      "scroll",
-      scheduleReposition,
-      true
-    );
-
-    startRandomEmotes();
-
-    window.setTimeout(
-      () => {
-
-        inTour(
-          "#mbTourNext"
-        )?.focus({
-          preventScroll: true
-        });
-
-      },
-      50
-    );
-  }
-
-  /* ==========================================================
-     BUTTON EVENTS
-     ========================================================== */
-
-  launcher.addEventListener(
-    "click",
-    openTour
-  );
-
-  inTour(
-    "#mbTourClose"
-  ).addEventListener(
-    "click",
-    () => {
-
-      closeTour({
-        skipped: true
-      });
-
+  inTour("#mbTourBack").addEventListener("click", () => {
+    if (index > 0) {
+      index -= 1;
+      renderStep(true);
     }
-  );
+  });
 
-  inTour(
-    "#mbTourSkip"
-  ).addEventListener(
-    "click",
-    () => {
-
-      closeTour({
-        skipped: true
-      });
-
+  inTour("#mbTourNext").addEventListener("click", () => {
+    if (index < steps.length - 1) {
+      index += 1;
+      renderStep(true);
+    } else {
+      closeTour();
     }
-  );
+  });
 
-  inTour(
-    "#mbTourBack"
-  ).addEventListener(
-    "click",
-    () => {
+  /* Clicking the shade does not accidentally skip the tutorial. */
 
-      if (index > 0) {
+  /* ============================================================
+     19. KEYBOARD SUPPORT
+     ============================================================ */
 
-        index -= 1;
+  document.addEventListener("keydown", event => {
+    if (!tourOpen) return;
 
-        farmerMood(
-          "nod"
-        );
-
-        renderStep(
-          true
-        );
-      }
-    }
-  );
-
-  inTour(
-    "#mbTourNext"
-  ).addEventListener(
-    "click",
-    () => {
-
-      if (
-        index <
-        steps.length - 1
-      ) {
-
-        index += 1;
-
-        farmerMood(
-          index % 2 === 0
-            ? "talking"
-            : "nod"
-        );
-
-        renderStep(
-          true
-        );
-
-      } else {
-
-        /*
-         * FINAL STEP:
-         * Farmer celebrates instead
-         * of simply disappearing.
-         */
-
-        closeTour({
-          celebrated: true
-        });
-      }
-    }
-  );
-
-  /* ==========================================================
-     KEYBOARD
-     ========================================================== */
-
-  document.addEventListener(
-    "keydown",
-    event => {
-
-      if (!tourOpen) return;
-
-      if (
-        event.key === "Escape"
-      ) {
-
-        event.preventDefault();
-
-        closeTour({
-          skipped: true
-        });
-
-      } else if (
-        event.key === "ArrowRight" &&
-        index <
-          steps.length - 1
-      ) {
-
-        index += 1;
-
-        farmerMood(
-          "talking"
-        );
-
-        renderStep(
-          true
-        );
-
-      } else if (
-        event.key === "ArrowLeft" &&
-        index > 0
-      ) {
-
-        index -= 1;
-
-        farmerMood(
-          "nod"
-        );
-
-        renderStep(
-          true
-        );
-      }
-    }
-  );
-
-  /* ==========================================================
-     LANGUAGE SWITCH
-     ========================================================== */
-
-  $("#languageSelect")?.addEventListener(
-    "change",
-    () => {
-
-      setupAvatars();
-
-      if (tourOpen) {
-
-        renderStep(
-          false
-        );
-      }
-    }
-  );
-
-  /* ==========================================================
-     FIRST VISIT
-     ========================================================== */
-
-  function startIfNewVisitor() {
-
-    if (completed()) {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      closeTour();
       return;
     }
 
-    window.setTimeout(
-      () => {
+    if (event.key === "ArrowRight" && index < steps.length - 1) {
+      event.preventDefault();
+      index += 1;
+      renderStep(true);
+      return;
+    }
 
-        if (!tourOpen) {
-          openTour();
-        }
+    if (event.key === "ArrowLeft" && index > 0) {
+      event.preventDefault();
+      index -= 1;
+      renderStep(true);
+    }
+  });
 
-      },
-      850
-    );
-  }
+  /* ============================================================
+     20. LANGUAGE CHANGE SUPPORT
+     ============================================================ */
 
-  if (
-    document.readyState ===
-    "loading"
-  ) {
+  $("#languageSelect")?.addEventListener("change", () => {
+    setupAvatars();
 
-    document.addEventListener(
-      "DOMContentLoaded",
-      startIfNewVisitor,
-      { once: true }
-    );
+    const status = $(".mb-smart-farmer-status");
 
-  } else {
+    if (status) {
+      const lang = getLanguage();
 
-    startIfNewVisitor();
-  }
+      status.textContent =
+        lang === "sw"
+          ? "MSAIDIZI WA KILIMO"
+          : lang === "en"
+            ? "FARM ASSISTANT"
+            : "FARM BUDDY · READY";
+    }
 
-  /* ==========================================================
-     SETUP AVATARS
-     ========================================================== */
+    if (tourOpen) {
+      renderStep(false);
+    }
+  });
 
-  setupAvatars();
+  /* ============================================================
+     21. AUTOMATIC FIRST-VISIT TOUR
+     ============================================================ */
 
-  /* ==========================================================
-     WATCH FOR DYNAMIC GUIDE
-     ========================================================== */
+  function startIfNewVisitor() {
+    if (completed()) return;
 
-  const observer =
-    new MutationObserver(
-      () => {
-
-        addGuideAvatar();
-        addSmartAssistAvatar();
-
+    window.setTimeout(() => {
+      if (!tourOpen && !document.hidden) {
+        openTour();
       }
-    );
+    }, 900);
+  }
 
-  observer.observe(
-    document.body,
-    {
+  /* ============================================================
+     22. HANDLE EXISTING GUIDE CONTENT LOADED LATER
+     ============================================================ */
+
+  let guideObserver = null;
+  let guideObserverTimer = null;
+
+  function observeGuide() {
+    setupAvatars();
+
+    if (guideObserver) return;
+
+    guideObserver = new MutationObserver(() => {
+      addGuideAvatar();
+    });
+
+    guideObserver.observe(document.body, {
       childList: true,
       subtree: true
-    }
-  );
+    });
 
-  window.setTimeout(
-    () => {
+    guideObserverTimer = window.setTimeout(() => {
+      if (guideObserver) {
+        guideObserver.disconnect();
+        guideObserver = null;
+      }
+    }, 8000);
+  }
 
-      observer.disconnect();
+  /* ============================================================
+     23. START EVERYTHING
+     ============================================================ */
 
-      setupAvatars();
+  function initialize() {
+    setupAvatars();
+    observeGuide();
+    startFarmerEmotes();
+    startIfNewVisitor();
 
-    },
-    7000
-  );
+    console.info("MavunoBridge tour and farmer assistant are ready.");
+  }
 
-  console.info(
-    "MavunoBridge animated farmer tour ready."
-  );
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initialize, {
+      once: true
+    });
+  } else {
+    initialize();
+  }
 
 })();
