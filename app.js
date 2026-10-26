@@ -47,8 +47,8 @@
     ["Livestock", "https://images.unsplash.com/photo-1516467508483-a7212febe31a?auto=format&fit=crop&w=600&q=80"],
     ["Livestock Produce", "https://images.unsplash.com/photo-1506976785307-8732e854ad03?auto=format&fit=crop&w=600&q=80"],
     ["Agricultural Inputs", "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=600&q=80"],
-    ["Farm Tools & Equipment", "https://images.unsplash.com/photo-1592982537447-6f2a6a0a3a5b?auto=format&fit=crop&w=600&q=80"],
-    ["Farmer Services", "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=600&q=80"]
+    ["Farm Tools & Equipment", "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTNjAixX4z-6m9SMY-FlStrqHLfbR5tC9NIv4En1VUhENAS5x_UQnF3hGSU&s=10"],
+    ["Farmer Services", "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSJaK2kaHO7bAqVCY81kIufzqrcvQ--l5XQUD8HX5bMcFD6Jk-_vYHPy17W&s=10"]
   ];
 
   const CATEGORY_NAMES = CATEGORIES.map(([name]) => name);
