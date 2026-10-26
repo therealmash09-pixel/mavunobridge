@@ -1,0 +1,57 @@
+/* =========================================================
+   MAVUNOBRIDGE — HOME.CSS
+   Small additions for index.html. Load after style.css.
+========================================================= */
+
+.header-actions {
+  flex-wrap: wrap;
+}
+
+#authLink {
+  min-height: 38px;
+  padding: 8px 13px;
+}
+
+.user-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 4px 3px 13px;
+  border: 1px solid #dce8d6;
+  border-radius: 999px;
+  background: var(--green-50);
+  color: var(--green-900);
+  font-size: 12px;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.user-chip .text-btn {
+  min-height: 0;
+  padding: 6px 10px;
+  border-radius: 999px;
+  color: var(--green-700);
+  font-size: 11px;
+}
+
+.user-chip .text-btn:hover {
+  background: white;
+}
+
+.empty-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+/* Three buttons on each listing card: two on top, "Contact seller" below. */
+@media (min-width: 701px) {
+  .card-actions .small {
+    flex: 1 1 calc(50% - 4px);
+  }
+
+  .card-actions .small.call-link {
+    flex-basis: 100%;
+  }
+}
