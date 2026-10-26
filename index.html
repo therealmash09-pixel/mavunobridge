@@ -1,18 +1,21 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#234d35">
-  <meta name="description" content="MavunoBridge connects Kenyan farmers and buyers through one agricultural marketplace.">
+  <meta name="description" content="MavunoBridge connects Kenyan farmers, buyers, livestock producers and agricultural service providers.">
 
   <title>MavunoBridge | Farm to Market</title>
 
-  <link rel="stylesheet" href="style.css?v=13">
-  <link rel="stylesheet" href="home.css?v=1">
+  <!-- Keep these filenames connected to your existing repository. -->
+  <link rel="stylesheet" href="style.css?v=14">
+  <link rel="stylesheet" href="home.css?v=2">
 
-  <script src="app.js?v=15" defer></script>
+  <script src="app.js?v=16" defer></script>
 </head>
+
 <body>
   <header class="topbar" id="top">
     <a href="#top" class="brand" aria-label="MavunoBridge home">
@@ -20,10 +23,16 @@
       <span>Mavuno<span class="brand-green">Bridge</span></span>
     </a>
 
-    <button id="menuButton" class="menu-button" type="button"
-      aria-label="Open navigation" aria-expanded="false">☰</button>
+    <button
+      id="menuButton"
+      class="menu-button"
+      type="button"
+      aria-label="Open navigation"
+      aria-expanded="false"
+      aria-controls="mainNav"
+    >☰</button>
 
-    <nav class="main-nav" id="mainNav">
+    <nav class="main-nav" id="mainNav" aria-label="Main navigation">
       <a href="#marketplace">Marketplace</a>
       <a href="smart-assist.html">Smart Assist</a>
       <a href="sacco.html">SACCO Hub</a>
@@ -33,6 +42,7 @@
 
     <div class="header-actions">
       <label class="language-label" for="languageSelect">Language</label>
+
       <select id="languageSelect" aria-label="Choose language">
         <option value="mix">Sheng + English</option>
         <option value="en">English</option>
@@ -43,46 +53,78 @@
 
       <div id="userChip" class="user-chip hidden">
         <span id="userGreeting"></span>
-        <button type="button" id="signOutButton" class="text-btn">Sign out</button>
+        <button type="button" id="signOutButton" class="text-btn">
+          Sign out
+        </button>
       </div>
 
-      <button type="button" id="cartButton" class="outline-btn">
+      <button
+        type="button"
+        id="cartButton"
+        class="outline-btn"
+        aria-haspopup="dialog"
+      >
         🛒 Cart <span id="cartCount">0</span>
       </button>
     </div>
   </header>
 
   <main>
+    <!-- HERO -->
     <section class="hero">
       <div class="hero-content">
         <span class="eyebrow">KENYA'S FARM-TO-MARKET DEMO</span>
 
-        <h1>Good harvests deserve <span>better markets.</span></h1>
+        <h1>
+          Good harvests deserve
+          <span>better markets.</span>
+        </h1>
 
         <p class="hero-description">
           Connect directly with farmers, compare produce, discover
-          opportunities and grow your biashara. Yote in one place.
+          agricultural services and grow your biashara. Yote in one place.
         </p>
 
         <div class="hero-buttons">
           <button type="button" id="heroSellButton" class="primary-btn">
             + Sell your produce
           </button>
-          <a href="#marketplace" class="outline-btn">Explore marketplace →</a>
+
+          <a href="#marketplace" class="outline-btn">
+            Explore marketplace →
+          </a>
         </div>
 
         <div class="hero-stats">
-          <div><strong>47</strong><span>Kenyan counties</span></div>
-          <div><strong>14+</strong><span>Farm categories</span></div>
-          <div><strong>Direct</strong><span>Buyer connections</span></div>
+          <div>
+            <strong>47</strong>
+            <span>Kenyan counties</span>
+          </div>
+
+          <div>
+            <strong>14+</strong>
+            <span>Farm categories</span>
+          </div>
+
+          <div>
+            <strong>Direct</strong>
+            <span>Buyer connections</span>
+          </div>
         </div>
 
-        <p class="demo-note">Science fair demonstration · Sample listings are labelled as demo data.</p>
+        <p class="demo-note">
+          Science fair demonstration · Sample listings are labelled as demo data.
+        </p>
       </div>
 
-      <div class="hero-image" role="img" aria-label="Fresh agricultural produce ready for market"></div>
+      <div
+        class="hero-image"
+        role="img"
+        aria-label="Fresh agricultural produce ready for market"
+      ></div>
     </section>
 
+    <!-- CATEGORIES -->
     <section class="category-section section-wrap" id="categories">
       <div class="section-heading">
         <div>
@@ -96,17 +138,21 @@
         </button>
       </div>
 
+      <!-- app.js fills this container with clickable category cards. -->
       <div id="categoryGrid" class="category-grid">
         <p>Loading categories...</p>
       </div>
     </section>
 
+    <!-- MARKETPLACE -->
     <section class="marketplace section-wrap" id="marketplace">
       <div class="section-heading">
         <div>
           <span class="eyebrow">FRESH FROM THE FARM</span>
           <h2>Marketplace</h2>
-          <p id="marketHint">Discover products and services from Kenyan sellers.</p>
+          <p id="marketHint">
+            Discover products and services from Kenyan sellers.
+          </p>
         </div>
 
         <button type="button" id="sellButton" class="primary-btn">
@@ -114,12 +160,16 @@
         </button>
       </div>
 
+      <!-- SEARCH AND FILTERS -->
       <div class="filters">
         <label class="search-box">
           <span aria-hidden="true">⌕</span>
-          <input type="search" id="searchInput"
-            placeholder="Search maize, beans, avocados..."
-            aria-label="Search marketplace">
+          <input
+            type="search"
+            id="searchInput"
+            placeholder="Search maize, beans, livestock produce..."
+            aria-label="Search marketplace"
+          >
         </label>
 
         <select id="categoryFilter" aria-label="Filter by category">
@@ -152,15 +202,23 @@
           <option value="price-high">Price: high to low</option>
         </select>
 
-        <button type="button" id="clearFiltersButton" class="outline-btn">
+        <button
+          type="button"
+          id="clearFiltersButton"
+          class="outline-btn"
+        >
           Clear filters
         </button>
       </div>
 
+      <!-- ILLUSTRATIVE PRICE GUIDE -->
       <aside class="fair-guide">
         <div>
           <strong>🌱 Fair-price guide</strong>
-          <p>Compare prices before buying. These are illustrative demo ranges, not live market quotations.</p>
+          <p>
+            Compare prices before buying. These are illustrative demo
+            ranges, not live market quotations.
+          </p>
         </div>
 
         <div class="fair-guide-prices">
@@ -170,101 +228,172 @@
         </div>
       </aside>
 
+      <!-- RESULTS -->
       <div class="result-row">
-        <span id="resultCount" aria-live="polite">Loading listings...</span>
+        <span id="resultCount" aria-live="polite">
+          Loading listings...
+        </span>
+
         <span id="activeCategory"></span>
       </div>
 
-      <div id="listingGrid" class="listing-grid" aria-live="polite">
+      <div
+        id="listingGrid"
+        class="listing-grid"
+        aria-live="polite"
+      >
         <p>Loading marketplace listings...</p>
       </div>
 
+      <!-- EMPTY SEARCH RESULTS -->
       <div id="emptyState" class="empty-state hidden">
         <div class="empty-icon">🌾</div>
+
         <h3>No listings found</h3>
-        <p>Try another search or filter, ama create a new listing.</p>
+
+        <p>
+          Try another search or filter, ama create a new listing.
+        </p>
 
         <div class="empty-actions">
-          <button type="button" id="emptySellButton" class="primary-btn">
+          <button
+            type="button"
+            id="emptySellButton"
+            class="primary-btn"
+          >
             Create a listing
           </button>
-          <button type="button" id="emptyRequestButton" class="outline-btn">
+
+          <button
+            type="button"
+            id="emptyRequestButton"
+            class="outline-btn"
+          >
             Post a buyer request
           </button>
         </div>
       </div>
     </section>
 
+    <!-- FEATURED SERVICES -->
     <section class="feature-strip section-wrap">
       <article>
         <span class="feature-icon">🌦️</span>
         <h3>Smart Assist</h3>
-        <p>Explore crop-planning and pest information for your farm.</p>
+        <p>
+          Explore crop-planning, weather information and pest guidance.
+        </p>
         <a href="smart-assist.html">Explore Smart Assist →</a>
       </article>
 
       <article>
         <span class="feature-icon">🤝</span>
         <h3>SACCO Hub</h3>
-        <p>Discover sample savings groups and farming opportunities.</p>
+        <p>
+          Discover sample savings groups and agricultural opportunities.
+        </p>
         <a href="sacco.html">Explore SACCO Hub →</a>
       </article>
 
       <article>
         <span class="feature-icon">📦</span>
         <h3>Buyer requests</h3>
-        <p>Buyers post what they need and farmers respond. A simple way to coordinate bigger orders.</p>
+        <p>
+          Buyers post what they need and farmers respond to potential orders.
+        </p>
         <a href="buyer-requests.html">Open the request board →</a>
       </article>
     </section>
   </main>
 
-  <!-- CREATE LISTING -->
-  <div id="listingModal" class="modal hidden" role="dialog"
-    aria-modal="true" aria-labelledby="listingModalTitle">
+  <!-- CREATE LISTING MODAL -->
+  <div
+    id="listingModal"
+    class="modal hidden"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="listingModalTitle"
+  >
     <div class="modal-card">
-      <button type="button" class="modal-close" data-close="listingModal"
-        aria-label="Close listing form">×</button>
+      <button
+        type="button"
+        class="modal-close"
+        data-close="listingModal"
+        aria-label="Close listing form"
+      >×</button>
 
       <span class="eyebrow">JOIN THE MARKETPLACE</span>
+
       <h2 id="listingModalTitle">Create a listing</h2>
+
       <p>Jaza details zako. Fields marked * are required.</p>
 
       <form id="listingForm">
         <div class="form-grid">
-          <label>Product or service name *
-            <input id="productName" name="productName" type="text"
-              maxlength="80" placeholder="e.g. Rosecoco Beans" required>
+          <label>
+            Product or service name *
+            <input
+              id="productName"
+              name="productName"
+              type="text"
+              maxlength="80"
+              placeholder="e.g. Rosecoco Beans"
+              required
+            >
           </label>
 
-          <label>Category *
+          <label>
+            Category *
             <select id="productCategory" name="productCategory" required>
               <option value="">Choose a category</option>
             </select>
           </label>
 
-          <label>County *
+          <label>
+            County *
             <select id="productCounty" name="productCounty" required>
               <option value="">Choose a county</option>
             </select>
           </label>
 
-          <label>Town or area
-            <input id="productTown" name="productTown" type="text"
-              maxlength="80" placeholder="e.g. Limuru">
+          <label>
+            Town or area
+            <input
+              id="productTown"
+              name="productTown"
+              type="text"
+              maxlength="80"
+              placeholder="e.g. Limuru"
+            >
           </label>
 
-          <label>Quantity available *
-            <input id="productQuantity" name="productQuantity" type="text"
-              maxlength="60" placeholder="e.g. 50 kg" required>
+          <label>
+            Quantity available *
+            <input
+              id="productQuantity"
+              name="productQuantity"
+              type="text"
+              maxlength="60"
+              placeholder="e.g. 50 kg"
+              required
+            >
           </label>
 
-          <label>Price in KSh *
-            <input id="productPrice" name="productPrice" type="number"
-              min="0.01" step="0.01" placeholder="e.g. 80" required>
+          <label>
+            Price in KSh *
+            <input
+              id="productPrice"
+              name="productPrice"
+              type="number"
+              min="0.01"
+              step="0.01"
+              placeholder="e.g. 80"
+              required
+            >
           </label>
 
-          <label>Price unit *
+          <label>
+            Price unit *
             <select id="productPriceUnit" name="productPriceUnit" required>
               <option value="kg">Per kg</option>
               <option value="piece">Per piece</option>
@@ -278,7 +407,8 @@
             </select>
           </label>
 
-          <label>Sale type *
+          <label>
+            Sale type *
             <select id="productSaleType" name="productSaleType" required>
               <option value="Retail">Retail</option>
               <option value="Bulk">Bulk</option>
@@ -286,19 +416,36 @@
             </select>
           </label>
 
-          <label>Your name or farm name *
-            <input id="sellerName" name="sellerName" type="text"
-              maxlength="80" placeholder="Your farm or business name" required>
+          <label>
+            Your name or farm name *
+            <input
+              id="sellerName"
+              name="sellerName"
+              type="text"
+              maxlength="80"
+              placeholder="Your farm or business name"
+              required
+            >
           </label>
 
-          <label>Phone number *
-            <input id="sellerPhone" name="sellerPhone" type="tel"
-              maxlength="20" placeholder="0712345678" required>
+          <label>
+            Phone number *
+            <input
+              id="sellerPhone"
+              name="sellerPhone"
+              type="tel"
+              maxlength="20"
+              placeholder="0712345678"
+              required
+            >
           </label>
 
-          <label>Condition
+          <label>
+            Condition
             <select id="productCondition" name="productCondition">
-              <option value="Fresh / good condition">Fresh / good condition</option>
+              <option value="Fresh / good condition">
+                Fresh / good condition
+              </option>
               <option value="Dry">Dry</option>
               <option value="Processed">Processed</option>
               <option value="Used">Used</option>
@@ -306,31 +453,61 @@
             </select>
           </label>
 
-          <label>Harvest date (optional)
-            <input id="productHarvestDate" name="productHarvestDate" type="date">
+          <label>
+            Harvest date (optional)
+            <input
+              id="productHarvestDate"
+              name="productHarvestDate"
+              type="date"
+            >
           </label>
 
-          <label class="wide">Product photo (optional)
-            <input id="productImage" name="productImage" type="file"
-              accept="image/jpeg,image/png,image/webp">
-            <small>Choose a clear product photo. The demo saves a resized image in this browser.</small>
+          <label class="wide">
+            Product photo (optional)
+            <input
+              id="productImage"
+              name="productImage"
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+            >
+            <small>
+              Choose a clear product photo. This browser-based demo
+              may resize the image before saving it.
+            </small>
           </label>
 
-          <label class="wide">Description
-            <textarea id="productDescription" name="productDescription"
-              rows="4" maxlength="500"
-              placeholder="Describe your produce, packaging, delivery or harvest."></textarea>
+          <label class="wide">
+            Description
+            <textarea
+              id="productDescription"
+              name="productDescription"
+              rows="4"
+              maxlength="500"
+              placeholder="Describe your produce, packaging, delivery or harvest."
+            ></textarea>
           </label>
         </div>
 
-        <p id="listingError" class="form-error hidden" role="alert"></p>
+        <p
+          id="listingError"
+          class="form-error hidden"
+          role="alert"
+        ></p>
 
         <div class="modal-actions">
-          <button type="button" class="outline-btn" data-close="listingModal">
+          <button
+            type="button"
+            class="outline-btn"
+            data-close="listingModal"
+          >
             Cancel
           </button>
 
-          <button type="submit" id="publishListingButton" class="primary-btn">
+          <button
+            type="submit"
+            id="publishListingButton"
+            class="primary-btn"
+          >
             Publish listing
           </button>
         </div>
@@ -338,14 +515,24 @@
     </div>
   </div>
 
-  <!-- CART -->
-  <div id="cartModal" class="modal hidden" role="dialog"
-    aria-modal="true" aria-labelledby="cartTitle">
+  <!-- SHOPPING CART MODAL -->
+  <div
+    id="cartModal"
+    class="modal hidden"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="cartTitle"
+  >
     <div class="modal-card">
-      <button type="button" class="modal-close" data-close="cartModal"
-        aria-label="Close cart">×</button>
+      <button
+        type="button"
+        class="modal-close"
+        data-close="cartModal"
+        aria-label="Close cart"
+      >×</button>
 
       <span class="eyebrow">YOUR SELECTIONS</span>
+
       <h2 id="cartTitle">Shopping cart</h2>
 
       <div id="cartItems">
@@ -353,16 +540,38 @@
       </div>
 
       <div class="modal-actions">
-        <button type="button" class="outline-btn" data-close="cartModal">Continue shopping</button>
-        <button type="button" id="clearCartButton" class="outline-btn">Clear cart</button>
+        <button
+          type="button"
+          class="outline-btn"
+          data-close="cartModal"
+        >
+          Continue shopping
+        </button>
+
+        <button
+          type="button"
+          id="clearCartButton"
+          class="outline-btn"
+        >
+          Clear cart
+        </button>
       </div>
 
-      <p class="demo-note">Demo cart only. No real payment is collected.</p>
+      <p class="demo-note">
+        Demo cart only. No real payment is collected.
+      </p>
     </div>
   </div>
 
-  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <!-- USER FEEDBACK -->
+  <div
+    id="toast"
+    class="toast"
+    role="status"
+    aria-live="polite"
+  ></div>
 
+  <!-- FOOTER -->
   <footer class="site-footer">
     <div class="footer-brand">
       <a href="#top" class="brand">
@@ -383,11 +592,13 @@
     </div>
 
     <p class="footer-disclaimer">
-      MavunoBridge is a demonstration project. Sample sellers, prices and listings
-      are illustrative and are not verified live offers.
+      MavunoBridge is a demonstration project. Sample sellers, prices
+      and listings are illustrative and are not verified live offers.
     </p>
 
-    <p>© <span id="currentYear">2026</span> MavunoBridge · Made for Kenyan agriculture.</p>
+    <p>
+      © <span id="currentYear">2026</span> MavunoBridge · Made for Kenyan agriculture.
+    </p>
   </footer>
 </body>
 </html>
