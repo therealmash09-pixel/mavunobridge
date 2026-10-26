@@ -9,8 +9,13 @@
   const STORAGE = {
     listings: "mavunobridge_listings_v6",
     cart: "mavunobridge_cart_v6",
-    language: "mavunobridge_language_v2"
+    language: "mavunobridge_language_v2",
+    user: "mavunobridge_demo_user_v1",
+    pendingChat: "mavunobridge_pending_chat_v1"
   };
+
+  // Read by buyer-guide.js to pre-fill the buyer request form.
+  const PREFILL_KEY = "mavunobridge_prefill_demand";
 
   const $ = (selector) => document.querySelector(selector);
   const $$ = (selector) => [...document.querySelectorAll(selector)];
@@ -241,6 +246,7 @@
   const D = {
     mix: {
       addCart: "Add to cart",
+      chatSeller: "Chat seller",
       contact: "Contact seller",
       demoBadge: "DEMO LISTING",
       saleRetail: "Retail",
@@ -258,6 +264,10 @@
       hintAll: "Discover products and services from Kenyan sellers.",
       hintCat: c => `Showing ${c}. Chagua product unayohitaji.`,
       noContact: "No contact number was provided for this listing.",
+      chatDraft: n => `${n} bado iko? Bei ya mwisho ni ngapi?`,
+      chatFailed: "Imeshindwa kufungua chat. Hakikisha browser inaruhusu local storage.",
+      greeting: n => `Sasa, ${n}`,
+      signedOut: "Umetoka kwa account.",
       cartEmpty: "Your cart is empty. Browse the marketplace to add items.",
       remove: "Remove",
       subtotal: v => `Demo subtotal: ${v}`,
@@ -282,6 +292,7 @@
     },
     en: {
       addCart: "Add to cart",
+      chatSeller: "Chat seller",
       contact: "Contact seller",
       demoBadge: "DEMO LISTING",
       saleRetail: "Retail",
@@ -299,6 +310,10 @@
       hintAll: "Discover products and services from Kenyan sellers.",
       hintCat: c => `Showing ${c}. Pick the product you need.`,
       noContact: "No contact number was provided for this listing.",
+      chatDraft: n => `Is the ${n} still available? What is your best price?`,
+      chatFailed: "Could not open the chat. Check that your browser allows local storage.",
+      greeting: n => `Hi, ${n}`,
+      signedOut: "You have signed out.",
       cartEmpty: "Your cart is empty. Browse the marketplace to add items.",
       remove: "Remove",
       subtotal: v => `Demo subtotal: ${v}`,
@@ -323,6 +338,7 @@
     },
     sw: {
       addCart: "Weka kikapuni",
+      chatSeller: "Ongea na muuzaji",
       contact: "Wasiliana na muuzaji",
       demoBadge: "TANGAZO LA MFANO",
       saleRetail: "Rejareja",
@@ -340,6 +356,10 @@
       hintAll: "Gundua bidhaa na huduma kutoka kwa wauzaji wa Kenya.",
       hintCat: c => `Inaonyesha ${c}. Chagua bidhaa unayohitaji.`,
       noContact: "Hakuna namba ya mawasiliano iliyotolewa kwa tangazo hili.",
+      chatDraft: n => `Je, ${n} bado ipo? Bei yako ya mwisho ni ngapi?`,
+      chatFailed: "Imeshindwa kufungua mazungumzo. Hakikisha kivinjari chako kinaruhusu hifadhi ya ndani.",
+      greeting: n => `Habari, ${n}`,
+      signedOut: "Umetoka kwenye akaunti.",
       cartEmpty: "Kikapu chako ni tupu. Tazama soko ili uongeze bidhaa.",
       remove: "Ondoa",
       subtotal: v => `Jumla ndogo ya majaribio: ${v}`,
@@ -462,6 +482,39 @@
   function saveUserListings() {
     const userListings = listings.filter(item => item.demo !== true);
     return saveStorage(STORAGE.listings, userListings);
+  }
+
+  /* SIGNED-IN USER (set by login.js) */
+
+  function getUser() {
+    const saved = loadStorage(STORAGE.user, null);
+    return saved && typeof saved === "object" && saved.name ? saved : null;
+  }
+
+  function renderUser() {
+    const user = getUser();
+    const link = $("#authLink");
+    const chip = $("#userChip");
+    const greeting = $("#userGreeting");
+
+    if (link) link.classList.toggle("hidden", Boolean(user));
+    if (chip) chip.classList.toggle("hidden", !user);
+
+    if (user && greeting) {
+      const firstName = String(user.name).trim().split(/\s+/)[0].slice(0, 18);
+      greeting.textContent = t("greeting", firstName);
+    }
+  }
+
+  function signOut() {
+    try {
+      localStorage.removeItem(STORAGE.user);
+    } catch (error) {
+      console.warn("Could not clear the demo session:", error);
+    }
+
+    renderUser();
+    showToast(t("signedOut"));
   }
 
   /* SELECTS AND CATEGORIES */
@@ -747,9 +800,15 @@
       addButton.dataset.addCart = item.id;
       addButton.textContent = t("addCart");
 
+      const chatButton = document.createElement("button");
+      chatButton.type = "button";
+      chatButton.className = "small";
+      chatButton.dataset.chat = item.id;
+      chatButton.textContent = t("chatSeller");
+
       const phone = normalizePhone(item.phone);
       const callLink = document.createElement("a");
-      callLink.className = "small";
+      callLink.className = "small call-link";
       callLink.textContent = t("contact");
 
       if (phone) {
@@ -762,7 +821,7 @@
         });
       }
 
-      actions.append(addButton, callLink);
+      actions.append(addButton, chatButton, callLink);
       body.append(category, title, location, price, fairBadge, fairDetail, quantity, actions);
       card.append(imageWrap, body);
       grid.appendChild(card);
@@ -810,6 +869,19 @@
     if (!$$(".modal:not(.hidden)").length) {
       document.body.classList.remove("modal-open");
     }
+  }
+
+  // Opens the "Create a listing" form, filling in the seller name
+  // from the signed-in demo user.
+  function openListingModal() {
+    const user = getUser();
+    const sellerName = $("#sellerName");
+
+    if (user && sellerName && !sellerName.value.trim()) {
+      sellerName.value = String(user.name).trim();
+    }
+
+    openModal("listingModal");
   }
 
   function showToast(message) {
@@ -907,7 +979,7 @@
     });
   }
 
-  /* CREATE AND SAVE LISTING — LISTING ISSUE FIX */
+  /* CREATE AND SAVE LISTING */
 
   async function handleListingSubmit(event) {
     event.preventDefault();
@@ -1058,6 +1130,51 @@
     }
   }
 
+  /* CHAT WITH A SELLER (opens messages.html about this product) */
+
+  function openChat(id) {
+    const item = listings.find(listing => listing.id === id);
+
+    if (!item) {
+      showToast(t("cartNotFound"));
+      return;
+    }
+
+    const payload = {
+      productId: item.id,
+      productName: item.name,
+      seller: item.seller,
+      county: item.county,
+      phone: item.phone || "",
+      price: Number(item.price) || 0,
+      quantity: item.qty || "",
+      saleType: item.sale || "Both",
+      message: t("chatDraft", item.name)
+    };
+
+    if (!saveStorage(STORAGE.pendingChat, payload)) {
+      showToast(t("chatFailed"));
+      return;
+    }
+
+    window.location.href = "messages.html";
+  }
+
+  /* BUYER REQUEST (when nothing matches the search) */
+
+  function requestProduct() {
+    const search = ($("#searchInput")?.value || "").trim();
+    const wanted = search || (activeCategory !== "All" ? activeCategory : "");
+
+    try {
+      if (wanted) sessionStorage.setItem(PREFILL_KEY, wanted);
+    } catch (error) {
+      console.warn("Could not pass the search to the request board:", error);
+    }
+
+    window.location.href = "buyer-requests.html";
+  }
+
   /* CART */
 
   function saveCart() {
@@ -1192,9 +1309,12 @@
   }
 
   function bindEvents() {
-    $("#sellButton")?.addEventListener("click", () => openModal("listingModal"));
-    $("#heroSellButton")?.addEventListener("click", () => openModal("listingModal"));
-    $("#emptySellButton")?.addEventListener("click", () => openModal("listingModal"));
+    $("#sellButton")?.addEventListener("click", openListingModal);
+    $("#heroSellButton")?.addEventListener("click", openListingModal);
+    $("#emptySellButton")?.addEventListener("click", openListingModal);
+    $("#emptyRequestButton")?.addEventListener("click", requestProduct);
+
+    $("#signOutButton")?.addEventListener("click", signOut);
 
     $("#listingForm")?.addEventListener("submit", handleListingSubmit);
 
@@ -1226,8 +1346,14 @@
     $("#clearFiltersButton")?.addEventListener("click", clearFilters);
 
     $("#listingGrid")?.addEventListener("click", event => {
-      const button = event.target.closest("[data-add-cart]");
-      if (button) addToCart(button.dataset.addCart);
+      const addButton = event.target.closest("[data-add-cart]");
+      if (addButton) {
+        addToCart(addButton.dataset.addCart);
+        return;
+      }
+
+      const chatButton = event.target.closest("[data-chat]");
+      if (chatButton) openChat(chatButton.dataset.chat);
     });
 
     $("#cartButton")?.addEventListener("click", () => {
@@ -1295,7 +1421,10 @@
     ['.main-nav a[href="#marketplace"]', "Marketplace", "Soko"],
     ['.main-nav a[href="smart-assist.html"]', "Smart Assist", "Msaidizi Mahiri"],
     ['.main-nav a[href="sacco.html"]', "SACCO Hub", "Kituo cha SACCO"],
+    ['.main-nav a[href="buyer-requests.html"]', "Buyer Requests", "Maombi ya Wanunuzi"],
     ['.main-nav a[href="messages.html"]', "Messages", "Ujumbe"],
+    ["#authLink", "Sign in", "Ingia"],
+    ["#signOutButton", "Sign out", "Toka"],
     ["#cartButton", "🛒 Cart ", "🛒 Kikapu "],
 
     // Hero
@@ -1359,6 +1488,7 @@
       "Try another search or filter, or create a new listing.",
       "Jaribu utafutaji au kichujio kingine, au tengeneza tangazo jipya."],
     ["#emptySellButton", "Create a listing", "Tengeneza tangazo"],
+    ["#emptyRequestButton", "Post a buyer request", "Weka ombi la mnunuzi"],
 
     // Feature strip
     [".feature-strip article:nth-child(1) h3", "Smart Assist", "Msaidizi Mahiri"],
@@ -1371,11 +1501,11 @@
       "Discover sample savings groups and farming opportunities.",
       "Gundua vikundi vya akiba vya mfano na fursa za kilimo."],
     [".feature-strip article:nth-child(2) a", "Explore SACCO Hub →", "Tazama Kituo cha SACCO →"],
-    [".feature-strip article:nth-child(3) h3", "Group buying", "Ununuzi wa pamoja"],
+    [".feature-strip article:nth-child(3) h3", "Buyer requests", "Maombi ya wanunuzi"],
     [".feature-strip article:nth-child(3) p",
-      "Explore ways buyers can coordinate larger produce orders.",
-      "Gundua njia ambazo wanunuzi wanaweza kuratibu oda kubwa za mazao."],
-    [".feature-strip article:nth-child(3) a", "Browse products →", "Tazama bidhaa →"],
+      null,
+      "Wanunuzi huweka wanachohitaji na wakulima hujibu. Njia rahisi ya kuratibu oda kubwa."],
+    [".feature-strip article:nth-child(3) a", "Open the request board →", "Fungua ubao wa maombi →"],
 
     // Create-listing modal
     ["#listingModal .eyebrow", "JOIN THE MARKETPLACE", "JIUNGE NA SOKO"],
@@ -1444,6 +1574,7 @@
     ['.footer-links a[href="#marketplace"]', "Marketplace", "Soko"],
     ['.footer-links a[href="smart-assist.html"]', "Smart Assist", "Msaidizi Mahiri"],
     ['.footer-links a[href="sacco.html"]', "SACCO Hub", "Kituo cha SACCO"],
+    ['.footer-links a[href="buyer-requests.html"]', "Buyer Requests", "Maombi ya Wanunuzi"],
     ['.footer-links a[href="messages.html"]', "Messages", "Ujumbe"],
     ['.footer-links a[href="login.html"]', "Demo account", "Akaunti ya majaribio"],
     [".footer-disclaimer",
@@ -1539,6 +1670,7 @@
     // Redraw the parts that the script builds itself.
     updateHint();
     renderListings();
+    renderUser();
 
     const cartModal = $("#cartModal");
     if (cartModal && !cartModal.classList.contains("hidden")) renderCart();
@@ -1577,6 +1709,7 @@
     safely("connect buttons", bindEvents);
     safely("draw categories", renderCategories);
     safely("draw listings", renderListings);
+    safely("show signed-in user", renderUser);
     safely("cart count", updateCartCount);
     safely("restore language", restoreLanguage);
 
