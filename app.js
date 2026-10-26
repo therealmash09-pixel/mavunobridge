@@ -368,7 +368,7 @@
       category: "Farmer Services", county: "Uasin Gishu", town: "Eldoret",
       price: 5000, unit: "service", qty: "Bookings by arrangement", sale: "Both",
       seller: "Eldoret Machinery Demo", phone: "0700667799",
-      image: "https://agrigoindia.com/assets/tractors.jpg",
+      image: "https://images.stockcake.com/public/2/4/5/245849e8-dc80-4a6f-9982-b48584318807_large/tractor-on-field-stockcake.jpg",
       description: "Sample tractor-hire service. Confirm hourly/acre rate, fuel, schedule and travel costs.", createdAt: 34
     },
     {
