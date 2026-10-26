@@ -1,0 +1,291 @@
+/* =========================================================
+   MAVUNOBRIDGE — AUTH.CSS
+   Sign-in page only. Load after style.css and pages.css.
+========================================================= */
+
+body.auth-page {
+  background: var(--cream);
+}
+
+.auth-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  min-height: calc(100vh - 71px);
+}
+
+/* ---------- left: picture panel ---------- */
+
+.auth-visual {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 64px clamp(28px, 6vw, 90px);
+  background:
+    linear-gradient(160deg, rgba(23, 53, 35, 0.9), rgba(44, 91, 59, 0.74)),
+    url("https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1400&q=80") center / cover,
+    var(--green-900);
+  color: white;
+}
+
+.auth-visual .eyebrow {
+  color: #a8d29d;
+}
+
+.auth-visual h1 {
+  max-width: 520px;
+  margin: 0;
+  color: white;
+  font-size: clamp(34px, 4.5vw, 56px);
+  font-weight: 850;
+  line-height: 1.08;
+  letter-spacing: -1.8px;
+}
+
+.auth-visual p:not(.eyebrow) {
+  max-width: 460px;
+  margin: 18px 0 0;
+  color: #d6e5d3;
+  font-size: 15px;
+  line-height: 1.75;
+}
+
+.auth-visual-bottom {
+  margin-top: 48px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  color: #b9d3b4;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.4px;
+}
+
+/* ---------- right: the sign-in card ---------- */
+
+.auth-panel {
+  display: grid;
+  place-items: center;
+  padding: 40px clamp(18px, 4vw, 56px);
+}
+
+.auth-card {
+  width: min(430px, 100%);
+  padding: 32px;
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  background: white;
+  box-shadow: var(--shadow);
+}
+
+/* The header already shows the logo, so skip the second one. */
+.auth-brand {
+  display: none;
+}
+
+.auth-card h2 {
+  margin: 0 0 4px;
+  color: var(--green-950);
+  font-size: 28px;
+  letter-spacing: -0.6px;
+}
+
+.auth-card > p.muted {
+  margin: 0 0 20px;
+  font-size: 13px;
+}
+
+.google-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 46px;
+  border: 1px solid #d5ddd2;
+  border-radius: 10px;
+  background: white;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 750;
+  transition: background 0.18s ease, border-color 0.18s ease;
+}
+
+.google-button:hover {
+  border-color: var(--green-600);
+  background: var(--green-50);
+}
+
+.google-letter {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border: 1px solid #e0e0e0;
+  border-radius: 50%;
+  background: white;
+  color: #4285f4;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.or-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 18px 0;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.or-divider::before,
+.or-divider::after {
+  height: 1px;
+  flex: 1;
+  background: var(--border);
+  content: "";
+}
+
+.auth-label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-bottom: 14px;
+  color: #344638;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.auth-label input,
+.auth-label select {
+  width: 100%;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid #dce5d9;
+  border-radius: 9px;
+  background: #fff;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 400;
+}
+
+.auth-label input:focus,
+.auth-label select:focus {
+  border-color: var(--green-600);
+  outline: 2px solid rgba(75, 135, 86, 0.13);
+}
+
+.auth-submit {
+  width: 100%;
+  margin-top: 6px;
+}
+
+.auth-notice {
+  margin: 16px 0;
+  padding: 11px 13px;
+  border: 1px solid #dce8d6;
+  border-radius: 10px;
+  background: var(--green-50);
+  color: var(--green-900);
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.auth-back {
+  display: block;
+  font-size: 12px;
+  font-weight: 750;
+  text-align: center;
+}
+
+.button-muted {
+  border-color: var(--border);
+  background: #f3f5f0;
+  color: #55635a;
+}
+
+.button-muted:hover {
+  background: #e9eee5;
+  color: #3f4d43;
+}
+
+/* ---------- the "Choose an account" pop-up ---------- */
+
+.modal-backdrop {
+  position: fixed;
+  z-index: 100;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  overflow-y: auto;
+  background: rgba(15, 35, 21, 0.65);
+  backdrop-filter: blur(5px);
+}
+
+/* style.css makes .modal a full-screen overlay; here it is just the card. */
+.modal-backdrop .modal.google-modal {
+  position: relative;
+  z-index: auto;
+  inset: auto;
+  display: block;
+  width: min(420px, 100%);
+  max-height: calc(100vh - 40px);
+  padding: 26px;
+  overflow-y: auto;
+  border: 1px solid #e0e7dd;
+  border-radius: 18px;
+  background: white;
+  backdrop-filter: none;
+  box-shadow: 0 25px 90px rgba(0, 0, 0, 0.2);
+}
+
+.google-modal-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.google-modal h2 {
+  margin: 0 0 4px;
+  color: var(--green-950);
+  font-size: 22px;
+}
+
+.google-modal > p.muted {
+  margin: 0 0 16px;
+  font-size: 12px;
+}
+
+/* ---------- phones ---------- */
+
+@media (max-width: 860px) {
+  .auth-layout {
+    grid-template-columns: 1fr;
+    min-height: 0;
+  }
+
+  .auth-visual {
+    padding: 34px 22px;
+  }
+
+  .auth-visual p:not(.eyebrow) {
+    font-size: 13px;
+  }
+
+  .auth-visual-bottom {
+    display: none;
+  }
+
+  .auth-panel {
+    padding: 24px 16px 40px;
+  }
+
+  .auth-card {
+    padding: 24px 20px;
+  }
+}
