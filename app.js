@@ -28,8 +28,6 @@
   const $ = selector => document.querySelector(selector);
   const $$ = selector => [...document.querySelectorAll(selector)];
 
-  // Category covers are decorative. Product cards never borrow an
-  // unrelated product photo; missing photos get a neutral fallback.
   const CATEGORIES = [
     ["Fruits", "https://images.unsplash.com/photo-1619566636858-adf3ef46400b?auto=format&fit=crop&w=600&q=80"],
     ["Vegetables", "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=600&q=80"],
@@ -66,12 +64,6 @@
     { name: "Hass Avocados", min: 90, max: 180, match: n => n.includes("hass avocado") },
     { name: "Maize", min: 45, max: 80, match: n => n.includes("maize") }
   ];
-
-  /* =========================================================
-     BUILT-IN DEMO LISTINGS
-     These load for every visitor, including QR-code visitors
-     who have never opened the site before.
-  ========================================================= */
 
   const DEMO_LISTINGS = [
     // FRUITS
@@ -122,16 +114,16 @@
       category: "Vegetables", county: "Kiambu", town: "Thika",
       price: 35, unit: "bunch", qty: "60 bunches", sale: "Retail",
       seller: "Thika Green Farm", phone: "0700112233",
-      image: "", description: "Fresh kale in bunches. Product photo has not been supplied for this demo item.",
-      createdAt: 6
+      image: "https://cdn.mafrservices.com/pim-content/KEN/media/product/1482/1776092400/1482_main.jpg",
+      description: "Fresh kale in bunches from a sample produce listing.", createdAt: 6
     },
     {
       id: "demo-cabbage", demo: true, name: "Green Cabbages",
       category: "Vegetables", county: "Nyandarua", town: "Ol Kalou",
       price: 45, unit: "piece", qty: "100 heads", sale: "Both",
       seller: "Ol Kalou Vegetable Farm", phone: "0700112244",
-      image: "", description: "Green cabbages sold by piece or in bulk.",
-      createdAt: 7
+      image: "https://cdn.shopify.com/s/files/1/0470/7306/7165/files/freshpoint-green-cabbage-1000x1000.jpg?v=1728919839",
+      description: "Green cabbages sold by piece or in bulk.", createdAt: 7
     },
 
     // NUTS
@@ -140,8 +132,8 @@
       category: "Nuts", county: "Kilifi", town: "Malindi",
       price: 220, unit: "kg", qty: "35 kg", sale: "Both",
       seller: "Coastal Harvest", phone: "0712345601",
-      image: "", description: "Groundnuts from a sample coastal seller. Product photo not supplied.",
-      createdAt: 8
+      image: "https://finefolk.ch/cdn/shop/files/finefolk-runner-peanuts.jpg?v=1757598353&width=1200",
+      description: "Groundnuts from a sample coastal seller.", createdAt: 8
     },
 
     // STARCHY FOODS
@@ -158,8 +150,8 @@
       category: "Starchy Foods", county: "Busia", town: "Bumala",
       price: 55, unit: "kg", qty: "85 kg", sale: "Both",
       seller: "Bumala Root Crop Farm", phone: "0712345612",
-      image: "", description: "Sweet potatoes sold by kilogram. Product photo not supplied.",
-      createdAt: 10
+      image: "https://www.akkerbouwbedrijf.nl/content/uploads/sites/10/2021/12/zoeteaardappelennetuitdegrond.jpg",
+      description: "Orange-fleshed sweet potatoes sold by kilogram.", createdAt: 10
     },
 
     // GRAINS
@@ -176,8 +168,8 @@
       category: "Grains", county: "Narok", town: "Narok",
       price: 72, unit: "kg", qty: "250 kg", sale: "Bulk",
       seller: "Narok Grain Growers", phone: "0790123489",
-      image: "", description: "Sample wheat grain listing for bulk buyers. No unrelated maize photo is used.",
-      createdAt: 12
+      image: "https://i.brecorder.com/large/2026/03/31112158329b037.webp",
+      description: "Sample wheat grain listing for bulk buyers.", createdAt: 12
     },
 
     // CEREALS
@@ -186,16 +178,16 @@
       category: "Cereals", county: "Kakamega", town: "Kakamega",
       price: 140, unit: "kg", qty: "70 kg", sale: "Bulk",
       seller: "Kakamega Wimbi Group", phone: "0799001122",
-      image: "", description: "Finger millet for food preparation and milling. Product photo not supplied.",
-      createdAt: 13
+      image: "https://ppmoilmill.com/cdn/shop/files/Finger_Millet_1.webp?v=1758176944&width=1200",
+      description: "Finger millet for food preparation and milling.", createdAt: 13
     },
     {
       id: "demo-sorghum", demo: true, name: "Sorghum Grain",
       category: "Cereals", county: "Kitui", town: "Kitui",
       price: 95, unit: "kg", qty: "90 kg", sale: "Both",
       seller: "Kitui Cereal Growers", phone: "0712345623",
-      image: "", description: "Sorghum grain available in sample quantities.",
-      createdAt: 14
+      image: "https://img500.exportersindia.com/product_images/bc-500/2024/8/13582260/richbloom-sorghum-seeds-1722589470-7524009.jpg",
+      description: "Sorghum grain available in sample quantities.", createdAt: 14
     },
 
     // LEGUMES
@@ -204,24 +196,24 @@
       category: "Legumes", county: "Meru", town: "Meru",
       price: 150, unit: "kg", qty: "60 kg", sale: "Both",
       seller: "Meru Bean Farmers", phone: "0744556677",
-      image: "", description: "Dry Rosecoco beans for home and business use.",
-      createdAt: 15
+      image: "https://britnuts.co.uk/cdn/shop/files/rosecoco-beans.jpg?v=1694121682",
+      description: "Dry Rosecoco beans for home and business use.", createdAt: 15
     },
     {
       id: "demo-green-grams", demo: true, name: "Green Grams (Ndengu)",
       category: "Legumes", county: "Machakos", town: "Mwala",
       price: 180, unit: "kg", qty: "45 kg", sale: "Both",
       seller: "Machakos Dry Foods", phone: "0766778899",
-      image: "", description: "Green grams from a sample seller. Product photo not supplied.",
-      createdAt: 16
+      image: "https://www.grocery.com/store/image/cache/catalog/aiva-we-believe-in-quality/aiva-green-moong-whole-mung-beans-green-gram-natur-0-500x500w.jpg",
+      description: "Green grams from a sample seller.", createdAt: 16
     },
     {
       id: "demo-cowpeas", demo: true, name: "Cowpeas (Kunde Seeds)",
       category: "Legumes", county: "Kitui", town: "Mwingi",
       price: 130, unit: "kg", qty: "50 kg", sale: "Bulk",
       seller: "Mwingi Legume Group", phone: "0712345634",
-      image: "", description: "Dry cowpeas for cooking or planting only when seed suitability is confirmed with the seller.",
-      createdAt: 17
+      image: "https://organicsphere.com/cdn/shop/files/il_1588xN.3243093955_ox5e.jpg?v=1758899103",
+      description: "Dry cowpeas for cooking or planting only when seed suitability is confirmed with the seller.", createdAt: 17
     },
 
     // SPICES
@@ -238,8 +230,8 @@
       category: "Spices", county: "Kakamega", town: "Mumias",
       price: 160, unit: "kg", qty: "25 kg", sale: "Both",
       seller: "Mumias Spice Growers", phone: "0712345645",
-      image: "", description: "Fresh ginger root for cooking. Product photo not supplied.",
-      createdAt: 19
+      image: "https://orientalpanda.com/5962-large_default/gingembre-frais-fresh-ginger-400-500-gr.jpg",
+      description: "Fresh ginger root for cooking.", createdAt: 19
     },
 
     // HERBAL PRODUCTS
@@ -248,16 +240,16 @@
       category: "Herbal Products", county: "Kiambu", town: "Thika",
       price: 250, unit: "kg", qty: "12 kg", sale: "Retail",
       seller: "Thika Herb Garden", phone: "0700112255",
-      image: "", description: "Dried lemongrass sold as a herbal plant product. No medical claims are made.",
-      createdAt: 20
+      image: "https://dehaat.in/_next/image?q=75&url=https%3A%2F%2Fdehaat-kheti-prod.s3.amazonaws.com%2Fdjango-summernote%2F2021-07-26%2F147502b5-893c-4eff-8648-aed85183b153.png&w=3840",
+      description: "Dried lemongrass sold as a herbal plant product. No medical claims are made.", createdAt: 20
     },
     {
       id: "demo-aloe", demo: true, name: "Aloe Vera Leaves",
       category: "Herbal Products", county: "Makueni", town: "Wote",
       price: 30, unit: "piece", qty: "80 leaves", sale: "Retail",
       seller: "Wote Plant Nursery", phone: "0700112266",
-      image: "", description: "Aloe vera leaves sold as a plant product; use and suitability should be checked independently.",
-      createdAt: 21
+      image: "https://greenparadiselive.com/cdn/shop/files/Aloe_vera_plant_1.png?v=1729578285&width=1920",
+      description: "Aloe vera leaves sold as a plant product; use and suitability should be checked independently.", createdAt: 21
     },
 
     // LIVESTOCK
@@ -267,16 +259,15 @@
       price: 1200, unit: "animal", qty: "12 birds", sale: "Retail",
       seller: "Western Poultry Demo Farm", phone: "0700223344",
       image: "https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=700&q=80",
-      description: "Sample livestock listing. Confirm age and availability with the seller.",
-      createdAt: 22
+      description: "Sample livestock listing. Confirm age and availability with the seller.", createdAt: 22
     },
     {
       id: "demo-goat", demo: true, name: "Dairy Goat",
       category: "Livestock", county: "Nyeri", town: "Othaya",
       price: 12500, unit: "animal", qty: "2 goats", sale: "Retail",
       seller: "Othaya Livestock Demo Farm", phone: "0700223355",
-      image: "", description: "Sample dairy-goat listing. Confirm breed, health records and availability with the seller.",
-      createdAt: 23
+      image: "https://images.pexels.com/photos/15084412/pexels-photo-15084412.jpeg?auto=compress&cs=tinysrgb&w=900",
+      description: "Sample dairy-goat listing. Confirm breed, health records and availability with the seller.", createdAt: 23
     },
 
     // LIVESTOCK PRODUCE
@@ -285,16 +276,16 @@
       category: "Livestock Produce", county: "Kiambu", town: "Ruiru",
       price: 450, unit: "tray", qty: "20 trays", sale: "Both",
       seller: "Ruiru Poultry Demo Farm", phone: "0700334455",
-      image: "", description: "Sample egg listing. Confirm tray size and availability with seller.",
-      createdAt: 24
+      image: "https://www.puga.es/php/thumbnail.php?alto=550&ancho=550&carpeta=articulos&img=articulo12343_1.jpg",
+      description: "Sample egg listing. Confirm tray size and availability with seller.", createdAt: 24
     },
     {
       id: "demo-milk", demo: true, name: "Raw Cow's Milk",
       category: "Livestock Produce", county: "Nakuru", town: "Njoro",
       price: 70, unit: "litre", qty: "40 litres", sale: "Retail",
       seller: "Njoro Dairy Demo Farm", phone: "0700334466",
-      image: "", description: "Illustrative raw-milk listing. Buyers should follow local food-safety and handling requirements.",
-      createdAt: 25
+      image: "https://static.tygodnik-rolniczy.pl/images/2022/10/21/219264.webp",
+      description: "Illustrative raw-milk listing. Buyers should follow local food-safety and handling requirements.", createdAt: 25
     },
 
     // AGRICULTURAL INPUTS
@@ -303,40 +294,40 @@
       category: "Agricultural Inputs", county: "Nakuru", town: "Njoro",
       price: 2, unit: "piece", qty: "2,000 onion seedlings", sale: "Both",
       seller: "Njoro Seedling Nursery", phone: "0700445566",
-      image: "", description: "Onion seedlings for transplanting. Confirm onion variety, seedling age and quantity before purchase.",
-      createdAt: 26
+      image: "https://www.sowingseedsnursery.com/uploads/1/5/4/9/15490230/vidalia-onions_orig.jpg",
+      description: "Onion seedlings for transplanting. Confirm onion variety, seedling age and quantity before purchase.", createdAt: 26
     },
     {
       id: "demo-tomato-seedlings", demo: true, name: "Tomato Seedlings",
       category: "Agricultural Inputs", county: "Kiambu", town: "Limuru",
       price: 3, unit: "piece", qty: "1,500 tomato seedlings", sale: "Both",
       seller: "Limuru Seedling Nursery", phone: "0700445577",
-      image: "", description: "Tomato seedlings. Ask the nursery which tomato variety is available.",
-      createdAt: 27
+      image: "https://tarimdanhabercom.teimg.com/tarimdanhaber-com/images/upload/domatesfidesi_1.jpg",
+      description: "Tomato seedlings. Ask the nursery which tomato variety is available.", createdAt: 27
     },
     {
       id: "demo-cabbage-seedlings", demo: true, name: "Cabbage Seedlings",
       category: "Agricultural Inputs", county: "Nyandarua", town: "Ol Kalou",
       price: 2, unit: "piece", qty: "1,000 cabbage seedlings", sale: "Both",
       seller: "Ol Kalou Seedling Nursery", phone: "0700445588",
-      image: "", description: "Cabbage seedlings ready for transplanting. Confirm the variety with the nursery.",
-      createdAt: 28
+      image: "https://www.epicgardening.com/wp-content/uploads/2023/05/Sowing-Cabbage-Seeds-Indoor.jpeg",
+      description: "Cabbage seedlings ready for transplanting. Confirm the variety with the nursery.", createdAt: 28
     },
     {
       id: "demo-maize-seeds", demo: true, name: "Certified Maize Seeds",
       category: "Agricultural Inputs", county: "Trans Nzoia", town: "Kitale",
       price: 450, unit: "unit", qty: "15 packets", sale: "Retail",
       seller: "Kitale Farm Inputs Demo Shop", phone: "0700445599",
-      image: "", description: "Sample maize-seed listing. Confirm seed variety, packet weight and certification details with seller.",
-      createdAt: 29
+      image: "https://imaginecare.co.ke/wp-content/uploads/2022/09/Kenya-Seed-Maize-H629-Highland-2kg.jpg",
+      description: "Sample maize-seed listing. Confirm seed variety, packet weight and certification details with seller.", createdAt: 29
     },
     {
       id: "demo-compost", demo: true, name: "Organic Farm Compost",
       category: "Agricultural Inputs", county: "Murang'a", town: "Kangema",
       price: 250, unit: "bag", qty: "40 bags", sale: "Both",
       seller: "Kangema Soil Care Demo", phone: "0700445500",
-      image: "", description: "Sample compost listing; check bag size and contents with seller.",
-      createdAt: 30
+      image: "https://grow.ifa.coop/hs-fs/hubfs/Imported_Blog_Media/webimg_oakdell_compost.jpg?height=1800&name=webimg_oakdell_compost.jpg&width=1800",
+      description: "Sample compost listing; check bag size and contents with seller.", createdAt: 30
     },
 
     // FARM TOOLS & EQUIPMENT
@@ -345,16 +336,16 @@
       category: "Farm Tools & Equipment", county: "Nairobi City", town: "Nairobi",
       price: 650, unit: "unit", qty: "20 hoes", sale: "Retail",
       seller: "Farm Tools Demo Shop", phone: "0700556677",
-      image: "", description: "Sample listing for jembe hand hoes. Confirm handle and head type with seller.",
-      createdAt: 31
+      image: "https://www.lehmans.com/cdn/shop/files/504eb2714521519b1600d3b4e45e9fe278213a48_100068957_1_L.png?v=1778777825&width=800",
+      description: "Sample listing for jembe hand hoes. Confirm handle and head type with seller.", createdAt: 31
     },
     {
       id: "demo-sprayer", demo: true, name: "Knapsack Sprayer",
       category: "Farm Tools & Equipment", county: "Nakuru", town: "Nakuru",
       price: 3500, unit: "unit", qty: "8 sprayers", sale: "Retail",
       seller: "Nakuru Equipment Demo Shop", phone: "0700556688",
-      image: "", description: "Sample knapsack sprayer listing. Confirm capacity and condition before purchase.",
-      createdAt: 32
+      image: "https://image.made-in-china.com/2f0j00OZTiVaWgHlry/16-Litres-Agriculture-Knapsack-Hand-Sprayer-Pump-for-Farm.webp",
+      description: "Sample knapsack sprayer listing. Confirm capacity and condition before purchase.", createdAt: 32
     },
 
     // FARMER SERVICES
@@ -363,24 +354,24 @@
       category: "Farmer Services", county: "Trans Nzoia", town: "Kitale",
       price: 3500, unit: "service", qty: "Bookings by arrangement", sale: "Both",
       seller: "Kitale Farm Services Demo", phone: "0700667788",
-      image: "", description: "Example ploughing service. Confirm acreage, date and final cost.",
-      createdAt: 33
+      image: "https://www.farmersjournal.ie/WEBFILES/000/892/252/2457492-892252.jpg",
+      description: "Example ploughing service. Confirm acreage, date and final cost.", createdAt: 33
     },
     {
       id: "demo-tractor-hire", demo: true, name: "Tractor Hire Service",
       category: "Farmer Services", county: "Uasin Gishu", town: "Eldoret",
       price: 5000, unit: "service", qty: "Bookings by arrangement", sale: "Both",
       seller: "Eldoret Machinery Demo", phone: "0700667799",
-      image: "", description: "Sample tractor-hire service. Confirm hourly/acre rate, fuel, schedule and travel costs.",
-      createdAt: 34
+      image: "https://www.farmersjournal.ie/WEBFILES/000/892/252/2457492-892252.jpg",
+      description: "Sample tractor-hire service. Confirm hourly/acre rate, fuel, schedule and travel costs.", createdAt: 34
     },
     {
       id: "demo-soil-test", demo: true, name: "Farm Soil Testing Service",
       category: "Farmer Services", county: "Nairobi City", town: "Nairobi",
       price: 1500, unit: "service", qty: "Appointments available", sale: "Retail",
       seller: "Agri Test Demo Service", phone: "0700667700",
-      image: "", description: "Illustrative soil-testing service. Ask the provider what the test includes and how to submit a sample.",
-      createdAt: 35
+      image: "https://orbitoglobal.com/wp-content/uploads/2024/05/Lab-Tester-4-1024x678.jpg",
+      description: "Illustrative soil-testing service. Ask the provider what the test includes and how to submit a sample.", createdAt: 35
     }
   ];
 
@@ -496,22 +487,28 @@
     if (sale === "Both") return t("saleBoth");
     return t("saleRetail");
   }
+
   function money(value) {
     return "KSh " + Number(value || 0).toLocaleString("en-KE", { maximumFractionDigits: 2 });
   }
+
   function normalizePhone(value) {
     return String(value || "").trim().replace(/[\s()-]/g, "");
   }
+
   function validPhone(value) {
     return /^(\+?254|0)?[17]\d{8}$/.test(normalizePhone(value));
   }
+
   function makeId() {
     if (window.crypto && typeof window.crypto.randomUUID === "function") return "listing-" + window.crypto.randomUUID();
     return "listing-" + Date.now() + "-" + Math.random().toString(36).slice(2, 10);
   }
+
   function escapeHTML(value) {
     return String(value ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
   }
+
   function loadStorage(key, fallback) {
     try {
       const saved = localStorage.getItem(key);
@@ -522,6 +519,7 @@
       return fallback;
     }
   }
+
   function saveStorage(key, value) {
     try {
       localStorage.setItem(key, JSON.stringify(value));
@@ -569,15 +567,16 @@
     const savedCart = loadStorage(STORAGE.cart, []);
     cart = Array.isArray(savedCart) ? savedCart : [];
   }
+
   function saveUserListings() {
     return saveStorage(STORAGE.listings, listings.filter(item => item.demo !== true));
   }
 
-  /* SIGN-IN IS ONLY A LOCAL DEMO SESSION */
   function getUser() {
     const saved = loadStorage(STORAGE.user, null);
     return saved && typeof saved === "object" && saved.name ? saved : null;
   }
+
   function renderUser() {
     const user = getUser();
     const link = $("#authLink");
@@ -587,13 +586,13 @@
     if (chip) chip.classList.toggle("hidden", !user);
     if (user && greeting) greeting.textContent = t("greeting", String(user.name).trim().split(/\s+/)[0].slice(0, 18));
   }
+
   function signOut() {
     try { localStorage.removeItem(STORAGE.user); } catch (error) { console.warn("Could not clear the demo session", error); }
     renderUser();
     showToast(t("signedOut"));
   }
 
-  /* CATEGORY AND COUNTY SELECTS */
   function populateSelects() {
     const categoryFilter = $("#categoryFilter");
     const productCategory = $("#productCategory");
@@ -606,18 +605,21 @@
       CATEGORIES.forEach(([name]) => categoryFilter.add(new Option(name, name)));
       categoryFilter.value = CATEGORY_NAMES.includes(current) || current === "All" ? current : "All";
     }
+
     if (productCategory) {
       const current = productCategory.value;
       productCategory.innerHTML = '<option value="">Choose a category</option>';
       CATEGORIES.forEach(([name]) => productCategory.add(new Option(name, name)));
       if (CATEGORY_NAMES.includes(current)) productCategory.value = current;
     }
+
     if (locationFilter) {
       const current = locationFilter.value || "All";
       locationFilter.innerHTML = '<option value="All">All counties</option>';
       COUNTIES.forEach(county => locationFilter.add(new Option(county, county)));
       locationFilter.value = COUNTIES.includes(current) || current === "All" ? current : "All";
     }
+
     if (productCounty) {
       const current = productCounty.value;
       productCounty.innerHTML = '<option value="">Choose a county</option>';
@@ -630,7 +632,11 @@
     const grid = $("#categoryGrid");
     if (!grid) return;
     grid.innerHTML = "";
-    if (categoryImageObserver) { categoryImageObserver.disconnect(); categoryImageObserver = null; }
+
+    if (categoryImageObserver) {
+      categoryImageObserver.disconnect();
+      categoryImageObserver = null;
+    }
 
     const canObserve = "IntersectionObserver" in window;
     if (canObserve) {
@@ -640,7 +646,8 @@
           const el = entry.target;
           const imageUrl = el.dataset.categoryImage;
           if (imageUrl) {
-            el.style.backgroundImage = `url("${imageUrl.replace(/"/g, "%22")}")`;
+            const safeUrl = imageUrl.replace(/"/g, "%22");
+            el.style.backgroundImage = `url("${safeUrl}")`;
             el.removeAttribute("data-category-image");
           }
           observer.unobserve(el);
@@ -656,14 +663,17 @@
       button.setAttribute("aria-pressed", String(activeCategory === category));
       if (activeCategory === category) button.classList.add("selected");
       button.innerHTML = `<span class="cat-image"></span><span class="cat-shade"></span><span class="cat-name">${escapeHTML(category)}</span>`;
+
       const imageEl = button.querySelector(".cat-image");
       imageEl.style.backgroundImage = "linear-gradient(135deg, #edf4e7, #cfe0c3)";
+
       if (canObserve) {
         imageEl.dataset.categoryImage = image;
         categoryImageObserver.observe(imageEl);
       } else {
         imageEl.style.backgroundImage = `url("${image.replace(/"/g, "%22")}")`;
       }
+
       grid.appendChild(button);
     });
   }
@@ -678,18 +688,17 @@
     $("#marketplace")?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
-  /* FAIR-PRICE GUIDE */
   function getFairPrice(item) {
     const name = String(item.name || "").toLowerCase();
     const guide = FAIR_GUIDE.find(entry => entry.match(name));
     if (!guide || item.unit !== "kg") return { status: "no-guide", label: t("fairNoLabel"), detail: t("fairNoDetail") };
+
     const detail = `${guide.name}: ${money(guide.min)}–${money(guide.max)} / kg`;
     if (Number(item.price) < guide.min) return { status: "below", label: t("fairBelow"), detail };
     if (Number(item.price) > guide.max) return { status: "above", label: t("fairAbove"), detail };
     return { status: "within", label: t("fairWithin"), detail };
   }
 
-  /* FILTER AND SORT */
   function getFilteredListings() {
     const search = ($("#searchInput")?.value || "").trim().toLowerCase();
     const county = $("#locationFilter")?.value || "All";
@@ -711,36 +720,35 @@
     else if (sort === "price-low") results.sort((a, b) => Number(a.price) - Number(b.price));
     else if (sort === "price-high") results.sort((a, b) => Number(b.price) - Number(a.price));
     else results.sort((a, b) => Number(Boolean(a.demo)) - Number(Boolean(b.demo)) || Number(b.createdAt || 0) - Number(a.createdAt || 0));
+
     return results;
   }
 
-  /* IMAGE FALLBACK: show a neutral placeholder, never a different product. */
   function setImageFallback(image, item) {
     if (!image || image.dataset.fallbackApplied === "yes") return;
     image.dataset.fallbackApplied = "yes";
+
     const fallback = document.createElement("div");
     fallback.className = "product-image-fallback";
     fallback.setAttribute("role", "img");
     fallback.setAttribute("aria-label", `Photo unavailable for ${item?.name || "this product"}`);
     fallback.textContent = "Photo not available";
-    Object.assign(fallback.style, {
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      minHeight: "150px",
-      width: "100%",
-      padding: "16px",
-      boxSizing: "border-box",
-      background: "linear-gradient(135deg, #edf4e7, #dce8d3)",
-      color: "#36553b",
-      textAlign: "center",
-      fontSize: "0.9rem",
-      fontWeight: "700"
-    });
+    fallback.style.display = "flex";
+    fallback.style.alignItems = "center";
+    fallback.style.justifyContent = "center";
+    fallback.style.flexDirection = "column";
+    fallback.style.minHeight = "150px";
+    fallback.style.width = "100%";
+    fallback.style.padding = "16px";
+    fallback.style.boxSizing = "border-box";
+    fallback.style.background = "linear-gradient(135deg, #edf4e7, #dce8d3)";
+    fallback.style.color = "#36553b";
+    fallback.style.textAlign = "center";
+    fallback.style.fontSize = "0.9rem";
+    fallback.style.fontWeight = "700";
     image.replaceWith(fallback);
   }
 
-  /* RENDER MARKETPLACE CARDS */
   function renderListings() {
     const grid = $("#listingGrid");
     if (!grid) return;
@@ -847,16 +855,13 @@
 
     const resultCount = $("#resultCount");
     if (resultCount) resultCount.textContent = t("showing", results.length);
-
     const active = $("#activeCategory");
     if (active) active.textContent = activeCategory === "All" ? "" : t("categoryLabel", activeCategory);
-
     const empty = $("#emptyState");
     if (empty) empty.classList.toggle("hidden", results.length > 0);
     grid.classList.toggle("hidden", results.length === 0);
   }
 
-  /* MODALS AND TOASTS */
   function openModal(id) {
     const modal = document.getElementById(id);
     if (!modal) return;
@@ -864,18 +869,21 @@
     document.body.classList.add("modal-open");
     modal.querySelector("input:not([type=file]), select, textarea, button")?.focus();
   }
+
   function closeModal(id) {
     const modal = document.getElementById(id);
     if (!modal) return;
     modal.classList.add("hidden");
     if (!$$(".modal:not(.hidden)").length) document.body.classList.remove("modal-open");
   }
+
   function openListingModal() {
     const user = getUser();
     const sellerName = $("#sellerName");
     if (user && sellerName && !sellerName.value.trim()) sellerName.value = String(user.name).trim();
     openModal("listingModal");
   }
+
   function showToast(message) {
     const toast = $("#toast");
     if (!toast) { console.info(message); return; }
@@ -884,23 +892,25 @@
     if (toastTimeout) window.clearTimeout(toastTimeout);
     toastTimeout = window.setTimeout(() => toast.classList.remove("show"), 3200);
   }
+
   function showListingError(message) {
     const error = $("#listingError");
     if (!error) { showToast(message); return; }
     error.textContent = message;
     error.classList.remove("hidden");
   }
+
   function clearListingError() {
     const error = $("#listingError");
     if (error) { error.textContent = ""; error.classList.add("hidden"); }
   }
 
-  /* SHRINK UPLOADED IMAGES BEFORE SAVING THEM TO THIS BROWSER */
   function readAndResizeImage(file) {
     return new Promise((resolve, reject) => {
       if (!file) { resolve(""); return; }
       if (!file.type.startsWith("image/")) { reject(new Error("Please choose an image file.")); return; }
       if (file.size > 8 * 1024 * 1024) { reject(new Error("That photo is too large. Please choose one under 8 MB.")); return; }
+
       const reader = new FileReader();
       reader.onerror = () => reject(new Error("Could not read the selected photo."));
       reader.onload = () => {
@@ -924,7 +934,6 @@
     });
   }
 
-  /* CREATE AND SAVE A USER LISTING */
   async function handleListingSubmit(event) {
     event.preventDefault();
     if (isPublishing) return;
@@ -967,11 +976,10 @@
         qty, sale, seller, phone, condition, description, harvestDate, image,
         createdAt: Date.now()
       };
-
       listings = [...listings, newListing];
+
       let storageWorked = saveUserListings();
       let photoDropped = false;
-
       if (!storageWorked && newListing.image) {
         const photo = newListing.image;
         newListing.image = "";
@@ -1008,7 +1016,6 @@
     }
   }
 
-  /* CHAT HAND-OFF TO messages.html */
   function openChat(id) {
     const item = listings.find(listing => listing.id === id);
     if (!item) { showToast(t("cartNotFound")); return; }
@@ -1024,7 +1031,6 @@
     window.location.href = "messages.html";
   }
 
-  /* BUYER REQUEST PREFILL */
   function requestProduct() {
     const search = ($("#searchInput")?.value || "").trim();
     const wanted = search || (activeCategory !== "All" ? activeCategory : "");
@@ -1033,11 +1039,11 @@
     window.location.href = "buyer-requests.html";
   }
 
-  /* DEMO CART — NO REAL PAYMENT */
   function saveCart() {
     if (!saveStorage(STORAGE.cart, cart)) { showToast(t("cartSaveFail")); return false; }
     return true;
   }
+
   function addToCart(id) {
     const item = listings.find(listing => listing.id === id);
     if (!item) { showToast(t("cartNotFound")); return; }
@@ -1046,12 +1052,14 @@
     else cart.push({ id, quantity: 1 });
     if (saveCart()) { updateCartCount(); showToast(t("cartAdded", item.name)); }
   }
+
   function updateCartCount() {
     const count = $("#cartCount");
     if (!count) return;
-    const total = cart.reduce((sum, entry) => sum + Math.max(1, Number(entry.quantity || 1)), 0);
+    const total = cart.reduce((sum, entry) => sum + Math.max(1, Number(entry.quantity || 1), 0), 0);
     count.textContent = String(total);
   }
+
   function renderCart() {
     const container = $("#cartItems");
     if (!container) return;
@@ -1100,12 +1108,14 @@
     container.appendChild(totalRow);
     updateCartCount();
   }
+
   function removeFromCart(id) {
     cart = cart.filter(entry => entry.id !== id);
     saveCart();
     renderCart();
     showToast(t("cartRemoved"));
   }
+
   function clearCart() {
     cart = [];
     saveCart();
@@ -1126,20 +1136,21 @@
     renderListings();
   }
 
-  /* LANGUAGE: keeps cards/cart/messages dynamic in all three modes. */
   const TRANSLATIONS = [
     [".main-nav a[href=\"#marketplace\"]", "Marketplace", "Soko"],
     [".main-nav a[href=\"smart-assist.html\"]", "Smart Assist", "Msaidizi Mahiri"],
     [".main-nav a[href=\"sacco.html\"]", "SACCO Hub", "Kituo cha SACCO"],
     [".main-nav a[href=\"buyer-requests.html\"]", "Buyer Requests", "Maombi ya Wanunuzi"],
     [".main-nav a[href=\"messages.html\"]", "Messages", "Ujumbe"],
-    ["#authLink", "Sign in", "Ingia"], ["#signOutButton", "Sign out", "Toka"],
+    ["#authLink", "Sign in", "Ingia"],
+    ["#signOutButton", "Sign out", "Toka"],
     [".hero .eyebrow", "KENYA'S FARM-TO-MARKET DEMO", "ONYESHO LA KENYA LA SHAMBANI HADI SOKONI"],
     [".hero h1", "Good harvests deserve <span>better markets.</span>", "Mavuno mazuri yanastahili <span>masoko bora.</span>", "html"],
     [".hero-description", "Connect directly with farmers, compare produce, discover opportunities and grow your business. Everything in one place.", "Wasiliana moja kwa moja na wakulima, linganisha mazao, gundua fursa na ukuze biashara yako. Yote mahali pamoja."],
     ["#heroSellButton", "+ Sell your produce", "+ Uza mazao yako"],
     [".category-section h2", "Explore categories", "Tazama aina za bidhaa"],
-    [".marketplace h2", "Marketplace", "Soko"], ["#sellButton", "+ Create listing", "+ Tengeneza tangazo"],
+    [".marketplace h2", "Marketplace", "Soko"],
+    ["#sellButton", "+ Create listing", "+ Tengeneza tangazo"],
     ["#searchInput", "Search maize, beans, avocados...", "Tafuta mahindi, maharagwe, parachichi...", "placeholder"],
     ["#showAllButton", "View all products →", "Tazama bidhaa zote →"],
     ["#clearFiltersButton", "Clear filters", "Futa vichujio"],
@@ -1152,6 +1163,7 @@
     ["#cartTitle", "Shopping cart", "Kikapu cha ununuzi"],
     ["#clearCartButton", "Clear cart", "Futa kikapu"]
   ];
+
   const originalTexts = new Map();
   let originalsCaptured = false;
 
@@ -1162,6 +1174,7 @@
     }
     return $(selector);
   }
+
   function readText(element, mode) {
     if (mode === "placeholder") return element.placeholder;
     if (mode === "html") return element.innerHTML;
@@ -1169,6 +1182,7 @@
     const node = [...element.childNodes].find(n => n.nodeType === 3 && n.nodeValue.trim());
     return node ? node.nodeValue : "";
   }
+
   function writeText(element, mode, value) {
     if (mode === "placeholder") element.placeholder = value;
     else if (mode === "html") element.innerHTML = value;
@@ -1178,6 +1192,7 @@
       if (node) node.nodeValue = value;
     }
   }
+
   function captureOriginals() {
     if (originalsCaptured) return;
     originalsCaptured = true;
@@ -1186,10 +1201,12 @@
       if (element && !originalTexts.has(element)) originalTexts.set(element, readText(element, mode));
     });
   }
+
   function applyLanguage(language) {
     currentLang = ["mix", "en", "sw"].includes(language) ? language : "mix";
     document.documentElement.lang = currentLang === "sw" ? "sw" : "en";
     captureOriginals();
+
     TRANSLATIONS.forEach(([selector, english, swahili, mode]) => {
       const element = findTarget(selector);
       if (!element) return;
@@ -1197,24 +1214,29 @@
       const value = currentLang === "mix" ? original : currentLang === "sw" ? swahili : english;
       if (value !== undefined && value !== null) writeText(element, mode, value);
     });
+
     updateHint();
     renderListings();
     renderUser();
+
     const cartModal = $("#cartModal");
     if (cartModal && !cartModal.classList.contains("hidden")) renderCart();
+
     const year = $("#currentYear");
     if (year) year.textContent = String(new Date().getFullYear());
   }
+
   function restoreLanguage() {
     const saved = loadStorage(STORAGE.language, "mix");
     const select = $("#languageSelect");
     if (select) {
       select.value = ["mix", "en", "sw"].includes(saved) ? saved : "mix";
       applyLanguage(select.value);
-    } else applyLanguage(saved);
+    } else {
+      applyLanguage(saved);
+    }
   }
 
-  /* EVENTS */
   function bindEvents() {
     $("#sellButton")?.addEventListener("click", openListingModal);
     $("#heroSellButton")?.addEventListener("click", openListingModal);
@@ -1222,6 +1244,7 @@
     $("#emptyRequestButton")?.addEventListener("click", requestProduct);
     $("#signOutButton")?.addEventListener("click", signOut);
     $("#listingForm")?.addEventListener("submit", handleListingSubmit);
+
     $("#showAllButton")?.addEventListener("click", () => {
       clearFilters();
       $("#marketplace")?.scrollIntoView({ behavior: "smooth" });
@@ -1231,35 +1254,47 @@
       const button = event.target.closest("[data-category]");
       if (button) selectCategory(button.dataset.category);
     });
+
     $("#categoryFilter")?.addEventListener("change", event => selectCategory(event.target.value || "All"));
 
     ["searchInput", "locationFilter", "saleFilter", "fairPriceFilter", "sortFilter"].forEach(id => {
       document.getElementById(id)?.addEventListener(id === "searchInput" ? "input" : "change", renderListings);
     });
+
     $("#clearFiltersButton")?.addEventListener("click", clearFilters);
 
     $("#listingGrid")?.addEventListener("click", event => {
       const addButton = event.target.closest("[data-add-cart]");
-      if (addButton) { addToCart(addButton.dataset.addCart); return; }
+      if (addButton) {
+        addToCart(addButton.dataset.addCart);
+        return;
+      }
       const chatButton = event.target.closest("[data-chat]");
       if (chatButton) openChat(chatButton.dataset.chat);
     });
 
-    $("#cartButton")?.addEventListener("click", () => { renderCart(); openModal("cartModal"); });
+    $("#cartButton")?.addEventListener("click", () => {
+      renderCart();
+      openModal("cartModal");
+    });
+
     $("#cartItems")?.addEventListener("click", event => {
       const button = event.target.closest("[data-remove-cart]");
       if (button) removeFromCart(button.dataset.removeCart);
     });
+
     $("#clearCartButton")?.addEventListener("click", clearCart);
 
     $$("[data-close]").forEach(button => {
       button.addEventListener("click", () => closeModal(button.dataset.close));
     });
+
     $$(".modal").forEach(modal => {
       modal.addEventListener("click", event => {
         if (event.target === modal) closeModal(modal.id);
       });
     });
+
     document.addEventListener("keydown", event => {
       if (event.key === "Escape") $$(".modal:not(.hidden)").forEach(modal => closeModal(modal.id));
     });
@@ -1288,31 +1323,33 @@
   }
 
   function safely(label, step) {
-    try { step(); }
-    catch (error) { console.error(`MavunoBridge: "${label}" failed`, error); }
+    try {
+      step();
+    } catch (error) {
+      console.error(`MavunoBridge: "${label}" failed`, error);
+    }
   }
 
   function init() {
-    // Run only on the marketplace page. Other pages have their own scripts.
     if (!$("#listingGrid")) {
-      console.info("MavunoBridge: marketplace grid is not on this page; skipping marketplace startup.");
+      console.info("MavunoBridge: marketplace grid is not on this page; no marketplace startup needed.");
       return;
     }
 
-    safely("load demo and user listings", loadData);
-    safely("fill category/county selects", populateSelects);
-    safely("bind marketplace events", bindEvents);
-    safely("render categories", renderCategories);
-    safely("render listings", renderListings);
-    safely("render signed-in user", renderUser);
-    safely("update cart count", updateCartCount);
+    safely("load data", loadData);
+    safely("fill dropdowns", populateSelects);
+    safely("connect buttons", bindEvents);
+    safely("draw categories", renderCategories);
+    safely("draw listings", renderListings);
+    safely("show signed-in user", renderUser);
+    safely("cart count", updateCartCount);
     safely("restore language", restoreLanguage);
 
     const year = $("#currentYear");
     if (year) year.textContent = String(new Date().getFullYear());
 
     console.info(
-      `MavunoBridge ready: ${listings.length} listings loaded, including ${DEMO_LISTINGS.length} built-in demo listings.`
+      `MavunoBridge ready: ${listings.length} listings loaded (${DEMO_LISTINGS.length} built-in demo samples).`
     );
   }
 
