@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#183522">
+
+  <title>Buyer Requests | MavunoBridge</title>
+
+  <link rel="stylesheet" href="style.css?v=13">
+  <link rel="stylesheet" href="pages.css?v=2">
+
+  <script src="language.js?v=2" defer></script>
+  <script src="chat.js?v=2" defer></script>
+</head>
+
+<body>
+  <header class="topbar">
+    <a class="brand" href="index.html">
+      <span class="brand-mark">M</span>
+      <span>
+        Mavuno<span class="brand-light">Bridge</span>
+        <small>FARMING. CONNECTED.</small>
+      </span>
+    </a>
+
+    <nav class="page-nav" id="mainNav">
+      <a href="index.html">Marketplace</a>
+      <a href="smart-assist.html">Smart Assist</a>
+      <a href="sacco.html">SACCO Hub</a>
+      <a href="buyer-requests.html" aria-current="page">Buyer Requests</a>
+      <a href="messages.html">Messages</a>
+    </nav>
+
+    <div class="top-actions">
+      <label class="language-picker">
+        <span class="sr-only">Choose language</span>
+        <select id="languageSelect" aria-label="Choose language">
+          <option value="mix">Sheng + Kiswahili</option>
+          <option value="en">English</option>
+          <option value="sw">Kiswahili</option>
+        </select>
+      </label>
+
+      <a class="text-link" href="index.html">← Marketplace</a>
+
+      <button
+        class="button small"
+        id="menuToggle"
+        type="button"
+        aria-label="Toggle navigation"
+      >☰</button>
+    </div>
+  </header>
+
+  <main class="page-shell">
+    <section class="page-hero">
+      <p class="eyebrow">BUYER AND FARMER CONNECTIONS</p>
+
+      <h1>
+        Post what you need.<br>
+        Find the right harvest.
+      </h1>
+
+      <p>
+        Weka ombi la bidhaa unatafuta, then farmers can review
+        the demo request board. Requests are saved in this browser only.
+      </p>
+
+      <span class="demo-label">
+        DEMO REQUEST BOARD · NOT A LIVE ORDER SYSTEM
+      </span>
+    </section>
+
+    <section class="section page-section">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">REQUEST BOARD</p>
+          <h2>Buyer requests</h2>
+
+          <p class="muted">
+            Describe the product, quantity and county to help farmers
+            understand your needs.
+          </p>
+        </div>
+      </div>
+
+      <div class="board-grid">
+        <section class="panel">
+          <h2>Post a request</h2>
+
+          <p class="muted">
+            Share only contact details you are comfortable displaying
+            in this demo.
+          </p>
+
+          <form class="stack-form" id="demandForm">
+            <label>
+              Product needed *
+              <input
+                id="dProduct"
+                name="product"
+                maxlength="100"
+                placeholder="e.g. 100 kg of dry maize"
+                required
+              >
+            </label>
+
+            <div class="form-row">
+              <label>
+                County *
+                <select id="dCounty" name="county" required>
+                  <option value="">Choose county</option>
+                </select>
+              </label>
+
+              <label>
+                Sale type
+                <select id="dType" name="type">
+                  <option value="Bulk">Bulk</option>
+                  <option value="Retail">Retail</option>
+                  <option value="Both">Either</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="form-row">
+              <label>
+                Quantity needed
+                <input
+                  id="dQty"
+                  name="quantity"
+                  maxlength="60"
+                  placeholder="e.g. 100 kg"
+                >
+              </label>
+
+              <label>
+                Needed by (optional)
+                <input id="dDate" name="date" type="date">
+              </label>
+            </div>
+
+            <label>
+              Contact (optional)
+              <input
+                id="dContact"
+                name="contact"
+                maxlength="100"
+                placeholder="Phone or email (optional)"
+              >
+            </label>
+
+            <label>
+              Extra details
+              <textarea
+                id="dDetails"
+                name="details"
+                maxlength="600"
+                rows="4"
+                placeholder="Quality, packaging, delivery location or budget range"
+              ></textarea>
+            </label>
+
+            <button class="button button-green" type="submit">
+              Post buyer request →
+            </button>
+          </form>
+        </section>
+
+        <section class="panel">
+          <h2>Current requests</h2>
+
+          <p class="muted">
+            This demo board is stored locally in your browser.
+          </p>
+
+          <div class="item-list" id="demandList">
+            <p class="empty-note">Loading requests...</p>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <section class="section page-section">
+      <div class="panel">
+        <h2>Support notes</h2>
+
+        <p class="muted">
+          Save a reminder or question for your demonstration.
+          This is not sent to a support team.
+        </p>
+
+        <form class="ask-form" id="supportForm">
+          <label>
+            Note
+            <textarea
+              id="supportText"
+              maxlength="500"
+              rows="3"
+              placeholder="Write a question or reminder..."
+              required
+            ></textarea>
+          </label>
+
+          <button class="button button-green" type="submit">
+            Save note
+          </button>
+        </form>
+
+        <div class="item-list" id="supportList" style="margin-top: 16px">
+          <p class="muted">No support notes saved.</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="page-cta">
+      <div>
+        <h2>Already found your product?</h2>
+        <p>
+          Return to the marketplace to browse sample sellers and listings.
+        </p>
+      </div>
+
+      <a class="button button-light" href="index.html#marketplace">
+        Browse marketplace →
+      </a>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <a href="index.html">MavunoBridge Marketplace</a>
+
+    <p>
+      Buyer requests and support notes are demo-only and remain in this
+      browser. Do not post private or sensitive information.
+    </p>
+  </footer>
+</body>
+</html>
