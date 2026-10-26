@@ -84,7 +84,7 @@
       category: "Grains", county: "Uasin Gishu", town: "Eldoret",
       price: 58, unit: "kg", qty: "300 kg", sale: "Bulk",
       seller: "Rift Valley Grain Hub", phone: "0733445566",
-    "image: "images/corn-listing.png",,
+      image: "images/corn-listing.png",
       description: "Dry maize for bulk buyers.",
       createdAt: 3
     },
