@@ -1,4 +1,3 @@
-
 (() => {
   "use strict";
 
@@ -548,7 +547,7 @@
   }
 
   /* LOAD DATA: built-in samples always load, even on a fresh judge's device. */
-  function loadData() {
+   function loadData() {
     let savedListings = loadStorage(STORAGE.listings, null);
     if (!Array.isArray(savedListings)) {
       savedListings = [];
@@ -601,7 +600,7 @@
 
     if (categoryFilter) {
       const current = categoryFilter.value || "All";
-      categoryFilter.innerHTML = '<option value="All">All categories</option>';
+      categoryFilter.innerHTML = '<option value="All">All Products</option>';
       CATEGORIES.forEach(([name]) => categoryFilter.add(new Option(name, name)));
       categoryFilter.value = CATEGORY_NAMES.includes(current) || current === "All" ? current : "All";
     }
@@ -631,6 +630,7 @@
   function renderCategories() {
     const grid = $("#categoryGrid");
     if (!grid) return;
+
     grid.innerHTML = "";
 
     if (categoryImageObserver) {
@@ -639,30 +639,50 @@
     }
 
     const canObserve = "IntersectionObserver" in window;
+
     if (canObserve) {
       categoryImageObserver = new IntersectionObserver((entries, observer) => {
         entries.forEach(entry => {
           if (!entry.isIntersecting) return;
-          const el = entry.target;
-          const imageUrl = el.dataset.categoryImage;
+
+          const imageEl = entry.target;
+          const imageUrl = imageEl.dataset.categoryImage;
+
           if (imageUrl) {
             const safeUrl = imageUrl.replace(/"/g, "%22");
-            el.style.backgroundImage = `url("${safeUrl}")`;
-            el.removeAttribute("data-category-image");
+            imageEl.style.backgroundImage = `url("${safeUrl}")`;
+            imageEl.removeAttribute("data-category-image");
           }
-          observer.unobserve(el);
+
+          observer.unobserve(imageEl);
         });
       }, { rootMargin: "140px 0px" });
     }
 
-    CATEGORIES.forEach(([category, image]) => {
+    /*
+     * All Products is a marketplace-only view, not a seller category.
+     * Its internal value is "All", which the existing filtering logic
+     * already understands to mean that no category filter is applied.
+     */
+    const allProductsImage =
+      "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=600&q=80";
+
+    const categoryCards = [
+      ["All Products", allProductsImage, "All"],
+      ...CATEGORIES.map(([name, image]) => [name, image, name])
+    ];
+
+    categoryCards.forEach(([label, image, categoryValue]) => {
       const button = document.createElement("button");
       button.type = "button";
       button.className = "category-card";
-      button.dataset.category = category;
-      button.setAttribute("aria-pressed", String(activeCategory === category));
-      if (activeCategory === category) button.classList.add("selected");
-      button.innerHTML = `<span class="cat-image"></span><span class="cat-shade"></span><span class="cat-name">${escapeHTML(category)}</span>`;
+      button.dataset.category = categoryValue;
+
+      const selected = activeCategory === categoryValue;
+      button.setAttribute("aria-pressed", String(selected));
+      if (selected) button.classList.add("selected");
+
+      button.innerHTML = `<span class="cat-image"></span><span class="cat-shade"></span><span class="cat-name">${escapeHTML(label)}</span>`;
 
       const imageEl = button.querySelector(".cat-image");
       imageEl.style.backgroundImage = "linear-gradient(135deg, #edf4e7, #cfe0c3)";
@@ -1077,7 +1097,7 @@
 
     let total = 0;
     cart.forEach(entry => {
-      const item = listings.find(listing => listing.id === entry.id);
+          const item = listings.find(listing => listing.id === entry.id);
       if (!item) return;
       const quantity = Math.max(1, Number(entry.quantity || 1));
       total += Number(item.price) * quantity;
@@ -1347,6 +1367,454 @@
 
     const year = $("#currentYear");
     if (year) year.textContent = String(new Date().getFullYear());
+
+    console.info(
+      `MavunoBridge ready: ${listings.length} listings loaded (${DEMO_LISTINGS.length} built-in demo samples).`
+    );
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init, { once: true });
+  } else {
+    init();
+  }
+})();
+  function openChat(id) {
+    const item = listings.find(listing => listing.id === id);
+
+    if (!item) {
+      showToast(t("cartNotFound"));
+      return;
+    }
+
+    const payload = {
+      productId: item.id,
+      productName: item.name,
+      seller: item.seller,
+      county: item.county,
+      phone: item.phone || "",
+      price: Number(item.price) || 0,
+      quantity: item.qty || "",
+      saleType: item.sale || "Both",
+      message: t("chatDraft", item.name)
+    };
+
+    if (!saveStorage(STORAGE.pendingChat, payload)) {
+      showToast(t("chatFailed"));
+      return;
+    }
+
+    window.location.href = "messages.html";
+  }
+
+  function requestProduct() {
+    const search = ($("#searchInput")?.value || "").trim();
+    const wanted = search || (activeCategory !== "All" ? activeCategory : "");
+
+    try {
+      if (wanted) sessionStorage.setItem(PREFILL_KEY, wanted);
+    } catch (error) {
+      console.warn("Could not pass the search to the request board:", error);
+    }
+
+    window.location.href = "buyer-requests.html";
+  }
+
+  function saveCart() {
+    if (!saveStorage(STORAGE.cart, cart)) {
+      showToast(t("cartSaveFail"));
+      return false;
+    }
+
+    return true;
+  }
+
+  function addToCart(id) {
+    const item = listings.find(listing => listing.id === id);
+
+    if (!item) {
+      showToast(t("cartNotFound"));
+      return;
+    }
+
+    const existing = cart.find(entry => entry.id === id);
+
+    if (existing) {
+      existing.quantity = Math.max(1, Number(existing.quantity || 1)) + 1;
+    } else {
+      cart.push({ id, quantity: 1 });
+    }
+
+    if (saveCart()) {
+      updateCartCount();
+      showToast(t("cartAdded", item.name));
+    }
+  }
+
+  function updateCartCount() {
+    const count = $("#cartCount");
+    if (!count) return;
+
+    const total = cart.reduce(
+      (sum, entry) => sum + Math.max(1, Number(entry.quantity || 1), 0),
+      0
+    );
+
+    count.textContent = String(total);
+  }
+
+  function renderCart() {
+    const container = $("#cartItems");
+    if (!container) return;
+
+    container.innerHTML = "";
+
+    cart = cart.filter(entry =>
+      listings.some(item => item.id === entry.id)
+    );
+
+    saveStorage(STORAGE.cart, cart);
+
+    if (!cart.length) {
+      const empty = document.createElement("p");
+      empty.textContent = t("cartEmpty");
+      container.appendChild(empty);
+      updateCartCount();
+      return;
+    }
+
+    let total = 0;
+
+    cart.forEach(entry => {
+      const item = listings.find(listing => listing.id === entry.id);
+      if (!item) return;
+
+      const quantity = Math.max(1, Number(entry.quantity || 1));
+      total += Number(item.price) * quantity;
+
+      const row = document.createElement("div");
+      row.className = "cart-item";
+
+      const info = document.createElement("div");
+      const title = document.createElement("h4");
+      title.textContent = item.name;
+
+      const detail = document.createElement("p");
+      detail.textContent =
+        `${quantity} × ${money(item.price)} / ${item.unit || "unit"} · ${item.seller || t("sellerFallback")}`;
+
+      info.append(title, detail);
+
+      const remove = document.createElement("button");
+      remove.type = "button";
+      remove.textContent = t("remove");
+      remove.dataset.removeCart = item.id;
+
+      row.append(info, remove);
+      container.appendChild(row);
+    });
+
+    const totalRow = document.createElement("p");
+    totalRow.className = "cart-total";
+    totalRow.style.fontWeight = "800";
+    totalRow.style.marginTop = "18px";
+    totalRow.textContent = t("subtotal", money(total));
+
+    container.appendChild(totalRow);
+    updateCartCount();
+  }
+
+  function removeFromCart(id) {
+    cart = cart.filter(entry => entry.id !== id);
+    saveCart();
+    renderCart();
+    showToast(t("cartRemoved"));
+  }
+
+  function clearCart() {
+    cart = [];
+    saveCart();
+    renderCart();
+    showToast(t("cartCleared"));
+  }
+
+  function clearFilters() {
+    activeCategory = "All";
+
+    if ($("#searchInput")) $("#searchInput").value = "";
+    if ($("#categoryFilter")) $("#categoryFilter").value = "All";
+    if ($("#locationFilter")) $("#locationFilter").value = "All";
+    if ($("#saleFilter")) $("#saleFilter").value = "All";
+    if ($("#fairPriceFilter")) $("#fairPriceFilter").value = "All";
+    if ($("#sortFilter")) $("#sortFilter").value = "recommended";
+
+    updateHint();
+    renderCategories();
+    renderListings();
+  }
+
+  const TRANSLATIONS = [
+    [".main-nav a[href=\"#marketplace\"]", "Marketplace", "Soko"],
+    [".main-nav a[href=\"smart-assist.html\"]", "Smart Assist", "Msaidizi Mahiri"],
+    [".main-nav a[href=\"sacco.html\"]", "SACCO Hub", "Kituo cha SACCO"],
+    [".main-nav a[href=\"buyer-requests.html\"]", "Buyer Requests", "Maombi ya Wanunuzi"],
+    [".main-nav a[href=\"messages.html\"]", "Messages", "Ujumbe"],
+    ["#authLink", "Sign in", "Ingia"],
+    ["#signOutButton", "Sign out", "Toka"],
+    [".hero .eyebrow", "KENYA'S FARM-TO-MARKET DEMO", "ONYESHO LA KENYA LA SHAMBANI HADI SOKONI"],
+    [".hero h1", "Good harvests deserve <span>better markets.</span>", "Mavuno mazuri yanastahili <span>masoko bora.</span>", "html"],
+    [".hero-description", "Connect directly with farmers, compare produce, discover opportunities and grow your business. Everything in one place.", "Wasiliana moja kwa moja na wakulima, linganisha mazao, gundua fursa na ukuze biashara yako. Yote mahali pamoja."],
+    ["#heroSellButton", "+ Sell your produce", "+ Uza mazao yako"],
+    [".category-section h2", "Explore categories", "Tazama aina za bidhaa"],
+    [".marketplace h2", "Marketplace", "Soko"],
+    ["#sellButton", "+ Create listing", "+ Tengeneza tangazo"],
+    ["#searchInput", "Search maize, beans, avocados...", "Tafuta mahindi, maharagwe, parachichi...", "placeholder"],
+    ["#showAllButton", "View all products →", "Tazama bidhaa zote →"],
+    ["#clearFiltersButton", "Clear filters", "Futa vichujio"],
+    ["#emptyState h3", "No listings found", "Hakuna matangazo yaliyopatikana"],
+    ["#emptyState p", "Try another search or filter, or create a new listing.", "Jaribu utafutaji au kichujio kingine, au tengeneza tangazo jipya."],
+    ["#emptySellButton", "Create a listing", "Tengeneza tangazo"],
+    ["#emptyRequestButton", "Post a buyer request", "Weka ombi la mnunuzi"],
+    ["#listingModalTitle", "Create a listing", "Tengeneza tangazo"],
+    ["#listingModal .modal-card > p", "Fill in your details. Fields marked * are required.", "Jaza maelezo yako. Sehemu zenye * ni lazima."],
+    ["#cartTitle", "Shopping cart", "Kikapu cha ununuzi"],
+    ["#clearCartButton", "Clear cart", "Futa kikapu"]
+  ];
+
+  const originalTexts = new Map();
+  let originalsCaptured = false;
+
+  function findTarget(selector) {
+    if (selector.charAt(0) === "^") {
+      const field = $(selector.slice(1));
+      return field ? field.closest("label") : null;
+    }
+
+    return $(selector);
+  }
+
+  function readText(element, mode) {
+    if (mode === "placeholder") return element.placeholder;
+    if (mode === "html") return element.innerHTML;
+    if (element.children.length === 0) return element.textContent;
+
+    const node = [...element.childNodes].find(
+      n => n.nodeType === 3 && n.nodeValue.trim()
+    );
+
+    return node ? node.nodeValue : "";
+  }
+
+  function writeText(element, mode, value) {
+    if (mode === "placeholder") {
+      element.placeholder = value;
+    } else if (mode === "html") {
+      element.innerHTML = value;
+    } else if (element.children.length === 0) {
+      element.textContent = value;
+    } else {
+      const node = [...element.childNodes].find(
+        n => n.nodeType === 3 && n.nodeValue.trim()
+      );
+
+      if (node) node.nodeValue = value;
+    }
+  }
+
+  function captureOriginals() {
+    if (originalsCaptured) return;
+    originalsCaptured = true;
+
+    TRANSLATIONS.forEach(([selector, , , mode]) => {
+      const element = findTarget(selector);
+
+      if (element && !originalTexts.has(element)) {
+        originalTexts.set(element, readText(element, mode));
+      }
+    });
+  }
+
+  function applyLanguage(language) {
+    currentLang = ["mix", "en", "sw"].includes(language) ? language : "mix";
+    document.documentElement.lang = currentLang === "sw" ? "sw" : "en";
+
+    captureOriginals();
+
+    TRANSLATIONS.forEach(([selector, english, swahili, mode]) => {
+      const element = findTarget(selector);
+      if (!element) return;
+
+      const original = originalTexts.get(element);
+
+      const value = currentLang === "mix"
+        ? original
+        : currentLang === "sw"
+          ? swahili
+          : english;
+
+      if (value !== undefined && value !== null) {
+        writeText(element, mode, value);
+      }
+    });
+
+    updateHint();
+    renderListings();
+    renderUser();
+
+    const cartModal = $("#cartModal");
+
+    if (cartModal && !cartModal.classList.contains("hidden")) {
+      renderCart();
+    }
+
+    const year = $("#currentYear");
+    if (year) year.textContent = String(new Date().getFullYear());
+  }
+
+  function restoreLanguage() {
+    const saved = loadStorage(STORAGE.language, "mix");
+    const select = $("#languageSelect");
+
+    if (select) {
+      select.value = ["mix", "en", "sw"].includes(saved) ? saved : "mix";
+      applyLanguage(select.value);
+    } else {
+      applyLanguage(saved);
+    }
+  }
+  function bindEvents() {
+    $("#sellButton")?.addEventListener("click", openListingModal);
+    $("#heroSellButton")?.addEventListener("click", openListingModal);
+    $("#emptySellButton")?.addEventListener("click", openListingModal);
+    $("#emptyRequestButton")?.addEventListener("click", requestProduct);
+    $("#signOutButton")?.addEventListener("click", signOut);
+    $("#listingForm")?.addEventListener("submit", handleListingSubmit);
+
+    $("#showAllButton")?.addEventListener("click", () => {
+      clearFilters();
+      $("#marketplace")?.scrollIntoView({ behavior: "smooth" });
+    });
+
+    $("#categoryGrid")?.addEventListener("click", event => {
+      const button = event.target.closest("[data-category]");
+      if (button) selectCategory(button.dataset.category);
+    });
+
+    $("#categoryFilter")?.addEventListener("change", event => {
+      selectCategory(event.target.value || "All");
+    });
+
+    ["searchInput", "locationFilter", "saleFilter", "fairPriceFilter", "sortFilter"].forEach(id => {
+      document.getElementById(id)?.addEventListener(
+        id === "searchInput" ? "input" : "change",
+        renderListings
+      );
+    });
+
+    $("#clearFiltersButton")?.addEventListener("click", clearFilters);
+
+    $("#listingGrid")?.addEventListener("click", event => {
+      const addButton = event.target.closest("[data-add-cart]");
+
+      if (addButton) {
+        addToCart(addButton.dataset.addCart);
+        return;
+      }
+
+      const chatButton = event.target.closest("[data-chat]");
+
+      if (chatButton) {
+        openChat(chatButton.dataset.chat);
+      }
+    });
+
+    $("#cartButton")?.addEventListener("click", () => {
+      renderCart();
+      openModal("cartModal");
+    });
+
+    $("#cartItems")?.addEventListener("click", event => {
+      const button = event.target.closest("[data-remove-cart]");
+      if (button) removeFromCart(button.dataset.removeCart);
+    });
+
+    $("#clearCartButton")?.addEventListener("click", clearCart);
+
+    $$("[data-close]").forEach(button => {
+      button.addEventListener("click", () => closeModal(button.dataset.close));
+    });
+
+    $$(".modal").forEach(modal => {
+      modal.addEventListener("click", event => {
+        if (event.target === modal) closeModal(modal.id);
+      });
+    });
+
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape") {
+        $$(".modal:not(.hidden)").forEach(modal => closeModal(modal.id));
+      }
+    });
+
+    $("#menuButton")?.addEventListener("click", () => {
+      const nav = $("#mainNav");
+      const button = $("#menuButton");
+
+      if (!nav || !button) return;
+
+      const isOpen = nav.classList.toggle("open");
+
+      button.setAttribute("aria-expanded", String(isOpen));
+      button.setAttribute(
+        "aria-label",
+        isOpen ? "Close navigation" : "Open navigation"
+      );
+    });
+
+    $("#mainNav")?.addEventListener("click", event => {
+      if (event.target.closest("a")) {
+        $("#mainNav")?.classList.remove("open");
+        $("#menuButton")?.setAttribute("aria-expanded", "false");
+      }
+    });
+
+    $("#languageSelect")?.addEventListener("change", event => {
+      saveStorage(STORAGE.language, event.target.value);
+      applyLanguage(event.target.value);
+      showToast(t("langChanged"));
+    });
+  }
+
+  function safely(label, step) {
+    try {
+      step();
+    } catch (error) {
+      console.error(`MavunoBridge: "${label}" failed`, error);
+    }
+  }
+
+  function init() {
+    if (!$("#listingGrid")) {
+      console.info(
+        "MavunoBridge: marketplace grid is not on this page; no marketplace startup needed."
+      );
+      return;
+    }
+
+    safely("load data", loadData);
+    safely("fill dropdowns", populateSelects);
+    safely("connect buttons", bindEvents);
+    safely("draw categories", renderCategories);
+    safely("draw listings", renderListings);
+    safely("show signed-in user", renderUser);
+    safely("cart count", updateCartCount);
+    safely("restore language", restoreLanguage);
+
+    const year = $("#currentYear");
+
+    if (year) {
+      year.textContent = String(new Date().getFullYear());
+    }
 
     console.info(
       `MavunoBridge ready: ${listings.length} listings loaded (${DEMO_LISTINGS.length} built-in demo samples).`
