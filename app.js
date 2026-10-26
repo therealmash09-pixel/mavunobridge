@@ -84,7 +84,7 @@
       category: "Grains", county: "Uasin Gishu", town: "Eldoret",
       price: 58, unit: "kg", qty: "300 kg", sale: "Bulk",
       seller: "Rift Valley Grain Hub", phone: "0733445566",
-      image: "images/corn-listing.png",
+      image: "images/corn-listing.jpg",
       description: "Dry maize for bulk buyers.",
       createdAt: 3
     },
@@ -234,13 +234,13 @@
     }
   ];
 
-  let listings = [];
-  let cart = [];
-  let activeCategory = "All";
-  let toastTimeout = null;
-  let isPublishing = false;
-  let currentLang = "mix";
-
+let listings = [];
+let cart = [];
+let activeCategory = "All";
+let categoryImageObserver = null;
+let toastTimeout = null;
+let isPublishing = false;
+let currentLang = "mix";
   /* LANGUAGE STRINGS FOR TEXT THAT THE SCRIPT CREATES (cards, cart, toasts) */
 
   const D = {
@@ -555,62 +555,78 @@
   }
 
   function renderCategories() {
-    const grid = $("#categoryGrid");
-    if (!grid) return;
+  const grid = $("#categoryGrid");
+  if (!grid) return;
 
-    grid.innerHTML = "";
+  grid.innerHTML = "";
 
-    CATEGORIES.forEach(([category, image]) => {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "category-card";
-      button.dataset.category = category;
-      button.setAttribute("aria-pressed", String(activeCategory === category));
+  const canObserve = "IntersectionObserver" in window;
 
-      if (activeCategory === category) button.classList.add("selected");
-
-      button.innerHTML = `
-        <span class="cat-image"></span>
-        <span class="cat-shade"></span>
-        <span class="cat-name">${escapeHTML(category)}</span>
-      `;
-
-      const imageEl = button.querySelector(".cat-image");
-      imageEl.style.backgroundImage = `url("${image}")`;
-
-      // If the photo is dead or blocked, show a green tile so the card
-      // still looks right (it keeps working as a filter button either way).
-      const probe = new Image();
-      probe.onerror = () => {
-        imageEl.style.backgroundImage =
-          "linear-gradient(135deg, #edf4e7, #cfe0c3)";
-      };
-      probe.src = image;
-
-      grid.appendChild(button);
-    });
+  if (categoryImageObserver) {
+    categoryImageObserver.disconnect();
+    categoryImageObserver = null;
   }
 
-  function selectCategory(category, scroll = true) {
-    const exists = category === "All" ||
-      CATEGORIES.some(([name]) => name === category);
+  if (canObserve) {
+    categoryImageObserver = new IntersectionObserver(
+      (entries, activeObserver) => {
+        entries.forEach(entry => {
+          if (!entry.isIntersecting) return;
 
-    activeCategory = exists ? category : "All";
+          const imageEl = entry.target;
+          const image = imageEl.dataset.categoryImage;
 
-    const filter = $("#categoryFilter");
-    if (filter) filter.value = activeCategory;
+          if (image) {
+            imageEl.style.backgroundImage = `url("${image}")`;
+            imageEl.removeAttribute("data-category-image");
+          }
 
-    renderCategories();
-    renderListings();
-    updateHint();
+          activeObserver.unobserve(imageEl);
+        });
+      },
+      {
+        rootMargin: "140px 0px"
+      }
+    );
+  }
 
-    if (scroll) {
-      $("#marketplace")?.scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-      });
+  CATEGORIES.forEach(([category, image]) => {
+    const button = document.createElement("button");
+
+    button.type = "button";
+    button.className = "category-card";
+    button.dataset.category = category;
+
+    button.setAttribute(
+      "aria-pressed",
+      String(activeCategory === category)
+    );
+
+    if (activeCategory === category) {
+      button.classList.add("selected");
     }
-  }
+
+    button.innerHTML = `
+      <span class="cat-image"></span>
+      <span class="cat-shade"></span>
+      <span class="cat-name">${escapeHTML(category)}</span>
+    `;
+
+    const imageEl = button.querySelector(".cat-image");
+
+    imageEl.style.backgroundImage =
+      "linear-gradient(135deg, #edf4e7, #cfe0c3)";
+
+    if (canObserve) {
+      imageEl.dataset.categoryImage = image;
+      categoryImageObserver.observe(imageEl);
+    } else {
+      imageEl.style.backgroundImage = `url("${image}")`;
+    }
+
+    grid.appendChild(button);
+  });
+}
 
   /* FAIR PRICE GUIDE */
 
