@@ -221,7 +221,7 @@
       category: "Grains", county: "Narok", town: "Narok",
       price: 72, unit: "kg", qty: "250 kg", sale: "Bulk",
       seller: "Narok Grain Growers", phone: "0790123489",
-      image: "https://images.unsplash.com/photo-1551754655-cd27e38d2076?auto=format&fit=crop&w=700&q=80",
+      image: "",
       description: "Sample wheat listing for bulk buyers.",
       createdAt: 18
     },
@@ -461,18 +461,30 @@ let currentLang = "mix";
   }
 
   function loadData() {
-    const savedListings = loadStorage(STORAGE.listings, []);
+ 
+    const categoryAliases = {
+      "Livestock Products": "Livestock Produce",
+      "Farm Inputs": "Agricultural Inputs",
+      "Tools & Equipment": "Farm Tools & Equipment"
+    };
+
     const userListings = Array.isArray(savedListings)
-      ? savedListings.filter(item =>
-          item &&
-          typeof item === "object" &&
-          item.demo !== true &&
-          item.id &&
-          item.name &&
-          item.category &&
-          Number.isFinite(Number(item.price))
-        )
+      ? savedListings
+          .filter(item =>
+            item &&
+            typeof item === "object" &&
+            item.demo !== true &&
+            item.id &&
+            item.name &&
+            item.category &&
+            Number.isFinite(Number(item.price))
+          )
+          .map(item => ({
+            ...item,
+            category: categoryAliases[item.category] || item.category
+          }))
       : [];
+
 
     // Keep demo listings separate so refreshes don't duplicate them.
     listings = [...DEMO_LISTINGS, ...userListings];
