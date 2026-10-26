@@ -4,13 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#244b30">
+  <meta name="color-scheme" content="light">
 
   <meta
     name="description"
     content="MavunoBridge connects Kenyan farmers, buyers, agricultural input suppliers and farm service providers."
   >
 
-  <meta name="color-scheme" content="light">
   <title>MavunoBridge | Farm to Market</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -23,20 +23,22 @@
 
   <link rel="stylesheet" href="style.css?v=16">
 
-  <!-- Keep these as separate files in the same GitHub repository. -->
+  <!-- Keep these files in the same repository as index.html. -->
   <script src="ai-config.js?v=2" defer></script>
-  <script src="buyer-guide.js?v=2" defer></script>
   <script src="app.js?v=18" defer></script>
+  <script src="buyer-guide.js?v=3" defer></script>
 </head>
 
 <body>
   <a class="skip-link" href="#marketplace">Skip to marketplace</a>
 
-  <!-- ===================== HEADER ===================== -->
+  <!-- ==================== HEADER ==================== -->
   <header class="topbar" id="top">
     <a href="#top" class="brand" aria-label="MavunoBridge home">
       <span class="brand-mark" aria-hidden="true">M</span>
-      <span class="brand-name">Mavuno<span class="brand-green">Bridge</span></span>
+      <span class="brand-name">
+        Mavuno<span class="brand-green">Bridge</span>
+      </span>
     </a>
 
     <button
@@ -68,6 +70,15 @@
         </select>
       </div>
 
+      <button
+        type="button"
+        id="openGuideButton"
+        class="outline-btn"
+        aria-label="Open buyer and farmer guide"
+      >
+        Help Guide
+      </button>
+
       <a href="login.html" id="authLink" class="outline-btn">
         Sign in
       </a>
@@ -94,10 +105,10 @@
   </header>
 
   <main>
-    <!-- ===================== HERO ===================== -->
+    <!-- ==================== HERO ==================== -->
     <section class="hero" aria-labelledby="heroTitle">
       <div class="hero-content">
-        <span class="eyebrow hero-eyebrow">
+        <span class="eyebrow">
           KENYA'S FARM-TO-MARKET DEMO
         </span>
 
@@ -113,11 +124,11 @@
 
         <div class="hero-buttons">
           <button type="button" id="heroSellButton" class="primary-btn">
-            <span aria-hidden="true">＋</span> Sell your produce
+            + Sell your produce
           </button>
 
           <a href="#marketplace" class="outline-btn">
-            Explore marketplace <span aria-hidden="true">→</span>
+            Explore marketplace →
           </a>
         </div>
 
@@ -147,19 +158,12 @@
       <div
         class="hero-visual"
         role="img"
-        aria-label="Fresh fruit and vegetables ready for market"
+        aria-label="Fresh agricultural produce ready for market"
       >
-        <div class="hero-visual-tag">
-          <span class="hero-tag-icon" aria-hidden="true">🌱</span>
-          <span>
-            <strong>From farm to market</strong>
-            <small>Made for Kenyan agriculture</small>
-          </span>
-        </div>
       </div>
     </section>
 
-    <!-- ===================== CATEGORIES ===================== -->
+    <!-- ==================== CATEGORIES ==================== -->
     <section
       class="category-section section-wrap"
       id="categories"
@@ -169,17 +173,15 @@
         <div>
           <span class="eyebrow">FIND WHAT YOU NEED</span>
           <h2 id="categoryHeading">Explore categories</h2>
-          <p>
-            Chagua category uone products zinazopatikana.
-          </p>
+          <p>Chagua category uone products zinazopatikana.</p>
         </div>
 
         <button type="button" id="showAllButton" class="text-btn">
-          View all products <span aria-hidden="true">→</span>
+          View all products →
         </button>
       </div>
 
-      <!-- app.js creates All Products first, followed by the real categories. -->
+      <!-- app.js builds All Products first, then the real categories. -->
       <div id="categoryGrid" class="category-grid">
         <div class="category-loading">
           <span class="loading-dot"></span>
@@ -188,7 +190,7 @@
       </div>
     </section>
 
-    <!-- ===================== MARKETPLACE ===================== -->
+    <!-- ==================== MARKETPLACE ==================== -->
     <section
       class="marketplace section-wrap"
       id="marketplace"
@@ -204,11 +206,11 @@
         </div>
 
         <button type="button" id="sellButton" class="primary-btn">
-          <span aria-hidden="true">＋</span> Create listing
+          + Create listing
         </button>
       </div>
 
-      <!-- ===================== SEARCH & FILTERS ===================== -->
+      <!-- SEARCH AND FILTERS -->
       <div class="filters" aria-label="Marketplace search and filters">
         <label class="search-box">
           <span class="search-icon" aria-hidden="true">⌕</span>
@@ -275,15 +277,16 @@
         </button>
       </div>
 
-      <!-- ===================== DEMO PRICE GUIDE ===================== -->
+      <!-- DEMO PRICE GUIDE -->
       <aside class="fair-guide" aria-label="Illustrative price guide">
         <div class="fair-guide-intro">
-          <span class="fair-guide-icon" aria-hidden="true">🌿</span>
+          <span class="fair-guide-icon" aria-hidden="true">🌱</span>
+
           <div>
             <strong>Fair-price guide</strong>
             <p>
-              Compare prices before buying. These are illustrative demo ranges,
-              not live market quotations.
+              Compare prices before buying. These are illustrative demo
+              ranges, not live market quotations.
             </p>
           </div>
         </div>
@@ -306,11 +309,12 @@
         </div>
       </aside>
 
-      <!-- ===================== RESULTS ===================== -->
+      <!-- RESULTS -->
       <div class="result-row">
         <span id="resultCount" aria-live="polite">
           Loading listings...
         </span>
+
         <span id="activeCategory" class="active-category"></span>
       </div>
 
@@ -326,7 +330,7 @@
         </div>
       </div>
 
-      <!-- Shown by app.js if there are no matching results. -->
+      <!-- EMPTY SEARCH RESULTS -->
       <div id="emptyState" class="empty-state hidden">
         <div class="empty-icon" aria-hidden="true">🌾</div>
 
@@ -356,16 +360,27 @@
       </div>
     </section>
 
-    <!-- ===================== FEATURED DESTINATIONS ===================== -->
-    <section class="feature-area section-wrap" aria-labelledby="featureHeading">
+    <!-- ==================== MAIN DESTINATIONS ==================== -->
+    <section
+      class="feature-area section-wrap"
+      aria-labelledby="featureHeading"
+    >
       <div class="section-heading">
         <div>
           <span class="eyebrow">MORE THAN A MARKETPLACE</span>
           <h2 id="featureHeading">Tools for your farming journey</h2>
           <p>
-            From crop questions to buyer demand, discover the next step.
+            Need help with crops, savings or a buyer? Choose where to go.
           </p>
         </div>
+
+        <button
+          type="button"
+          class="outline-btn"
+          id="openGuideFromFeatures"
+        >
+          Open website guide
+        </button>
       </div>
 
       <div class="feature-strip">
@@ -376,8 +391,15 @@
             Explore crop planning, pest guidance and farm questions.
           </p>
           <a href="smart-assist.html">
-            Explore Smart Assist <span aria-hidden="true">→</span>
+            Open Smart Assist →
           </a>
+          <button
+            class="outline-btn destination-guide-button"
+            type="button"
+            data-guide-go="smart-assist"
+          >
+            Take me there
+          </button>
         </article>
 
         <article class="destination-card">
@@ -387,25 +409,39 @@
             Discover sample savings groups and agricultural opportunities.
           </p>
           <a href="sacco.html">
-            Explore SACCO Hub <span aria-hidden="true">→</span>
+            Open SACCO Hub →
           </a>
+          <button
+            class="outline-btn destination-guide-button"
+            type="button"
+            data-guide-go="sacco"
+          >
+            Take me there
+          </button>
         </article>
 
         <article class="destination-card">
           <div class="destination-icon" aria-hidden="true">📦</div>
-          <h3>Buyer requests</h3>
+          <h3>Buyer Requests</h3>
           <p>
-            Buyers can describe what they need so farmers can respond.
+            Explore buyer requests and see what products people need.
           </p>
           <a href="buyer-requests.html">
-            Open request board <span aria-hidden="true">→</span>
+            Open request board →
           </a>
+          <button
+            class="outline-btn destination-guide-button"
+            type="button"
+            data-guide-go="requests"
+          >
+            Take me there
+          </button>
         </article>
       </div>
     </section>
   </main>
 
-  <!-- ===================== CREATE LISTING MODAL ===================== -->
+  <!-- ==================== CREATE LISTING MODAL ==================== -->
   <div
     id="listingModal"
     class="modal hidden"
@@ -576,7 +612,7 @@
             >
             <small>
               Choose a clear photo of the actual item. The demo may resize
-              your photo before saving it in this browser.
+              the photo before saving it in this browser.
             </small>
           </label>
 
@@ -618,14 +654,14 @@
         </div>
 
         <p class="demo-note modal-demo-note">
-          Demo notice: listings are saved in this browser only. They are not
-          automatically published to other users' devices.
+          Demo notice: listings are saved in this browser only and won't
+          automatically appear on other visitors' devices.
         </p>
       </form>
     </div>
   </div>
 
-  <!-- ===================== SHOPPING CART MODAL ===================== -->
+  <!-- ==================== SHOPPING CART MODAL ==================== -->
   <div
     id="cartModal"
     class="modal hidden"
@@ -674,7 +710,7 @@
     </div>
   </div>
 
-  <!-- ===================== TOAST / FEEDBACK ===================== -->
+  <!-- ==================== FEEDBACK ==================== -->
   <div
     id="toast"
     class="toast"
@@ -682,13 +718,15 @@
     aria-live="polite"
   ></div>
 
-  <!-- ===================== FOOTER ===================== -->
+  <!-- ==================== FOOTER ==================== -->
   <footer class="site-footer">
     <div class="footer-main">
       <div class="footer-brand">
         <a href="#top" class="brand" aria-label="Back to MavunoBridge home">
           <span class="brand-mark" aria-hidden="true">M</span>
-          <span class="brand-name">Mavuno<span class="brand-green">Bridge</span></span>
+          <span class="brand-name">
+            Mavuno<span class="brand-green">Bridge</span>
+          </span>
         </a>
 
         <p>Connecting harvests to opportunities.</p>
@@ -713,6 +751,13 @@
 
       <div class="footer-link-column">
         <strong>Help</strong>
+        <button
+          type="button"
+          class="text-btn footer-guide-button"
+          id="openGuideFooterButton"
+        >
+          Open website guide
+        </button>
         <a href="login.html">Demo account</a>
         <a href="#top">Back to top ↑</a>
       </div>
@@ -730,5 +775,26 @@
       </p>
     </div>
   </footer>
+
+  <!-- If the guide takes a farmer to this URL, open the listing form. -->
+  <script>
+    (() => {
+      const params = new URLSearchParams(window.location.search);
+
+      if (params.get("guide") !== "listing") return;
+
+      const openListingForm = () => {
+        document.getElementById("sellButton")?.click();
+      };
+
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", () => {
+          window.setTimeout(openListingForm, 0);
+        }, { once: true });
+      } else {
+        window.setTimeout(openListingForm, 0);
+      }
+    })();
+  </script>
 </body>
 </html>
