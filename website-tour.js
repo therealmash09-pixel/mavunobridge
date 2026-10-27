@@ -1,94 +1,119 @@
 /* ============================================================
-   MAVUNOBRIDGE — CHARACTER TOUR & AVATAR SYSTEM
+   MAVUNOBRIDGE — COMPACT TOUR ASSISTANT
    Complete replacement: website-tour.js
 
-   AVATAR DESIGN
-   - Original, bold, cel-shaded cartoon characters
-   - Dark-skinned Kenyan-inspired characters
-   - Individual illustrated backgrounds for each character
-   - Strong outlines and expressive, friendly faces
-   - No body movement
-   - No head movement
-   - No floating or bouncing
-   - Eyes blink naturally
-   - Mouth moves only while speech is playing
+   FEATURES
+   - Compact helper panel instead of a full-screen overlay
+   - Compass button fixed to the bottom-left
+   - Four selectable, dark-skinned cartoon farmer characters
+   - A different illustrated background for each character
+   - Selectable system voices
+   - Voice preview button
+   - English and Kenyan-style Kiswahili-English wording
+   - Read-aloud toggle
+   - Back, Next, Skip and Close controls
+   - Highlights relevant website sections when available
+   - Natural eye blinking
+   - Mouth movement only when speech is playing
+   - Can connect to existing Smart Assist avatar containers
+   - Does not replace the entire webpage
+   - Does not require Supabase or another backend
 
-   WEBSITE TOUR
-   - Skippable step-by-step tutorial
-   - Back and Next controls
-   - English and casual Kiswahili-English wording
-   - Browser speech synthesis when available
-   - Responsive desktop and mobile layout
-   - Can work on marketplace, Smart Assist and SACCO pages
-   - Safe checks for missing page elements
-
-   IMPORTANT:
-   This file uses original vector-drawn characters with a
-   bold cartoon aesthetic. It does not use copied characters
-   from a television show or image files from the internet.
+   NOTE
+   Speech options depend on the voices installed in the
+   user's browser or operating system.
    ============================================================ */
 
 (() => {
   "use strict";
 
-  /* ------------------------------------------------------------
-     1. PREVENT THE SCRIPT FROM RUNNING TWICE
-     ------------------------------------------------------------ */
-
-  if (window.__MAVUNOBRIDGE_CHARACTER_TOUR_V5__) {
+  if (window.__MAVUNOBRIDGE_COMPACT_GUIDE__) {
     return;
   }
 
-  window.__MAVUNOBRIDGE_CHARACTER_TOUR_V5__ = true;
+  window.__MAVUNOBRIDGE_COMPACT_GUIDE__ = true;
 
 
-  /* ------------------------------------------------------------
-     2. BASIC CONFIGURATION
-     ------------------------------------------------------------ */
+  /* =========================================================
+     1. SETTINGS
+     ========================================================= */
 
-  const TOUR_SEEN_KEY = "mavunobridge_tour_seen_v5";
+  const GUIDE_STORAGE_KEY = "mavunobridge_guide_seen_v6";
 
-  const TOUR_TRIGGER_SELECTOR = [
-    "[data-open-tour]",
-    "[data-tour-open]",
-    "#tourButton",
-    "#websiteTourButton",
-    "#tutorialButton",
-    "#guideButton",
-    "#helpTourButton",
-    "#openTutorial",
-    ".website-tour-trigger",
-    ".tour-trigger"
-  ].join(",");
+  const CHARACTER_STORAGE_KEY = "mavunobridge_guide_character_v6";
+
+  const VOICE_STORAGE_KEY = "mavunobridge_guide_voice_v6";
+
+  const LANGUAGE_STORAGE_KEY = "mavunobridge_guide_language_v6";
+
+  const SPEECH_STORAGE_KEY = "mavunobridge_guide_speech_v6";
+
+  let selectedCharacter = "akinyi";
+
+  let selectedVoiceURI = "";
+
+  let selectedLanguage = "en";
+
+  let readAloudEnabled = true;
+
+  let speechIsActive = false;
+
+  let activeUtterance = null;
+
+  let tourIsOpen = false;
+
+  let currentStep = 0;
+
+  let mouthTimer = null;
+
+  let voiceList = [];
+
+  let avatarCounter = 0;
+
+  let observer = null;
+
+  let observerScheduled = false;
+
+  let lastSpeakingUtterance = null;
 
 
-  /* ------------------------------------------------------------
-     3. CHARACTER DEFINITIONS
-     ------------------------------------------------------------ */
+  /* =========================================================
+     2. CHARACTER INFORMATION
+     ========================================================= */
 
   const CHARACTERS = {
     akinyi: {
       name: "Akinyi",
       role: "Farmer Guide",
-      skin: "#70402E",
-      skinShadow: "#4B281F",
-      skinLight: "#965D43",
+
+      skin: "#70452F",
+      skinDark: "#4B2C20",
+      skinLight: "#966448",
+
       hair: "#171313",
-      shirt: "#647D3F",
-      shirtLight: "#8CA45B",
+
+      clothing: "#607B43",
+      clothingDark: "#3F572E",
+      clothingLight: "#8DA763",
+
       scene: "farm",
       hairstyle: "afro"
     },
 
     wanjiku: {
       name: "Wanjiku",
-      role: "Market Guide",
-      skin: "#5E3528",
-      skinShadow: "#3D211A",
-      skinLight: "#89523B",
+      role: "Marketplace Guide",
+
+      skin: "#5D3528",
+      skinDark: "#3D211A",
+      skinLight: "#89533B",
+
       hair: "#171313",
-      shirt: "#C58A35",
-      shirtLight: "#E7B65B",
+
+      clothing: "#BE8334",
+      clothingDark: "#81531E",
+      clothingLight: "#E9BC65",
+
       scene: "market",
       hairstyle: "braids"
     },
@@ -96,12 +121,17 @@
     kamau: {
       name: "Kamau",
       role: "Smart Assist Guide",
-      skin: "#693B2B",
-      skinShadow: "#47261D",
-      skinLight: "#92583D",
-      hair: "#151313",
-      shirt: "#326B50",
-      shirtLight: "#57936B",
+
+      skin: "#693E2C",
+      skinDark: "#44251C",
+      skinLight: "#925C41",
+
+      hair: "#171313",
+
+      clothing: "#347258",
+      clothingDark: "#244D3A",
+      clothingLight: "#67A17D",
+
       scene: "smart",
       hairstyle: "twists"
     },
@@ -109,417 +139,369 @@
     otieno: {
       name: "Otieno",
       role: "SACCO Guide",
-      skin: "#512D22",
-      skinShadow: "#351D18",
-      skinLight: "#794832",
+
+      skin: "#512E23",
+      skinDark: "#341D17",
+      skinLight: "#794A34",
+
       hair: "#151313",
-      shirt: "#B45D3B",
-      shirtLight: "#D98558",
+
+      clothing: "#B85F3D",
+      clothingDark: "#7D3B27",
+      clothingLight: "#DE8A5D",
+
       scene: "sacco",
       hairstyle: "fade"
     }
   };
 
 
-  /* ------------------------------------------------------------
-     4. CHARACTER-SPECIFIC BACKGROUNDS
+  /* =========================================================
+     3. STORAGE
+     ========================================================= */
 
-     Each background is part of the SVG artwork.
+  function readStorage(key, fallback = "") {
+    try {
+      return localStorage.getItem(key) ?? fallback;
+    } catch (error) {
+      return fallback;
+    }
+  }
 
-     These are completely static illustrations. They do not
-     move or animate.
-     ------------------------------------------------------------ */
+  function saveStorage(key, value) {
+    try {
+      localStorage.setItem(key, String(value));
+    } catch (error) {
+      // The guide still works when storage is unavailable.
+    }
+  }
 
-  function createScene(character, id) {
+  function loadPreferences() {
+    const savedCharacter = readStorage(
+      CHARACTER_STORAGE_KEY,
+      "akinyi"
+    );
+
+    if (CHARACTERS[savedCharacter]) {
+      selectedCharacter = savedCharacter;
+    }
+
+    selectedVoiceURI = readStorage(VOICE_STORAGE_KEY, "");
+
+    const savedLanguage = readStorage(
+      LANGUAGE_STORAGE_KEY,
+      ""
+    );
+
+    if (savedLanguage === "en" || savedLanguage === "sw") {
+      selectedLanguage = savedLanguage;
+    } else {
+      const appLanguage = [
+        readStorage("mavunobridge_language"),
+        readStorage("mavunobridge_language_v1"),
+        readStorage("shambamarket_language_v2"),
+        readStorage("mb_language"),
+        readStorage("preferredLanguage")
+      ].join(" ").toLowerCase();
+
+      selectedLanguage =
+        appLanguage.includes("swahili") ||
+        appLanguage.includes("kiswahili") ||
+        appLanguage.includes("sheng") ||
+        /(^|\s)sw(\s|$)/.test(appLanguage)
+          ? "sw"
+          : "en";
+    }
+
+    readAloudEnabled =
+      readStorage(SPEECH_STORAGE_KEY, "true") !== "false";
+  }
+
+
+  /* =========================================================
+     4. ILLUSTRATED BACKGROUNDS
+     ========================================================= */
+
+  function createBackground(character, id) {
     if (character.scene === "farm") {
       return `
-        <defs>
-          <linearGradient id="${id}-sky"
-                          x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#F6C36F"/>
-            <stop offset="100%" stop-color="#FFE5A8"/>
-          </linearGradient>
-        </defs>
+        <rect width="240" height="270" fill="#F4CF87"/>
 
-        <rect width="420" height="420"
-              fill="url(#${id}-sky)"/>
+        <circle cx="186" cy="48" r="23" fill="#FFF1BD"/>
 
-        <circle cx="323" cy="77" r="34"
-                fill="#FFF2BD"/>
+        <path d="M0 130
+                 Q40 92 90 124
+                 Q142 83 190 121
+                 Q218 102 240 121
+                 L240 270 L0 270Z"
+              fill="#9DAD67"/>
 
-        <path d="M0 222
-                 Q75 154 145 208
-                 Q235 139 315 206
-                 Q372 170 420 210
-                 L420 420 L0 420Z"
-              fill="#94A85C"/>
+        <path d="M0 171
+                 Q65 135 120 173
+                 Q180 135 240 169
+                 L240 270 L0 270Z"
+              fill="#597A43"/>
 
-        <path d="M0 267
-                 Q90 219 173 267
-                 Q273 214 420 269
-                 L420 420 L0 420Z"
-              fill="#54763F"/>
+        <path d="M0 204 L80 171 L122 270 L0 270Z"
+              fill="#B29A4C"/>
 
-        <path d="M0 331 L170 257 L218 420 L0 420Z"
-              fill="#9E9A49"/>
+        <path d="M240 205 L160 171 L120 270 L240 270Z"
+              fill="#8F9545"/>
 
-        <path d="M420 326 L260 258 L210 420 L420 420Z"
-              fill="#8C9345"/>
-
-        <g fill="#42633A">
-          <path d="M40 274 l13 -29 l13 29Z"/>
-          <path d="M65 281 l12 -26 l12 26Z"/>
-          <path d="M338 257 l14 -31 l14 31Z"/>
-          <path d="M364 265 l12 -27 l12 27Z"/>
+        <g fill="#3E6339">
+          <path d="M14 164 l12 -27 l12 27Z"/>
+          <path d="M32 167 l10 -23 l10 23Z"/>
+          <path d="M190 155 l12 -27 l12 27Z"/>
+          <path d="M209 159 l10 -23 l10 23Z"/>
         </g>
 
-        <g fill="#E3C36D" opacity=".9">
-          <path d="M12 351 L125 420 L100 420Z"/>
-          <path d="M408 351 L295 420 L320 420Z"/>
+        <g fill="#F4D47A">
+          <circle cx="19" cy="218" r="3"/>
+          <circle cx="32" cy="232" r="3"/>
+          <circle cx="211" cy="220" r="3"/>
+          <circle cx="198" cy="238" r="3"/>
         </g>
       `;
     }
 
     if (character.scene === "market") {
       return `
-        <defs>
-          <linearGradient id="${id}-sky"
-                          x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stop-color="#F4BC78"/>
-            <stop offset="100%" stop-color="#F7DFAD"/>
-          </linearGradient>
-        </defs>
+        <rect width="240" height="270" fill="#F2C28C"/>
 
-        <rect width="420" height="420"
-              fill="url(#${id}-sky)"/>
+        <rect x="14" y="69" width="212" height="110"
+              rx="4" fill="#F4E1BE"
+              stroke="#60412B" stroke-width="3"/>
 
-        <rect x="24" y="82" width="372" height="164"
-              rx="8" fill="#F7E4C2"
-              stroke="#64402B" stroke-width="4"/>
+        <path d="M8 74 L232 74 L210 37 L30 37Z"
+              fill="#46744B"
+              stroke="#39271E" stroke-width="3"/>
 
-        <path d="M16 103 L404 103 L382 61
-                 L38 61Z"
-              fill="#47784B"
-              stroke="#30271F" stroke-width="4"/>
+        <path d="M30 37 L66 37 L58 74 L8 74Z"
+              fill="#E4AF4A"/>
 
-        <path d="M38 61 L91 61 L78 103 L25 103Z"
-              fill="#E9B456"/>
+        <path d="M66 37 L102 37 L94 74 L58 74Z"
+              fill="#C86248"/>
 
-        <path d="M91 61 L144 61 L131 103 L78 103Z"
-              fill="#D46748"/>
+        <path d="M102 37 L138 37 L130 74 L94 74Z"
+              fill="#E4AF4A"/>
 
-        <path d="M144 61 L197 61 L184 103 L131 103Z"
-              fill="#E9B456"/>
+        <path d="M138 37 L174 37 L166 74 L130 74Z"
+              fill="#C86248"/>
 
-        <path d="M197 61 L250 61 L237 103 L184 103Z"
-              fill="#D46748"/>
+        <path d="M174 37 L210 37 L232 74 L166 74Z"
+              fill="#E4AF4A"/>
 
-        <path d="M250 61 L303 61 L290 103 L237 103Z"
-              fill="#E9B456"/>
-
-        <path d="M303 61 L356 61 L343 103 L290 103Z"
-              fill="#D46748"/>
-
-        <path d="M356 61 L382 61 L404 103 L343 103Z"
-              fill="#E9B456"/>
-
-        <rect x="49" y="128" width="105" height="68"
-              rx="4" fill="#D7BF8E"
-              stroke="#64402B" stroke-width="3"/>
-
-        <rect x="170" y="128" width="105" height="68"
-              rx="4" fill="#D7BF8E"
-              stroke="#64402B" stroke-width="3"/>
-
-        <rect x="291" y="128" width="79" height="68"
-              rx="4" fill="#D7BF8E"
-              stroke="#64402B" stroke-width="3"/>
-
-        <g fill="#B74D36">
-          <circle cx="74" cy="151" r="11"/>
-          <circle cx="98" cy="151" r="11"/>
-          <circle cx="122" cy="151" r="11"/>
+        <g stroke="#6F482B" stroke-width="2">
+          <rect x="26" y="91" width="54" height="45"
+                fill="#D7BE90"/>
+          <rect x="93" y="91" width="54" height="45"
+                fill="#D7BE90"/>
+          <rect x="160" y="91" width="43" height="45"
+                fill="#D7BE90"/>
         </g>
 
-        <g fill="#E7B84C">
-          <circle cx="195" cy="151" r="11"/>
-          <circle cx="219" cy="151" r="11"/>
-          <circle cx="243" cy="151" r="11"/>
+        <g fill="#B95138">
+          <circle cx="39" cy="104" r="7"/>
+          <circle cx="53" cy="104" r="7"/>
+          <circle cx="67" cy="104" r="7"/>
         </g>
 
-        <g fill="#648B46">
-          <circle cx="313" cy="151" r="11"/>
-          <circle cx="338" cy="151" r="11"/>
-          <circle cx="350" cy="176" r="11"/>
+        <g fill="#E6B64E">
+          <circle cx="106" cy="104" r="7"/>
+          <circle cx="120" cy="104" r="7"/>
+          <circle cx="134" cy="104" r="7"/>
         </g>
 
-        <rect x="0" y="246" width="420" height="174"
-              fill="#B98A57"/>
+        <g fill="#688C46">
+          <circle cx="173" cy="104" r="7"/>
+          <circle cx="188" cy="104" r="7"/>
+        </g>
 
-        <path d="M0 285 Q210 250 420 285"
-              fill="none" stroke="#E0B47B"
-              stroke-width="7"/>
+        <rect x="0" y="179" width="240" height="91"
+              fill="#B68B5A"/>
+
+        <path d="M0 208 Q120 185 240 208"
+              stroke="#E0B97D" stroke-width="5"
+              fill="none"/>
       `;
     }
 
     if (character.scene === "smart") {
       return `
-        <defs>
-          <linearGradient id="${id}-sky"
-                          x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stop-color="#455E78"/>
-            <stop offset="100%" stop-color="#C1B6DB"/>
-          </linearGradient>
-        </defs>
+        <rect width="240" height="270" fill="#526A86"/>
 
-        <rect width="420" height="420"
-              fill="url(#${id}-sky)"/>
+        <circle cx="189" cy="42" r="30"
+                fill="#E7D9FF" opacity=".85"/>
 
-        <circle cx="332" cy="83" r="55"
-                fill="#E9DCFF" opacity=".45"/>
-
-        <g fill="#314660" opacity=".8">
-          <rect x="16" y="170" width="62" height="138"
-                rx="5"/>
-          <rect x="87" y="132" width="54" height="176"
-                rx="5"/>
-          <rect x="291" y="144" width="54" height="164"
-                rx="5"/>
-          <rect x="353" y="185" width="50" height="123"
-                rx="5"/>
+        <g fill="#354B64">
+          <rect x="8" y="110" width="39" height="104" rx="3"/>
+          <rect x="54" y="83" width="34" height="131" rx="3"/>
+          <rect x="153" y="90" width="36" height="124" rx="3"/>
+          <rect x="195" y="124" width="34" height="90" rx="3"/>
         </g>
 
-        <g fill="#DDE5F2" opacity=".85">
-          <rect x="28" y="190" width="10" height="12"/>
-          <rect x="48" y="190" width="10" height="12"/>
-          <rect x="28" y="215" width="10" height="12"/>
-          <rect x="48" y="215" width="10" height="12"/>
+        <g fill="#DDE9F5">
+          <rect x="17" y="124" width="7" height="9"/>
+          <rect x="30" y="124" width="7" height="9"/>
+          <rect x="17" y="142" width="7" height="9"/>
+          <rect x="30" y="142" width="7" height="9"/>
 
-          <rect x="100" y="154" width="10" height="12"/>
-          <rect x="120" y="154" width="10" height="12"/>
-          <rect x="100" y="179" width="10" height="12"/>
-          <rect x="120" y="179" width="10" height="12"/>
+          <rect x="62" y="96" width="7" height="9"/>
+          <rect x="75" y="96" width="7" height="9"/>
+          <rect x="62" y="114" width="7" height="9"/>
+          <rect x="75" y="114" width="7" height="9"/>
 
-          <rect x="304" y="165" width="10" height="12"/>
-          <rect x="324" y="165" width="10" height="12"/>
+          <rect x="162" y="104" width="7" height="9"/>
+          <rect x="175" y="104" width="7" height="9"/>
 
-          <rect x="365" y="203" width="10" height="12"/>
-          <rect x="384" y="203" width="10" height="12"/>
+          <rect x="204" y="138" width="7" height="9"/>
+          <rect x="217" y="138" width="7" height="9"/>
         </g>
 
-        <path d="M0 302 Q105 279 210 300
-                 Q320 276 420 302
-                 L420 420 L0 420Z"
-              fill="#4E7964"/>
+        <path d="M0 204
+                 Q60 184 120 204
+                 Q180 185 240 204
+                 L240 270 L0 270Z"
+              fill="#4D7962"/>
 
-        <g stroke="#E8E0FF" stroke-width="3" fill="none"
-           opacity=".8">
-          <circle cx="52" cy="80" r="17"/>
-          <path d="M52 63 V97 M35 80 H69"/>
+        <g fill="none" stroke="#EFE4FF" stroke-width="2">
+          <circle cx="29" cy="44" r="10"/>
+          <path d="M29 34 V54 M19 44 H39"/>
 
-          <circle cx="365" cy="120" r="14"/>
-          <path d="M365 106 V134 M351 120 H379"/>
-
-          <path d="M80 115 L118 89 L148 115"/>
-        </g>
-
-        <g fill="#E8E0FF" opacity=".9">
-          <circle cx="148" cy="115" r="4"/>
-          <circle cx="80" cy="115" r="4"/>
-          <circle cx="118" cy="89" r="4"/>
+          <circle cx="218" cy="75" r="8"/>
+          <path d="M218 67 V83 M210 75 H226"/>
         </g>
       `;
     }
 
     return `
-      <defs>
-        <linearGradient id="${id}-sky"
-                        x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stop-color="#80B5AC"/>
-          <stop offset="100%" stop-color="#DCE9C9"/>
-        </linearGradient>
-      </defs>
+      <rect width="240" height="270" fill="#9AB6A4"/>
 
-      <rect width="420" height="420"
-            fill="url(#${id}-sky)"/>
+      <circle cx="190" cy="44" r="25"
+              fill="#F5DDA2"/>
 
-      <circle cx="330" cy="73" r="45"
-              fill="#F8E5A9" opacity=".9"/>
+      <path d="M0 145
+               Q65 116 120 144
+               Q180 112 240 143
+               L240 270 L0 270Z"
+              fill="#6F9978"/>
 
-      <path d="M0 210 Q120 163 220 210
-               Q325 164 420 210
-               L420 420 L0 420Z"
-            fill="#7CA080"/>
+      <path d="M22 87 L120 35 L218 87Z"
+              fill="#47724F"
+              stroke="#354C39" stroke-width="3"/>
 
-      <rect x="56" y="113" width="308" height="151"
-            rx="7" fill="#F1D7AB"
-            stroke="#483A2C" stroke-width="4"/>
+      <rect x="35" y="87" width="170" height="97"
+            fill="#F1D6A8"
+            stroke="#44392D" stroke-width="3"/>
 
-      <path d="M35 117 L385 117 L354 73
-               L66 73Z"
-            fill="#4D7351"
-            stroke="#483A2C" stroke-width="4"/>
+      <rect x="96" y="124" width="48" height="60"
+            fill="#A46C42"
+            stroke="#44392D" stroke-width="3"/>
 
-      <rect x="180" y="171" width="60" height="93"
-            fill="#A56B40"
-            stroke="#483A2C" stroke-width="4"/>
+      <rect x="53" y="104" width="31" height="28"
+            fill="#B9D9D1"
+            stroke="#44392D" stroke-width="3"/>
 
-      <circle cx="229" cy="215" r="4"
-              fill="#F5DDA9"/>
+      <rect x="156" y="104" width="31" height="28"
+            fill="#B9D9D1"
+            stroke="#44392D" stroke-width="3"/>
 
-      <rect x="80" y="148" width="62" height="54"
-            fill="#B9D7CD"
-            stroke="#483A2C" stroke-width="4"/>
+      <path d="M68 104 V132 M53 118 H84"
+            stroke="#44392D" stroke-width="2"/>
 
-      <rect x="278" y="148" width="62" height="54"
-            fill="#B9D7CD"
-            stroke="#483A2C" stroke-width="4"/>
+      <path d="M171 104 V132 M156 118 H187"
+            stroke="#44392D" stroke-width="2"/>
 
-      <path d="M111 148 V202 M80 175 H142"
-            stroke="#483A2C" stroke-width="3"/>
-
-      <path d="M309 148 V202 M278 175 H340"
-            stroke="#483A2C" stroke-width="3"/>
-
-      <path d="M0 290 Q210 255 420 290
-               L420 420 L0 420Z"
-            fill="#537C57"/>
-
-      <g fill="#D7C376">
-        <path d="M36 315 Q48 294 60 315 Q48 305 36 315Z"/>
-        <path d="M350 324 Q362 303 374 324 Q362 314 350 324Z"/>
-      </g>
+      <path d="M0 205 Q120 186 240 205
+               L240 270 L0 270Z"
+            fill="#4D7A54"/>
     `;
   }
 
 
-  /* ------------------------------------------------------------
-     5. HAIRSTYLES
-
-     All faces use original vector artwork. Hairstyles are
-     different but remain static.
-     ------------------------------------------------------------ */
+  /* =========================================================
+     5. CHARACTER HAIR
+     ========================================================= */
 
   function createHairBack(character) {
     if (character.hairstyle === "afro") {
       return `
-        <path d="M126 174
-                 C105 158 110 133 122 117
-                 C116 95 142 70 164 80
-                 C178 53 209 57 222 72
-                 C247 57 272 83 273 101
-                 C300 117 303 148 285 173
-                 L276 202 L139 201Z"
-              fill="${character.hair}"
-              stroke="#211815" stroke-width="5"
-              stroke-linejoin="round"/>
-
-        <g fill="#252020">
-          <circle cx="145" cy="102" r="20"/>
-          <circle cx="170" cy="82" r="17"/>
-          <circle cx="197" cy="75" r="19"/>
-          <circle cx="226" cy="81" r="19"/>
-          <circle cx="254" cy="99" r="19"/>
-          <circle cx="273" cy="126" r="17"/>
-          <circle cx="132" cy="132" r="16"/>
+        <g fill="#171313"
+           stroke="#211816"
+           stroke-width="3">
+          <circle cx="88" cy="79" r="20"/>
+          <circle cx="103" cy="57" r="20"/>
+          <circle cx="127" cy="48" r="21"/>
+          <circle cx="151" cy="54" r="20"/>
+          <circle cx="171" cy="73" r="19"/>
+          <circle cx="177" cy="94" r="16"/>
+          <circle cx="82" cy="101" r="15"/>
         </g>
       `;
     }
 
     if (character.hairstyle === "braids") {
       return `
-        <path d="M132 160
-                 C119 122 139 76 180 72
-                 C220 56 263 82 282 118
-                 L282 225 L262 251 L248 189
-                 L163 194 L151 250 L130 226Z"
-              fill="${character.hair}"
-              stroke="#211815" stroke-width="5"
-              stroke-linejoin="round"/>
+        <path d="M78 83
+                 Q79 48 120 41
+                 Q161 39 176 75
+                 L176 155
+                 L156 171
+                 L148 111
+                 L103 111
+                 L96 171
+                 L78 155Z"
+              fill="#171313"
+              stroke="#211816" stroke-width="3"/>
 
-        <g fill="none" stroke="#302424"
-           stroke-width="8" stroke-linecap="round">
-          <path d="M143 119 Q131 168 143 230"/>
-          <path d="M158 99 Q148 159 160 240"/>
-          <path d="M175 88 Q170 155 180 245"/>
-          <path d="M191 81 Q190 150 198 247"/>
-          <path d="M209 81 Q214 150 213 246"/>
-          <path d="M229 88 Q239 156 228 243"/>
-          <path d="M248 99 Q266 164 247 233"/>
-          <path d="M267 117 Q284 166 265 219"/>
-        </g>
-
-        <g fill="none" stroke="#644031"
-           stroke-width="2" stroke-linecap="round">
-          <path d="M143 132 Q139 174 145 218"/>
-          <path d="M159 120 Q154 176 162 226"/>
-          <path d="M177 107 Q176 172 182 226"/>
-          <path d="M195 102 Q196 174 199 228"/>
-          <path d="M215 104 Q220 174 213 229"/>
-          <path d="M234 115 Q244 174 229 226"/>
-          <path d="M253 127 Q270 174 248 218"/>
+        <g fill="none" stroke="#302321" stroke-width="6"
+           stroke-linecap="round">
+          <path d="M86 67 Q82 111 91 158"/>
+          <path d="M98 51 Q96 112 103 163"/>
+          <path d="M111 45 Q112 110 115 159"/>
+          <path d="M125 43 Q128 106 128 162"/>
+          <path d="M139 47 Q144 106 141 159"/>
+          <path d="M153 56 Q161 106 154 155"/>
+          <path d="M165 70 Q176 111 165 145"/>
         </g>
       `;
     }
 
     if (character.hairstyle === "twists") {
       return `
-        <path d="M133 158
-                 C119 123 137 87 161 81
-                 C179 61 209 65 220 77
-                 C244 67 270 87 279 114
-                 L284 166 L266 191
-                 L147 190Z"
-              fill="${character.hair}"
-              stroke="#211815" stroke-width="5"
-              stroke-linejoin="round"/>
+        <path d="M80 92
+                 Q72 55 111 45
+                 Q142 33 164 56
+                 Q179 73 174 102
+                 L165 131 L91 130Z"
+              fill="#171313"
+              stroke="#211816" stroke-width="3"/>
 
-        <g fill="#201A18">
-          <circle cx="146" cy="106" r="13"/>
-          <circle cx="165" cy="83" r="12"/>
-          <circle cx="187" cy="76" r="12"/>
-          <circle cx="208" cy="77" r="12"/>
-          <circle cx="232" cy="83" r="12"/>
-          <circle cx="253" cy="100" r="12"/>
-          <circle cx="271" cy="124" r="12"/>
-        </g>
-
-        <g fill="#44302A">
-          <circle cx="164" cy="89" r="4"/>
-          <circle cx="190" cy="82" r="4"/>
-          <circle cx="212" cy="82" r="4"/>
-          <circle cx="235" cy="91" r="4"/>
+        <g fill="#211A18">
+          <circle cx="91" cy="62" r="10"/>
+          <circle cx="108" cy="49" r="10"/>
+          <circle cx="128" cy="45" r="10"/>
+          <circle cx="147" cy="52" r="10"/>
+          <circle cx="163" cy="68" r="10"/>
         </g>
       `;
     }
 
     return `
-      <path d="M134 166
-               L132 132
-               Q128 93 169 78
-               Q207 61 246 79
-               Q281 94 282 132
-               L279 173 L259 187
-               L151 186Z"
-            fill="${character.hair}"
-            stroke="#211815" stroke-width="5"
-            stroke-linejoin="round"/>
+      <path d="M79 89
+               Q75 49 116 42
+               Q152 36 173 66
+               L176 104 L162 124 L91 124Z"
+            fill="#171313"
+            stroke="#211816" stroke-width="3"/>
 
-      <path d="M146 112
-               Q166 83 200 88
-               Q238 81 266 112
-               L273 137
-               Q236 115 209 122
-               Q177 117 143 139Z"
-            fill="#28201D"/>
-
-      <path d="M147 130 Q158 113 169 115"
-            stroke="#493128" stroke-width="4"
-            fill="none" stroke-linecap="round"/>
-
-      <path d="M229 113 Q243 111 257 126"
-            stroke="#493128" stroke-width="4"
-            fill="none" stroke-linecap="round"/>
+      <path d="M84 81
+               Q99 53 129 59
+               Q151 55 168 79
+               L169 91
+               Q144 77 125 85
+               Q103 79 84 94Z"
+            fill="#29201C"/>
     `;
   }
 
@@ -527,446 +509,341 @@
   function createHairFront(character) {
     if (character.hairstyle === "afro") {
       return `
-        <path d="M139 145
-                 Q145 106 177 99
-                 Q207 88 237 103
-                 Q260 113 272 145
-                 Q254 127 238 132
-                 Q220 143 209 125
-                 Q195 148 176 132
-                 Q159 140 139 145Z"
-              fill="${character.hair}"
-              stroke="#211815" stroke-width="4"
-              stroke-linejoin="round"/>
-
-        <g fill="#272020">
-          <circle cx="158" cy="117" r="10"/>
-          <circle cx="180" cy="104" r="10"/>
-          <circle cx="203" cy="103" r="10"/>
-          <circle cx="228" cy="111" r="10"/>
-          <circle cx="250" cy="125" r="10"/>
-        </g>
+        <path d="M87 93
+                 Q90 57 119 54
+                 Q148 51 170 77
+                 L175 100
+                 Q155 85 145 95
+                 Q131 106 119 92
+                 Q106 104 94 97Z"
+              fill="#171313"
+              stroke="#211816" stroke-width="3"/>
       `;
     }
 
     if (character.hairstyle === "braids") {
       return `
-        <path d="M139 146
-                 Q144 104 180 93
-                 Q219 81 252 107
-                 Q266 121 273 146
-                 Q251 130 236 133
-                 Q219 131 209 146
-                 Q193 132 178 138
-                 Q157 136 139 146Z"
-              fill="${character.hair}"
-              stroke="#211815" stroke-width="4"
-              stroke-linejoin="round"/>
+        <path d="M87 92
+                 Q91 57 119 52
+                 Q148 49 169 76
+                 L174 98
+                 Q155 84 143 94
+                 Q132 102 119 93
+                 Q103 101 88 98Z"
+              fill="#171313"
+              stroke="#211816" stroke-width="3"/>
 
-        <g fill="none" stroke="#503026"
-           stroke-width="3" stroke-linecap="round">
-          <path d="M159 110 Q164 126 158 137"/>
-          <path d="M179 100 Q187 119 180 135"/>
-          <path d="M201 96 Q207 118 204 136"/>
-          <path d="M222 100 Q232 117 229 135"/>
-          <path d="M242 110 Q252 124 252 139"/>
+        <g stroke="#553729" stroke-width="2" fill="none">
+          <path d="M101 69 Q106 82 102 95"/>
+          <path d="M115 60 Q123 80 118 95"/>
+          <path d="M131 59 Q139 79 134 96"/>
+          <path d="M146 66 Q155 81 151 95"/>
         </g>
       `;
     }
 
     if (character.hairstyle === "twists") {
       return `
-        <path d="M137 145
-                 Q146 105 175 95
-                 Q210 80 242 98
-                 Q263 109 274 142
-                 L256 133 L240 139 L224 127
-                 L209 138 L192 126
-                 L177 138 L161 131Z"
-              fill="${character.hair}"
-              stroke="#211815" stroke-width="4"
-              stroke-linejoin="round"/>
+        <path d="M83 93
+                 Q87 60 113 52
+                 Q143 44 165 70
+                 L174 96
+                 L156 90 L144 97
+                 L131 87 L118 98
+                 L104 89 L91 97Z"
+              fill="#171313"
+              stroke="#211816" stroke-width="3"/>
       `;
     }
 
     return `
-      <path d="M139 145
-               Q144 111 177 99
-               Q210 84 244 100
-               Q266 113 273 144
-               L255 136 L236 140
-               L221 130 L204 139
-               L187 132 L171 139 L153 135Z"
-            fill="${character.hair}"
-            stroke="#211815" stroke-width="4"
-            stroke-linejoin="round"/>
+      <path d="M84 93
+               Q91 61 117 55
+               Q145 48 166 75
+               L174 95
+               L156 89 L143 97
+               L130 88 L116 96
+               L101 89 L90 96Z"
+            fill="#171313"
+            stroke="#211816" stroke-width="3"/>
     `;
   }
 
 
-  /* ------------------------------------------------------------
-     6. MAIN AVATAR SVG
+  /* =========================================================
+     6. COMPLETE STATIC CHARACTER ILLUSTRATION
 
-     The only moving parts are the two eye groups and the
-     three mouth frames controlled by JavaScript.
-     ------------------------------------------------------------ */
+     All drawing stays still except:
+       - open/closed eyes
+       - closed/open mouth frames
 
-  let avatarCounter = 0;
+     The illustration occupies a small panel, not the whole
+     browser window.
+     ========================================================= */
 
   function createAvatarSVG(characterKey) {
     const character = CHARACTERS[characterKey] || CHARACTERS.akinyi;
 
     avatarCounter += 1;
 
-    const id = "mb-avatar-" + avatarCounter;
+    const avatarId = "mb-character-" + avatarCounter;
 
     return `
       <svg
-        data-mb-avatar-svg="true"
-        data-mb-character="${characterKey}"
-        viewBox="0 0 420 420"
-        width="100%"
-        height="100%"
+        viewBox="0 0 240 270"
         role="img"
         aria-label="${character.name}, ${character.role}"
         xmlns="http://www.w3.org/2000/svg"
+        data-mb-avatar-svg="true"
+        data-mb-character="${characterKey}"
         preserveAspectRatio="xMidYMid meet"
       >
 
-        <!-- CHARACTER-SPECIFIC STATIC BACKGROUND -->
-        ${createScene(character, id)}
+        <!-- INDIVIDUAL BACKGROUND -->
+        ${createBackground(character, avatarId)}
 
-        <!-- BODY: STATIC -->
-        <path
-          d="M82 420
-             L96 350
-             Q105 320 145 310
-             L178 299
-             L242 299
-             L275 310
-             Q315 320 324 350
-             L338 420Z"
-          fill="${character.shirt}"
-          stroke="#241A17"
-          stroke-width="6"
-          stroke-linejoin="round"
-        />
+        <!-- CLOTHING -->
+        <path d="M35 270
+                 L45 214
+                 Q49 195 75 187
+                 L97 181
+                 L143 181
+                 L165 187
+                 Q191 195 195 214
+                 L205 270Z"
+              fill="${character.clothing}"
+              stroke="#241A17"
+              stroke-width="4"
+              stroke-linejoin="round"/>
 
-        <path
-          d="M154 315 L190 344 L210 330
-             L230 344 L266 315"
-          fill="none"
-          stroke="${character.shirtLight}"
-          stroke-width="6"
-          stroke-linecap="round"
-        />
+        <path d="M88 187 L106 210 L120 199
+                 L134 210 L152 187"
+              fill="none"
+              stroke="${character.clothingLight}"
+              stroke-width="4"
+              stroke-linecap="round"
+              stroke-linejoin="round"/>
 
-        <!-- NECK: STATIC -->
-        <path
-          d="M176 258
-             L176 305
-             Q210 329 244 305
-             L244 258Z"
-          fill="${character.skin}"
-          stroke="#241A17"
-          stroke-width="5"
-          stroke-linejoin="round"
-        />
+        <!-- NECK -->
+        <path d="M101 151 L101 187
+                 Q120 201 139 187 L139 151Z"
+              fill="${character.skin}"
+              stroke="#251A16"
+              stroke-width="3"/>
 
-        <!-- BACK OF HAIR -->
+        <!-- HAIR BEHIND HEAD -->
         ${createHairBack(character)}
 
         <!-- EARS -->
-        <path
-          d="M151 181
-             Q132 171 132 194
-             Q135 216 154 216"
-          fill="${character.skin}"
-          stroke="#241A17"
-          stroke-width="5"
-        />
+        <path d="M86 107
+                 Q73 100 75 119
+                 Q78 134 91 130Z"
+              fill="${character.skin}"
+              stroke="#251A16"
+              stroke-width="3"/>
 
-        <path
-          d="M269 181
-             Q288 171 288 194
-             Q285 216 266 216"
-          fill="${character.skin}"
-          stroke="#241A17"
-          stroke-width="5"
-        />
+        <path d="M154 107
+                 Q167 100 165 119
+                 Q162 134 149 130Z"
+              fill="${character.skin}"
+              stroke="#251A16"
+              stroke-width="3"/>
 
-        <!-- EAR DETAILS -->
-        <path
-          d="M146 190 Q139 196 149 205"
-          fill="none"
-          stroke="${character.skinShadow}"
-          stroke-width="4"
-          stroke-linecap="round"
-        />
+        <!-- FACE -->
+        <path d="M87 80
+                 Q91 58 120 58
+                 Q149 58 153 80
+                 L149 130
+                 Q143 159 120 166
+                 Q97 159 91 130Z"
+              fill="${character.skin}"
+              stroke="#251A16"
+              stroke-width="4"
+              stroke-linejoin="round"/>
 
-        <path
-          d="M274 190 Q281 196 271 205"
-          fill="none"
-          stroke="${character.skinShadow}"
-          stroke-width="4"
-          stroke-linecap="round"
-        />
+        <!-- FACE SHADING -->
+        <path d="M120 63
+                 Q146 65 150 87
+                 L145 130
+                 Q139 151 124 160
+                 Q142 134 137 103
+                 Q136 78 120 63Z"
+              fill="${character.skinDark}"
+              opacity=".28"/>
 
-        <!-- FACE SHAPE -->
-        <path
-          d="M146 137
-             Q152 100 210 98
-             Q268 100 274 137
-             L268 215
-             Q260 260 210 270
-             Q160 260 152 215Z"
-          fill="${character.skin}"
-          stroke="#241A17"
-          stroke-width="5"
-          stroke-linejoin="round"
-        />
-
-        <!-- FACE SHADING: STATIC -->
-        <path
-          d="M210 105
-             Q256 106 265 143
-             L260 211
-             Q253 247 222 262
-             Q252 228 246 187
-             Q244 142 210 105Z"
-          fill="${character.skinShadow}"
-          opacity=".22"
-        />
-
-        <path
-          d="M156 148
-             Q168 126 188 126"
-          fill="none"
-          stroke="${character.skinLight}"
-          stroke-width="6"
-          stroke-linecap="round"
-          opacity=".7"
-        />
+        <path d="M96 87 Q103 77 113 77"
+              stroke="${character.skinLight}"
+              stroke-width="3"
+              fill="none"
+              stroke-linecap="round"/>
 
         <!-- EYEBROWS -->
-        <path
-          d="M163 162 Q180 151 195 163"
-          fill="none"
-          stroke="#211715"
-          stroke-width="7"
-          stroke-linecap="round"
-        />
+        <path d="M95 103 Q106 96 114 103"
+              stroke="#211715"
+              stroke-width="5"
+              fill="none"
+              stroke-linecap="round"/>
 
-        <path
-          d="M225 163 Q241 151 257 162"
-          fill="none"
-          stroke="#211715"
-          stroke-width="7"
-          stroke-linecap="round"
-        />
+        <path d="M126 103 Q136 96 145 103"
+              stroke="#211715"
+              stroke-width="5"
+              fill="none"
+              stroke-linecap="round"/>
 
         <!-- OPEN EYES -->
         <g data-mb-eye-open="true">
-          <path
-            d="M163 180
-               Q179 165 196 180
-               Q181 197 163 180Z"
-            fill="#FFF7E9"
-            stroke="#211715"
-            stroke-width="4"
-            stroke-linejoin="round"
-          />
 
-          <ellipse
-            cx="180"
-            cy="180"
-            rx="6.5"
-            ry="9"
-            fill="#2B201C"
-          />
+          <path d="M95 112
+                   Q105 102 115 112
+                   Q106 124 95 112Z"
+                fill="#FFF7E9"
+                stroke="#241A17"
+                stroke-width="2.5"
+                stroke-linejoin="round"/>
 
-          <circle
-            cx="182"
-            cy="176"
-            r="2.5"
-            fill="#FFFFFF"
-          />
+          <ellipse cx="105" cy="113"
+                   rx="4" ry="6"
+                   fill="#271C18"/>
 
-          <path
-            d="M225 180
-               Q241 165 257 180
-               Q239 197 225 180Z"
-            fill="#FFF7E9"
-            stroke="#211715"
-            stroke-width="4"
-            stroke-linejoin="round"
-          />
+          <circle cx="106.5" cy="110.5"
+                  r="1.5" fill="#FFFFFF"/>
 
-          <ellipse
-            cx="242"
-            cy="180"
-            rx="6.5"
-            ry="9"
-            fill="#2B201C"
-          />
+          <path d="M125 112
+                   Q135 102 145 112
+                   Q134 124 125 112Z"
+                fill="#FFF7E9"
+                stroke="#241A17"
+                stroke-width="2.5"
+                stroke-linejoin="round"/>
 
-          <circle
-            cx="244"
-            cy="176"
-            r="2.5"
-            fill="#FFFFFF"
-          />
+          <ellipse cx="135" cy="113"
+                   rx="4" ry="6"
+                   fill="#271C18"/>
+
+          <circle cx="136.5" cy="110.5"
+                  r="1.5" fill="#FFFFFF"/>
+
         </g>
 
-        <!-- CLOSED EYES: SHOWN DURING BLINKS -->
+        <!-- CLOSED EYES USED FOR BLINKING -->
         <g data-mb-eye-closed="true" style="display:none">
-          <path
-            d="M164 182 Q180 188 195 182"
-            fill="none"
-            stroke="#211715"
-            stroke-width="5"
-            stroke-linecap="round"
-          />
 
-          <path
-            d="M226 182 Q241 188 256 182"
-            fill="none"
-            stroke="#211715"
-            stroke-width="5"
-            stroke-linecap="round"
-          />
+          <path d="M96 113 Q105 118 114 113"
+                stroke="#241A17"
+                stroke-width="3"
+                fill="none"
+                stroke-linecap="round"/>
+
+          <path d="M126 113 Q135 118 144 113"
+                stroke="#241A17"
+                stroke-width="3"
+                fill="none"
+                stroke-linecap="round"/>
+
         </g>
 
-        <!-- NOSE: STATIC -->
-        <path
-          d="M208 181
-             L202 207
-             Q208 213 217 208"
-          fill="none"
-          stroke="${character.skinShadow}"
-          stroke-width="4"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        />
+        <!-- NOSE -->
+        <path d="M120 114
+                 L116 130
+                 Q120 133 125 130"
+              fill="none"
+              stroke="${character.skinDark}"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"/>
 
-        <!-- NOSE HIGHLIGHT -->
-        <path
-          d="M208 185 L205 203"
-          fill="none"
-          stroke="${character.skinLight}"
-          stroke-width="2"
-          stroke-linecap="round"
-          opacity=".75"
-        />
+        <!-- STATIC CHEEK SHADING -->
+        <path d="M95 129 Q101 133 107 129"
+              fill="none"
+              stroke="${character.skinLight}"
+              stroke-width="3"
+              stroke-linecap="round"
+              opacity=".55"/>
 
-        <!-- CHEEK SHADING: STATIC -->
-        <path
-          d="M158 208 Q168 216 182 209"
-          fill="none"
-          stroke="${character.skinLight}"
-          stroke-width="5"
-          stroke-linecap="round"
-          opacity=".4"
-        />
-
-        <path
-          d="M238 209 Q251 216 261 208"
-          fill="none"
-          stroke="${character.skinLight}"
-          stroke-width="5"
-          stroke-linecap="round"
-          opacity=".4"
-        />
+        <path d="M133 129 Q139 133 145 129"
+              fill="none"
+              stroke="${character.skinLight}"
+              stroke-width="3"
+              stroke-linecap="round"
+              opacity=".55"/>
 
         <!-- CLOSED MOUTH -->
-        <path
-          data-mb-mouth-frame="0"
-          d="M190 232
-             Q210 243 230 232"
-          fill="none"
-          stroke="#2B1715"
-          stroke-width="5"
-          stroke-linecap="round"
-        />
+        <g data-mb-mouth-frame="0">
+
+          <path d="M109 142 Q120 148 131 142"
+                fill="none"
+                stroke="#2C1715"
+                stroke-width="3.5"
+                stroke-linecap="round"/>
+
+        </g>
 
         <!-- SPEAKING MOUTH: SMALL OPEN -->
         <g data-mb-mouth-frame="1" style="display:none">
-          <path
-            d="M192 231
-               Q210 244 228 231
-               Q225 248 210 249
-               Q195 248 192 231Z"
-            fill="#311719"
-            stroke="#241715"
-            stroke-width="4"
-            stroke-linejoin="round"
-          />
 
-          <path
-            d="M198 235 Q210 239 222 235"
-            fill="none"
-            stroke="#FFF0D9"
-            stroke-width="3"
-            stroke-linecap="round"
-          />
+          <path d="M110 141
+                   Q120 147 130 141
+                   Q127 151 120 151
+                   Q113 151 110 141Z"
+                fill="#311719"
+                stroke="#261714"
+                stroke-width="2.5"
+                stroke-linejoin="round"/>
+
+          <path d="M115 144 Q120 147 125 144"
+                fill="none"
+                stroke="#FFF0D9"
+                stroke-width="2"
+                stroke-linecap="round"/>
+
         </g>
 
         <!-- SPEAKING MOUTH: OPEN -->
         <g data-mb-mouth-frame="2" style="display:none">
-          <path
-            d="M190 230
-               Q210 243 230 230
-               Q227 254 210 255
-               Q193 254 190 230Z"
-            fill="#281315"
-            stroke="#241715"
-            stroke-width="4"
-            stroke-linejoin="round"
-          />
 
-          <path
-            d="M197 235
-               Q210 240 223 235
-               L220 241
-               Q210 244 200 241Z"
-            fill="#FFF0D9"
-          />
+          <path d="M108 140
+                   Q120 147 132 140
+                   Q130 154 120 155
+                   Q110 154 108 140Z"
+                fill="#281315"
+                stroke="#261714"
+                stroke-width="2.5"
+                stroke-linejoin="round"/>
 
-          <path
-            d="M202 248 Q210 244 218 248"
-            fill="none"
-            stroke="#A84C4A"
-            stroke-width="3"
-            stroke-linecap="round"
-          />
+          <path d="M114 145
+                   Q120 148 126 145
+                   L124 149
+                   Q120 151 116 149Z"
+                fill="#FFF0D9"/>
+
         </g>
 
         <!-- HAIR IN FRONT -->
         ${createHairFront(character)}
 
-        <!-- FINISHING DETAILS -->
+        <!-- SIMPLE STATIC CHARACTER DETAIL -->
         ${
-          character.hairstyle === "braids"
+          characterKey === "akinyi"
             ? `
-              <g fill="#D7A74D"
-                 stroke="#39271D"
-                 stroke-width="3">
-                <circle cx="143" cy="216" r="6"/>
-                <circle cx="265" cy="215" r="6"/>
-              </g>
+              <circle cx="82" cy="131" r="3"
+                      fill="#E9C36D"/>
+              <circle cx="158" cy="131" r="3"
+                      fill="#E9C36D"/>
             `
             : ""
         }
 
         ${
-          characterKey === "akinyi"
+          characterKey === "wanjiku"
             ? `
-              <g fill="none"
-                 stroke="#E8BE62"
-                 stroke-width="4">
-                <circle cx="144" cy="221" r="7"/>
-                <circle cx="276" cy="221" r="7"/>
-              </g>
+              <circle cx="80" cy="145" r="4"
+                      fill="#E8B550"
+                      stroke="#39271D"
+                      stroke-width="1.5"/>
+              <circle cx="160" cy="145" r="4"
+                      fill="#E8B550"
+                      stroke="#39271D"
+                      stroke-width="1.5"/>
             `
             : ""
         }
@@ -976,458 +853,582 @@
   }
 
 
-  /* ------------------------------------------------------------
-     7. AVATAR STYLES
+  /* =========================================================
+     7. COMPACT HELPER STYLES
 
-     Notice that there are no keyframe animations here.
-
-     The JavaScript changes only the eyes and the mouth SVGs.
-     ------------------------------------------------------------ */
+     No backdrop.
+     No full-screen modal.
+     No avatar-sized page overlay.
+     ========================================================= */
 
   const style = document.createElement("style");
 
-  style.id = "mavunobridge-character-tour-styles";
+  style.id = "mavunobridge-compact-guide-styles";
 
   style.textContent = `
-    .mb-tour-root,
-    .mb-tour-root *,
-    .mb-avatar-mount,
-    .mb-avatar-mount * {
+    #mb-guide-widget,
+    #mb-guide-widget *,
+    .mb-guide-mounted-avatar,
+    .mb-guide-mounted-avatar * {
       box-sizing: border-box;
     }
 
-    .mb-tour-root {
+    /* BOTTOM-LEFT COMPASS */
+
+    #mb-guide-compass {
       position: fixed;
-      inset: 0;
-      z-index: 99990;
-      display: none;
-      font-family: Arial, Helvetica, sans-serif;
-      color: #203526;
-    }
+      left: 16px;
+      bottom: 16px;
+      z-index: 99980;
 
-    .mb-tour-root.mb-tour-visible {
-      display: block;
-    }
-
-    .mb-tour-backdrop {
-      position: absolute;
-      inset: 0;
-      background: rgba(13, 23, 16, .70);
-    }
-
-    .mb-tour-dialog {
-      position: absolute;
-      width: min(930px, calc(100% - 30px));
-      max-height: min(700px, calc(100dvh - 32px));
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      overflow-y: auto;
-      background: #FFFFFF;
-      border: 2px solid #DCE5D6;
-      border-radius: 20px;
-      box-shadow: 0 20px 65px rgba(0, 0, 0, .28);
-    }
-
-    .mb-tour-header {
-      min-height: 60px;
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 14px 20px;
-      border-bottom: 1px solid #E7EDE3;
-    }
-
-    .mb-tour-brand {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 15px;
-      font-weight: 800;
-      color: #244B30;
-    }
-
-    .mb-tour-brand-mark {
-      display: grid;
-      place-items: center;
-      width: 34px;
-      height: 34px;
-      flex: 0 0 34px;
-      border-radius: 10px;
-      background: #E9F0DF;
-      color: #244B30;
-      font-size: 19px;
-    }
-
-    .mb-tour-close {
-      width: 38px;
-      height: 38px;
-      flex: 0 0 38px;
-      border: 0;
-      border-radius: 10px;
-      background: #F0F3ED;
-      color: #27382B;
-      font-size: 25px;
-      line-height: 1;
-      cursor: pointer;
-    }
-
-    .mb-tour-close:hover {
-      background: #E1E9DC;
-    }
-
-    .mb-tour-main {
-      display: grid;
-      grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr);
-      gap: 25px;
-      padding: 22px;
-    }
-
-    .mb-tour-character-card {
-      min-width: 0;
-      align-self: stretch;
-      overflow: hidden;
-      border: 1px solid #DFE6D9;
-      border-radius: 17px;
-      background: #F5F2E7;
-    }
-
-    .mb-tour-avatar-stage {
-      width: 100%;
-      aspect-ratio: 1 / 1;
-      overflow: hidden;
-      background: #EDE8D8;
-    }
-
-    .mb-tour-avatar-stage svg {
-      display: block;
-      width: 100%;
-      height: 100%;
-    }
-
-    .mb-tour-character-info {
-      padding: 14px 16px 17px;
-      background: #FFFFFF;
-      border-top: 1px solid #E2E7DC;
-    }
-
-    .mb-tour-character-name {
-      margin: 0;
-      color: #243B2A;
-      font-size: 20px;
-      font-weight: 800;
-    }
-
-    .mb-tour-character-role {
-      margin: 5px 0 0;
-      color: #657564;
-      font-size: 13px;
-      font-weight: 600;
-    }
-
-    .mb-tour-content {
-      display: flex;
-      min-width: 0;
-      flex-direction: column;
       justify-content: center;
-      padding: 6px 0;
-    }
+      gap: 9px;
 
-    .mb-tour-eyebrow {
-      margin: 0 0 12px;
-      color: #537744;
-      font-size: 12px;
+      min-height: 48px;
+      min-width: 48px;
+      padding: 10px 15px;
+
+      border: 2px solid #DDE7D5;
+      border-radius: 15px;
+
+      background: #244B30;
+      color: #FFFFFF;
+
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 13px;
       font-weight: 800;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-    }
 
-    .mb-tour-title {
-      margin: 0 0 15px;
-      color: #203A28;
-      font-size: clamp(24px, 3vw, 34px);
-      line-height: 1.16;
-      font-weight: 850;
-      overflow-wrap: anywhere;
-    }
+      box-shadow: 0 5px 18px rgba(24, 50, 29, .23);
 
-    .mb-tour-description {
-      margin: 0;
-      color: #526154;
-      font-size: 16px;
-      line-height: 1.75;
-      overflow-wrap: anywhere;
-    }
-
-    .mb-tour-tip {
-      margin-top: 22px;
-      padding: 13px 15px;
-      border-left: 4px solid #749454;
-      border-radius: 0 9px 9px 0;
-      background: #F3F6EE;
-      color: #3F5742;
-      font-size: 13px;
-      line-height: 1.6;
-    }
-
-    .mb-tour-progress-area {
-      margin-top: 25px;
-    }
-
-    .mb-tour-progress-label {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 9px;
-      color: #667568;
-      font-size: 12px;
-      font-weight: 700;
-    }
-
-    .mb-tour-progress-track {
-      width: 100%;
-      height: 6px;
-      overflow: hidden;
-      border-radius: 99px;
-      background: #E6EADF;
-    }
-
-    .mb-tour-progress-value {
-      height: 100%;
-      width: 0;
-      background: #547D3D;
-      border-radius: 99px;
-    }
-
-    .mb-tour-footer {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 14px;
-      padding: 15px 20px;
-      border-top: 1px solid #E7EDE3;
-      background: #FBFCF9;
-    }
-
-    .mb-tour-skip {
-      border: 0;
-      background: transparent;
-      color: #566857;
-      font-size: 13px;
-      font-weight: 700;
-      padding: 10px 4px;
       cursor: pointer;
     }
 
-    .mb-tour-actions {
+    #mb-guide-compass:hover {
+      background: #193B24;
+    }
+
+    #mb-guide-compass:focus-visible {
+      outline: 3px solid #D0A54E;
+      outline-offset: 3px;
+    }
+
+    #mb-guide-compass svg {
+      width: 23px;
+      height: 23px;
+      flex: 0 0 23px;
+    }
+
+    /* COMPACT PANEL */
+
+    #mb-guide-widget {
+      position: fixed;
+      z-index: 99979;
+
+      left: 16px;
+      bottom: 76px;
+
+      width: min(370px, calc(100vw - 32px));
+
+      max-height: min(610px, calc(100dvh - 105px));
+
+      display: none;
+      flex-direction: column;
+
+      overflow: hidden;
+
+      border: 1px solid #DCE5D6;
+      border-radius: 16px;
+
+      background: #FFFFFF;
+      color: #24382A;
+
+      box-shadow: 0 12px 38px rgba(20, 35, 23, .25);
+
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    #mb-guide-widget.mb-guide-open {
+      display: flex;
+    }
+
+    .mb-guide-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+
+      flex: 0 0 auto;
+
+      padding: 12px 14px;
+
+      border-bottom: 1px solid #E6EBE1;
+      background: #F9FBF7;
+    }
+
+    .mb-guide-brand {
       display: flex;
       align-items: center;
       gap: 9px;
+
+      min-width: 0;
+
+      color: #244B30;
+      font-size: 13px;
+      font-weight: 800;
     }
 
-    .mb-tour-button {
-      min-height: 43px;
-      border: 1px solid #D8E0D2;
-      border-radius: 10px;
-      padding: 10px 16px;
-      background: #FFFFFF;
-      color: #29412E;
-      font-size: 14px;
-      font-weight: 800;
+    .mb-guide-brand-mark {
+      display: grid;
+      place-items: center;
+
+      width: 30px;
+      height: 30px;
+      flex: 0 0 30px;
+
+      border-radius: 9px;
+      background: #E6EFDD;
+
+      font-size: 17px;
+    }
+
+    .mb-guide-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .mb-guide-icon-button {
+      display: grid;
+      place-items: center;
+
+      width: 32px;
+      height: 32px;
+      flex: 0 0 32px;
+
+      border: 0;
+      border-radius: 8px;
+
+      background: #EDF2E8;
+      color: #304733;
+
+      font-size: 18px;
+
       cursor: pointer;
     }
 
-    .mb-tour-button:disabled {
-      opacity: .43;
+    .mb-guide-icon-button:hover {
+      background: #DFE8D8;
+    }
+
+    .mb-guide-scroll {
+      min-height: 0;
+      flex: 1 1 auto;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+    }
+
+    /* COMPACT CHARACTER AREA */
+
+    .mb-guide-character-row {
+      display: grid;
+      grid-template-columns: 110px minmax(0, 1fr);
+      align-items: center;
+      gap: 13px;
+
+      padding: 13px 14px 10px;
+    }
+
+    .mb-guide-avatar-stage {
+      width: 110px;
+      height: 125px;
+
+      overflow: hidden;
+
+      border: 1px solid #DADFD2;
+      border-radius: 12px;
+
+      background: #EFE8D5;
+    }
+
+    .mb-guide-avatar-stage svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .mb-guide-character-text {
+      min-width: 0;
+    }
+
+    .mb-guide-character-name {
+      margin: 0 0 5px;
+
+      color: #263B2B;
+      font-size: 17px;
+      font-weight: 800;
+    }
+
+    .mb-guide-character-role {
+      margin: 0 0 9px;
+
+      color: #677666;
+      font-size: 11px;
+      line-height: 1.5;
+    }
+
+    .mb-guide-label {
+      display: block;
+
+      margin-bottom: 5px;
+
+      color: #4C5C4D;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .mb-guide-select {
+      display: block;
+      width: 100%;
+      min-width: 0;
+      min-height: 34px;
+
+      border: 1px solid #D5DFD0;
+      border-radius: 8px;
+
+      padding: 6px 8px;
+
+      background: #FFFFFF;
+      color: #293D2C;
+
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 12px;
+    }
+
+    .mb-guide-select:focus-visible {
+      outline: 2px solid #73985E;
+      outline-offset: 2px;
+    }
+
+    /* GUIDE TEXT */
+
+    .mb-guide-copy {
+      padding: 0 14px 13px;
+    }
+
+    .mb-guide-eyebrow {
+      margin: 4px 0 6px;
+
+      color: #68854F;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+    }
+
+    .mb-guide-title {
+      margin: 0 0 8px;
+
+      color: #233C2A;
+      font-size: 21px;
+      line-height: 1.2;
+      font-weight: 850;
+
+      overflow-wrap: anywhere;
+    }
+
+    .mb-guide-description {
+      margin: 0;
+
+      color: #526153;
+      font-size: 13px;
+      line-height: 1.65;
+
+      overflow-wrap: anywhere;
+    }
+
+    .mb-guide-tip {
+      margin-top: 12px;
+      padding: 10px 11px;
+
+      border-left: 3px solid #79945B;
+      border-radius: 0 8px 8px 0;
+
+      background: #F2F6ED;
+      color: #455B43;
+
+      font-size: 11px;
+      line-height: 1.55;
+    }
+
+    /* VOICE SETTINGS */
+
+    .mb-guide-settings {
+      display: grid;
+      grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr);
+      gap: 10px;
+
+      padding: 11px 14px 12px;
+
+      border-top: 1px solid #E6EBE1;
+      background: #FBFCF9;
+    }
+
+    .mb-guide-setting {
+      min-width: 0;
+    }
+
+    .mb-guide-voice-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      padding: 0 14px 12px;
+
+      background: #FBFCF9;
+    }
+
+    .mb-guide-read-toggle {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+
+      color: #4F604F;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .mb-guide-read-toggle input {
+      accent-color: #315C38;
+    }
+
+    .mb-guide-preview {
+      min-height: 32px;
+
+      border: 1px solid #D4DFCF;
+      border-radius: 8px;
+
+      padding: 6px 10px;
+
+      background: #FFFFFF;
+      color: #2B4B31;
+
+      font-size: 11px;
+      font-weight: 800;
+
+      cursor: pointer;
+    }
+
+    .mb-guide-preview:hover {
+      background: #EDF4E7;
+    }
+
+    .mb-guide-voice-status {
+      padding: 0 14px 10px;
+
+      background: #FBFCF9;
+      color: #778275;
+
+      font-size: 10px;
+      line-height: 1.4;
+    }
+
+    /* PROGRESS */
+
+    .mb-guide-progress {
+      padding: 0 14px 11px;
+      background: #FBFCF9;
+    }
+
+    .mb-guide-progress-label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+
+      margin-bottom: 6px;
+
+      color: #697668;
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    .mb-guide-progress-track {
+      height: 5px;
+      overflow: hidden;
+
+      border-radius: 99px;
+      background: #E4EADF;
+    }
+
+    .mb-guide-progress-value {
+      width: 0;
+      height: 100%;
+
+      border-radius: 99px;
+      background: #648749;
+    }
+
+    /* BUTTONS */
+
+    .mb-guide-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+
+      padding: 10px 12px;
+
+      border-top: 1px solid #E2E9DD;
+      background: #FFFFFF;
+    }
+
+    .mb-guide-footer-left,
+    .mb-guide-footer-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .mb-guide-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+
+      min-height: 35px;
+      min-width: 0;
+
+      border: 1px solid #D9E1D4;
+      border-radius: 8px;
+
+      padding: 8px 10px;
+
+      background: #FFFFFF;
+      color: #304832;
+
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 11px;
+      font-weight: 800;
+
+      white-space: nowrap;
+
+      cursor: pointer;
+    }
+
+    .mb-guide-button:hover {
+      background: #F0F4EC;
+    }
+
+    .mb-guide-button:disabled {
+      opacity: .4;
       cursor: not-allowed;
     }
 
-    .mb-tour-button-primary {
+    .mb-guide-primary {
       border-color: #244B30;
       background: #244B30;
       color: #FFFFFF;
     }
 
-    .mb-tour-button-primary:hover {
+    .mb-guide-primary:hover {
       background: #193B24;
     }
 
-    .mb-tour-button-secondary:hover {
-      background: #EFF3EB;
-    }
-
-    .mb-tour-sound-note {
-      margin-top: 13px;
-      color: #758074;
-      font-size: 11px;
-      line-height: 1.5;
-    }
-
-    .mb-tour-help-button {
-      position: fixed;
-      right: 18px;
-      bottom: 18px;
-      z-index: 9990;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      min-height: 44px;
-      border: 1px solid #DAE4D5;
-      border-radius: 13px;
-      padding: 11px 16px;
-      background: #244B30;
-      color: #FFFFFF;
-      font: 800 13px Arial, Helvetica, sans-serif;
-      box-shadow: 0 5px 20px rgba(25, 46, 29, .18);
+    .mb-guide-skip {
+      border: 0;
+      background: transparent;
+      color: #637264;
+      font-size: 10px;
+      font-weight: 800;
       cursor: pointer;
     }
 
-    .mb-tour-help-button:hover {
-      background: #193B24;
+    .mb-guide-skip:hover {
+      color: #244B30;
     }
 
-    .mb-avatar-mount {
-      position: relative;
-      display: block;
-      width: 100%;
-      height: 100%;
+    /* OTHER PAGE AVATAR CONTAINERS */
+
+    .mb-guide-mounted-avatar {
+      width: min(155px, 100%);
+      max-width: 100%;
+      aspect-ratio: 240 / 270;
       overflow: hidden;
     }
 
-    .mb-avatar-mount svg {
+    .mb-guide-mounted-avatar svg {
       display: block;
       width: 100%;
       height: 100%;
     }
 
-    @media (max-width: 680px) {
-      .mb-tour-dialog {
-        width: calc(100% - 18px);
-        max-height: calc(100dvh - 18px);
-        border-radius: 15px;
+    /* MOBILE */
+
+    @media (max-width: 430px) {
+      #mb-guide-compass {
+        left: 12px;
+        bottom: 12px;
       }
 
-      .mb-tour-header {
-        min-height: 52px;
-        padding: 10px 13px;
+      #mb-guide-widget {
+        left: 12px;
+        bottom: 70px;
+
+        width: calc(100vw - 24px);
+        max-height: calc(100dvh - 86px);
       }
 
-      .mb-tour-brand {
-        font-size: 13px;
+      .mb-guide-character-row {
+        grid-template-columns: 94px minmax(0, 1fr);
+        gap: 10px;
       }
 
-      .mb-tour-main {
-        grid-template-columns: minmax(0, 1fr);
-        gap: 16px;
-        padding: 13px;
+      .mb-guide-avatar-stage {
+        width: 94px;
+        height: 108px;
       }
 
-      .mb-tour-character-card {
-        display: grid;
-        grid-template-columns: minmax(0, 150px) minmax(0, 1fr);
-        align-items: center;
+      .mb-guide-title {
+        font-size: 19px;
       }
 
-      .mb-tour-avatar-stage {
-        aspect-ratio: 1 / 1;
-      }
-
-      .mb-tour-character-info {
-        padding: 12px;
-        border-top: 0;
-        border-left: 1px solid #E2E7DC;
-      }
-
-      .mb-tour-character-name {
-        font-size: 18px;
-      }
-
-      .mb-tour-character-role {
-        font-size: 12px;
-        line-height: 1.5;
-      }
-
-      .mb-tour-content {
-        padding: 3px 2px;
-      }
-
-      .mb-tour-eyebrow {
-        margin-bottom: 8px;
-      }
-
-      .mb-tour-title {
-        font-size: 24px;
-        margin-bottom: 10px;
-      }
-
-      .mb-tour-description {
-        font-size: 14px;
-        line-height: 1.65;
-      }
-
-      .mb-tour-tip {
-        margin-top: 13px;
-        padding: 10px 12px;
-      }
-
-      .mb-tour-progress-area {
-        margin-top: 16px;
-      }
-
-      .mb-tour-footer {
-        align-items: center;
-        padding: 10px 12px;
-        gap: 6px;
-      }
-
-      .mb-tour-skip {
-        max-width: 100px;
+      .mb-guide-description {
         font-size: 12px;
       }
 
-      .mb-tour-actions {
-        gap: 6px;
+      .mb-guide-footer {
+        padding: 9px;
       }
 
-      .mb-tour-button {
-        min-height: 40px;
-        padding: 9px 12px;
-        font-size: 12px;
+      .mb-guide-button {
+        padding: 7px 8px;
       }
     }
 
-    @media (max-width: 360px) {
-      .mb-tour-character-card {
-        grid-template-columns: minmax(0, 112px) minmax(0, 1fr);
+    @media (max-width: 330px) {
+      .mb-guide-character-row {
+        grid-template-columns: 80px minmax(0, 1fr);
       }
 
-      .mb-tour-character-name {
-        font-size: 16px;
+      .mb-guide-avatar-stage {
+        width: 80px;
+        height: 94px;
       }
 
-      .mb-tour-title {
-        font-size: 21px;
+      .mb-guide-character-name {
+        font-size: 15px;
       }
 
-      .mb-tour-description {
-        font-size: 13px;
-      }
-
-      .mb-tour-skip {
-        max-width: 80px;
-      }
-
-      .mb-tour-button {
-        padding: 8px 9px;
+      .mb-guide-settings {
+        grid-template-columns: minmax(0, 1fr);
       }
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .mb-tour-root *,
-      .mb-avatar-mount * {
-        scroll-behavior: auto !important;
+      #mb-guide-widget,
+      #mb-guide-compass {
+        scroll-behavior: auto;
       }
     }
   `;
@@ -1435,305 +1436,441 @@
   document.head.appendChild(style);
 
 
-  /* ------------------------------------------------------------
-     8. FIND AND CONTROL AVATAR PARTS
-     ------------------------------------------------------------ */
+  /* =========================================================
+     8. COMPASS BUTTON AND GUIDE PANEL
+     ========================================================= */
 
-  let mouthTimer = null;
-  let mouthFrameIndex = 0;
-  let currentlyTalking = false;
+  const compass = document.createElement("button");
 
-  function getAvatarElements() {
-    return Array.from(
-      document.querySelectorAll("svg[data-mb-avatar-svg]")
-    );
-  }
+  compass.id = "mb-guide-compass";
+  compass.type = "button";
 
+  compass.setAttribute(
+    "aria-label",
+    "Open MavunoBridge website guide"
+  );
+
+  compass.setAttribute(
+    "aria-controls",
+    "mb-guide-widget"
+  );
+
+  compass.setAttribute(
+    "aria-expanded",
+    "false"
+  );
+
+  compass.innerHTML = `
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="9.2"
+              stroke="currentColor" stroke-width="1.8"/>
+
+      <path d="M15.7 7.7 L13.5 13.5 L7.7 15.7 L10 10Z"
+            fill="#F3CB72"
+            stroke="currentColor"
+            stroke-width="1.2"
+            stroke-linejoin="round"/>
+
+      <circle cx="12" cy="12" r="1.3"
+              fill="currentColor"/>
+    </svg>
+
+    <span>Guide</span>
+  `;
+
+
+  const widget = document.createElement("section");
+
+  widget.id = "mb-guide-widget";
+
+  widget.setAttribute(
+    "aria-label",
+    "MavunoBridge website guide"
+  );
+
+  widget.innerHTML = `
+    <header class="mb-guide-header">
+
+      <div class="mb-guide-brand">
+
+        <span class="mb-guide-brand-mark" aria-hidden="true">
+          🌱
+        </span>
+
+        <span>MavunoBridge Guide</span>
+
+      </div>
+
+      <div class="mb-guide-header-actions">
+
+        <button
+          type="button"
+          class="mb-guide-icon-button"
+          id="mb-guide-stop-speech"
+          aria-label="Stop speaking"
+          title="Stop speaking"
+        >
+          ■
+        </button>
+
+        <button
+          type="button"
+          class="mb-guide-icon-button"
+          id="mb-guide-close"
+          aria-label="Close guide"
+          title="Close guide"
+        >
+          ×
+        </button>
+
+      </div>
+
+    </header>
+
+    <div class="mb-guide-scroll">
+
+      <div class="mb-guide-character-row">
+
+        <div
+          class="mb-guide-avatar-stage"
+          id="mb-guide-avatar-stage"
+        ></div>
+
+        <div class="mb-guide-character-text">
+
+          <p
+            class="mb-guide-character-name"
+            id="mb-guide-character-name"
+          >
+            Akinyi
+          </p>
+
+          <p
+            class="mb-guide-character-role"
+            id="mb-guide-character-role"
+          >
+            Farmer Guide
+          </p>
+
+          <label
+            class="mb-guide-label"
+            for="mb-guide-character-select"
+          >
+            Choose your guide
+          </label>
+
+          <select
+            class="mb-guide-select"
+            id="mb-guide-character-select"
+          >
+            <option value="akinyi">Akinyi</option>
+            <option value="wanjiku">Wanjiku</option>
+            <option value="kamau">Kamau</option>
+            <option value="otieno">Otieno</option>
+          </select>
+
+        </div>
+
+      </div>
+
+      <div class="mb-guide-copy">
+
+        <p
+          class="mb-guide-eyebrow"
+          id="mb-guide-eyebrow"
+        >
+          YOUR WEBSITE TOUR
+        </p>
+
+        <h2
+          class="mb-guide-title"
+          id="mb-guide-title"
+        >
+          Karibu to MavunoBridge!
+        </h2>
+
+        <p
+          class="mb-guide-description"
+          id="mb-guide-description"
+        >
+          Explore the website with your own guide.
+        </p>
+
+        <div
+          class="mb-guide-tip"
+          id="mb-guide-tip"
+        >
+          Choose Next to start exploring.
+        </div>
+
+      </div>
+
+      <div class="mb-guide-settings">
+
+        <div class="mb-guide-setting">
+
+          <label
+            class="mb-guide-label"
+            for="mb-guide-language"
+          >
+            Language
+          </label>
+
+          <select
+            class="mb-guide-select"
+            id="mb-guide-language"
+          >
+            <option value="en">English</option>
+            <option value="sw">Kiswahili + English</option>
+          </select>
+
+        </div>
+
+        <div class="mb-guide-setting">
+
+          <label
+            class="mb-guide-label"
+            for="mb-guide-voice"
+          >
+            Select voice
+          </label>
+
+          <select
+            class="mb-guide-select"
+            id="mb-guide-voice"
+          >
+            <option value="">System default voice</option>
+          </select>
+
+        </div>
+
+      </div>
+
+      <div class="mb-guide-voice-row">
+
+        <label class="mb-guide-read-toggle">
+          <input
+            type="checkbox"
+            id="mb-guide-read-aloud"
+            checked
+          />
+
+          <span>Read steps aloud</span>
+        </label>
+
+        <button
+          type="button"
+          class="mb-guide-preview"
+          id="mb-guide-test-voice"
+        >
+          Test voice
+        </button>
+
+      </div>
+
+      <div
+        class="mb-guide-voice-status"
+        id="mb-guide-voice-status"
+        aria-live="polite"
+      >
+        Choose a voice and press Test voice.
+      </div>
+
+      <div class="mb-guide-progress">
+
+        <div class="mb-guide-progress-label">
+
+          <span id="mb-guide-step-count">
+            Ready to begin
+          </span>
+
+          <span id="mb-guide-progress-percent">
+            0%
+          </span>
+
+        </div>
+
+        <div
+          class="mb-guide-progress-track"
+          role="progressbar"
+          aria-label="Tour progress"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-valuenow="0"
+          id="mb-guide-progress-track"
+        >
+          <div
+            class="mb-guide-progress-value"
+            id="mb-guide-progress-value"
+          ></div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <footer class="mb-guide-footer">
+
+      <div class="mb-guide-footer-left">
+
+        <button
+          type="button"
+          class="mb-guide-skip"
+          id="mb-guide-skip"
+        >
+          Skip tour
+        </button>
+
+      </div>
 
-  function setEyesOpen(svg, open) {
-    if (!svg) return;
+      <div class="mb-guide-footer-right">
 
-    const openGroup = svg.querySelector("[data-mb-eye-open]");
-    const closedGroup = svg.querySelector("[data-mb-eye-closed]");
+        <button
+          type="button"
+          class="mb-guide-button"
+          id="mb-guide-back"
+          disabled
+        >
+          Back
+        </button>
 
-    if (openGroup) {
-      openGroup.style.display = open ? "" : "none";
-    }
+        <button
+          type="button"
+          class="mb-guide-button mb-guide-primary"
+          id="mb-guide-next"
+        >
+          Start tour
+        </button>
 
-    if (closedGroup) {
-      closedGroup.style.display = open ? "none" : "";
-    }
-  }
+      </div>
 
+    </footer>
+  `;
 
-  function setMouthFrame(svg, frame) {
-    if (!svg) return;
 
-    const frames = svg.querySelectorAll("[data-mb-mouth-frame]");
+  document.body.appendChild(compass);
+  document.body.appendChild(widget);
 
-    frames.forEach((mouth) => {
-      mouth.style.display =
-        Number(mouth.getAttribute("data-mb-mouth-frame")) === frame
-          ? ""
-          : "none";
-    });
-  }
 
+  /* =========================================================
+     9. ELEMENT REFERENCES
+     ========================================================= */
 
-  function setAllMouths(frame) {
-    getAvatarElements().forEach((svg) => {
-      setMouthFrame(svg, frame);
-    });
-  }
+  const ui = {
+    compass,
 
+    widget,
 
-  /* ------------------------------------------------------------
-     9. NATURAL BLINKING
+    avatarStage:
+      widget.querySelector("#mb-guide-avatar-stage"),
 
-     Blinking is the only eye animation.
+    characterName:
+      widget.querySelector("#mb-guide-character-name"),
 
-     Every blink is brief, with a random delay before the next
-     blink. There is no constant rapid blinking.
-     ------------------------------------------------------------ */
+    characterRole:
+      widget.querySelector("#mb-guide-character-role"),
 
-  function initializeBlinking(svg) {
-    if (!svg || svg.dataset.mbBlinkInitialized === "true") {
-      return;
-    }
+    characterSelect:
+      widget.querySelector("#mb-guide-character-select"),
 
-    svg.dataset.mbBlinkInitialized = "true";
+    language:
+      widget.querySelector("#mb-guide-language"),
 
-    function scheduleBlink() {
-      if (!svg.isConnected) return;
+    voice:
+      widget.querySelector("#mb-guide-voice"),
 
-      const nextDelay = 2300 + Math.random() * 3300;
+    readAloud:
+      widget.querySelector("#mb-guide-read-aloud"),
 
-      svg._mbNextBlinkTimer = window.setTimeout(() => {
-        if (!svg.isConnected) return;
+    testVoice:
+      widget.querySelector("#mb-guide-test-voice"),
 
-        setEyesOpen(svg, false);
+    voiceStatus:
+      widget.querySelector("#mb-guide-voice-status"),
 
-        const blinkDuration = 85 + Math.random() * 55;
+    stopSpeech:
+      widget.querySelector("#mb-guide-stop-speech"),
 
-        svg._mbBlinkCloseTimer = window.setTimeout(() => {
-          if (!svg.isConnected) return;
+    close:
+      widget.querySelector("#mb-guide-close"),
 
-          setEyesOpen(svg, true);
+    eyebrow:
+      widget.querySelector("#mb-guide-eyebrow"),
 
-          scheduleBlink();
-        }, blinkDuration);
-      }, nextDelay);
-    }
+    title:
+      widget.querySelector("#mb-guide-title"),
 
-    setEyesOpen(svg, true);
-    scheduleBlink();
-  }
+    description:
+      widget.querySelector("#mb-guide-description"),
 
+    tip:
+      widget.querySelector("#mb-guide-tip"),
 
-  function initializeAllAvatars() {
-    getAvatarElements().forEach(initializeBlinking);
-  }
+    count:
+      widget.querySelector("#mb-guide-step-count"),
 
+    percent:
+      widget.querySelector("#mb-guide-progress-percent"),
 
-  /* ------------------------------------------------------------
-     10. MOUTH MOVEMENT WHILE SPEAKING
+    progressTrack:
+      widget.querySelector("#mb-guide-progress-track"),
 
-     Only the mouth changes between three drawn frames.
+    progressValue:
+      widget.querySelector("#mb-guide-progress-value"),
 
-     The mouth stays closed when speech ends.
-     ------------------------------------------------------------ */
+    skip:
+      widget.querySelector("#mb-guide-skip"),
 
-  function startMouthMovement() {
-    if (currentlyTalking) return;
+    back:
+      widget.querySelector("#mb-guide-back"),
 
-    currentlyTalking = true;
-    mouthFrameIndex = 0;
+    next:
+      widget.querySelector("#mb-guide-next")
+  };
 
-    setAllMouths(1);
 
-    if (mouthTimer) {
-      clearInterval(mouthTimer);
-    }
+  /* =========================================================
+     10. TOUR STEPS
+     ========================================================= */
 
-    mouthTimer = window.setInterval(() => {
-      if (!currentlyTalking) return;
-
-      const sequence = [1, 2, 1, 0, 1, 2];
-
-      mouthFrameIndex =
-        (mouthFrameIndex + 1) % sequence.length;
-
-      setAllMouths(sequence[mouthFrameIndex]);
-    }, 125);
-  }
-
-
-  function stopMouthMovement() {
-    currentlyTalking = false;
-
-    if (mouthTimer) {
-      clearInterval(mouthTimer);
-      mouthTimer = null;
-    }
-
-    setAllMouths(0);
-  }
-
-
-  /* ------------------------------------------------------------
-     11. CONNECT AVATAR MOVEMENT TO SPEECH SYNTHESIS
-
-     Any assistant code using browser speech synthesis can
-     trigger the same mouth movement.
-
-     The original speech function is preserved and called.
-     ------------------------------------------------------------ */
-
-  function connectSpeechToAvatars() {
-    if (!("speechSynthesis" in window)) return;
-
-    const synthesis = window.speechSynthesis;
-
-    if (synthesis.__mbAvatarSpeechConnected) return;
-
-    try {
-      const originalSpeak = synthesis.speak;
-
-      if (typeof originalSpeak !== "function") return;
-
-      const wrappedSpeak = function (utterance) {
-        if (
-          utterance &&
-          typeof utterance.addEventListener === "function"
-        ) {
-          let finished = false;
-
-          const onStart = () => {
-            startMouthMovement();
-          };
-
-          const onFinish = () => {
-            if (finished) return;
-
-            finished = true;
-            stopMouthMovement();
-          };
-
-          utterance.addEventListener("start", onStart, {
-            once: true
-          });
-
-          utterance.addEventListener("end", onFinish, {
-            once: true
-          });
-
-          utterance.addEventListener("error", onFinish, {
-            once: true
-          });
-        }
-
-        return originalSpeak.call(this, utterance);
-      };
-
-      synthesis.speak = wrappedSpeak;
-      synthesis.__mbAvatarSpeechConnected = true;
-    } catch (error) {
-      /*
-        If the browser doesn't allow wrapping its speech
-        function, the website tour still handles its own
-        mouth movement separately.
-      */
-    }
-  }
-
-
-  /* ------------------------------------------------------------
-     12. LANGUAGE PREFERENCE
-
-     Supports commonly used language-storage names from the
-     project. The default wording is simple English.
-     ------------------------------------------------------------ */
-
-  function getPreferredLanguage() {
-    const possibleKeys = [
-      "mavunobridge_language",
-      "mavunobridge_language_v1",
-      "shambamarket_language_v2",
-      "mb_language",
-      "preferredLanguage"
-    ];
-
-    for (const key of possibleKeys) {
-      try {
-        const value = localStorage.getItem(key);
-
-        if (value) {
-          const normalized = value.toLowerCase().trim();
-
-          if (
-            normalized.includes("sw") ||
-            normalized.includes("kiswahili") ||
-            normalized.includes("swahili") ||
-            normalized.includes("sheng")
-          ) {
-            return "sw";
-          }
-
-          if (
-            normalized.includes("en") ||
-            normalized.includes("english")
-          ) {
-            return "en";
-          }
-        }
-      } catch (error) {
-        // Continue with the next possible preference.
-      }
-    }
-
-    return "en";
-  }
-
-
-  /* ------------------------------------------------------------
-     13. TOUR CONTENT
-     ------------------------------------------------------------ */
-
-  const TOUR_STEPS = [
+  const STEPS = [
     {
-      character: "akinyi",
-
-      target: [
-        "main",
+      targets: [
         "#marketplace",
         "#marketplaceSection",
-        "[data-marketplace]"
+        "[data-marketplace]",
+        "main"
       ],
 
       en: {
         title: "Karibu to MavunoBridge!",
         body:
           "This is your connection between farmers and buyers. " +
-          "Explore products, compare offers and discover more " +
-          "ways to make agriculture work for you.",
+          "Explore agricultural products, compare offers and " +
+          "discover useful farming services.",
+
         tip:
-          "Take the tour step by step. You can skip it anytime."
+          "Use the Next button to explore the website step by step."
       },
 
       sw: {
         title: "Karibu MavunoBridge!",
         body:
-          "Hapa farmers na buyers wana-connect. Unaweza ku-explore " +
-          "products, compare bei na kupata opportunities za farming.",
+          "Hapa farmers na buyers wana-connect. Explore products, " +
+          "compare bei na discover farming services zinazokufaa.",
+
         tip:
-          "Pitia steps hizi polepole. Unaweza kuskip tutorial anytime."
+          "Bonyeza Next kuendelea na tour. Unaweza ku-skip anytime."
       }
     },
 
     {
-      character: "wanjiku",
-
-      target: [
+      targets: [
         "#searchInput",
         "#marketSearch",
         "#search",
@@ -1743,11 +1880,11 @@
       ],
 
       en: {
-        title: "Search for what you need",
+        title: "Search for products",
         body:
           "Use the search bar to find produce, farm supplies, " +
-          "tools and other agricultural products. Search by name " +
-          "to narrow down the available listings.",
+          "tools and other available agricultural products.",
+
         tip:
           "Try searching for tomatoes, maize, beans or avocados."
       },
@@ -1755,18 +1892,16 @@
       sw: {
         title: "Search bidhaa unahitaji",
         body:
-          "Tumia search bar kupata produce, farm supplies, tools " +
-          "na agricultural products zingine. Andika jina la kitu " +
-          "unatafuta ili upate listings zinazofaa.",
+          "Tumia search bar kutafuta produce, farm supplies, tools " +
+          "na agricultural products zingine.",
+
         tip:
           "Try ku-search tomatoes, maize, beans ama avocados."
       }
     },
 
     {
-      character: "akinyi",
-
-      target: [
+      targets: [
         "#categories",
         "#categoryGrid",
         ".category-grid",
@@ -1778,28 +1913,26 @@
       en: {
         title: "Explore the categories",
         body:
-          "Browse different categories such as fruits, vegetables, " +
-          "grains, cereals, legumes, livestock, farm tools and " +
-          "agricultural services.",
+          "Browse fruits, vegetables, grains, cereals, legumes, " +
+          "livestock, farm equipment and agricultural services.",
+
         tip:
-          "Choose a category to make browsing easier."
+          "Choose a category to narrow down the products you see."
       },
 
       sw: {
-        title: "Explore categories tofauti",
+        title: "Explore categories",
         body:
           "Browse fruits, vegetables, grains, cereals, legumes, " +
-          "livestock, farm tools na agricultural services. " +
-          "Choose category yenye inakufaa.",
+          "livestock, farm equipment na agricultural services.",
+
         tip:
-          "Category inakusaidia kupata products faster."
+          "Chagua category kupata products unatafuta faster."
       }
     },
 
     {
-      character: "wanjiku",
-
-      target: [
+      targets: [
         "#listingGrid",
         "#productGrid",
         ".listing-grid",
@@ -1809,63 +1942,60 @@
       ],
 
       en: {
-        title: "Compare products and prices",
+        title: "Compare listings",
         body:
-          "Check the available listings and compare prices, " +
-          "quantities and locations before choosing a seller. " +
-          "Read the listing details before making a decision.",
+          "Check product details, quantities, prices and seller " +
+          "locations before making a choice.",
+
         tip:
-          "Availability and seller details may differ between listings."
+          "Read the complete listing and check seller information."
       },
 
       sw: {
-        title: "Compare bidhaa na bei",
+        title: "Compare listings",
         body:
-          "Angalia listings, compare prices, quantities na locations " +
-          "kabla uchague seller. Read details za listing kwanza " +
-          "ili ufanye decision poa.",
+          "Angalia product details, quantities, prices na seller " +
+          "locations kabla ya kuchagua bidhaa.",
+
         tip:
-          "Seller details na availability zinaweza kutofautiana."
+          "Soma details zote za listing kwanza."
       }
     },
 
     {
-      character: "akinyi",
-
-      target: [
+      targets: [
         "#sellButton",
         "#heroSellButton",
         "[data-open-sell]",
         "[data-action='sell']",
-        "a[href*='sell']",
         ".sell-button"
       ],
 
       en: {
-        title: "Got products to sell?",
+        title: "List your own products",
         body:
-          "Farmers can use the selling feature to share their " +
-          "produce with potential buyers. Add the required details " +
-          "carefully so buyers understand what you are offering.",
+          "Farmers can use the selling feature to show their " +
+          "produce to potential buyers. Enter accurate product " +
+          "details and quantities.",
+
         tip:
-          "Use clear product information and accurate quantities."
+          "Clear descriptions and accurate information help buyers."
       },
 
       sw: {
-        title: "Una bidhaa za kuuza?",
+        title: "Sell your products",
         body:
-          "Farmers wanaweza kutumia selling feature kuonyesha " +
-          "produce yao kwa buyers. Weka product details vizuri " +
-          "ili wanunuzi waelewe unauza nini.",
+          "Farmers wanaweza kuweka listings za produce yao ili " +
+          "buyers waone wanachouza. Weka details na quantities " +
+          "zilizo accurate.",
+
         tip:
-          "Weka details na quantities zilizo accurate."
+          "Product descriptions nzuri zinasaidia buyers kuelewa."
       }
     },
 
     {
-      character: "kamau",
-
-      target: [
+      targets: [
         "#smartAssist",
         "#smartAssistButton",
         "#smart-assist",
@@ -1878,29 +2008,27 @@
       en: {
         title: "Meet Smart Assist",
         body:
-          "Smart Assist is designed to help farmers explore farming " +
-          "guidance, crop ideas and other useful information. " +
-          "Open the Smart Assist page to see the features available.",
+          "Smart Assist is designed to offer farming guidance, " +
+          "crop ideas and other useful agricultural information. " +
+          "Open its page to explore the available features.",
+
         tip:
-          "Recommendations can depend on location, weather data " +
-          "and the information available."
+          "Advice depends on the features and information available."
       },
 
       sw: {
         title: "Meet Smart Assist",
         body:
           "Smart Assist imeundwa kusaidia farmers kupata farming " +
-          "guidance, crop ideas na useful information. Fungua " +
-          "Smart Assist page uone features zilizopo.",
+          "guidance, crop ideas na information useful kwa shamba.",
+
         tip:
-          "Recommendations zinategemea data na information available."
+          "Fungua Smart Assist page kuangalia features zilizopo."
       }
     },
 
     {
-      character: "otieno",
-
-      target: [
+      targets: [
         "#sacco",
         "#saccoHub",
         "#saccoButton",
@@ -1910,325 +2038,483 @@
       ],
 
       en: {
-        title: "Discover the SACCO Hub",
+        title: "Explore the SACCO Hub",
         body:
-          "Visit the SACCO Hub to explore the SACCO-related " +
-          "information and opportunities provided by the website. " +
-          "Read the requirements carefully before taking action.",
+          "Visit the SACCO Hub to explore the information and " +
+          "opportunities made available through the website.",
+
         tip:
-          "Check each organisation's details and eligibility conditions."
+          "Check each organisation's requirements and eligibility."
       },
 
       sw: {
         title: "Explore SACCO Hub",
         body:
-          "Tembelea SACCO Hub ku-explore information na opportunities " +
-          "zinazopatikana. Soma requirements za kila organisation " +
-          "carefully kabla ya kuchukua hatua.",
+          "Tembelea SACCO Hub ku-explore information na " +
+          "opportunities zinazopatikana kwenye website.",
+
         tip:
-          "Confirm details na eligibility requirements kwanza."
+          "Confirm requirements na eligibility kabla ya kujiunga."
       }
     }
   ];
 
 
-  /* ------------------------------------------------------------
-     14. CREATE THE TOUR INTERFACE
-     ------------------------------------------------------------ */
+  /* =========================================================
+     11. AVATAR RENDERING
+     ========================================================= */
 
-  const tourRoot = document.createElement("div");
+  function renderSelectedCharacter() {
+    const character =
+      CHARACTERS[selectedCharacter] || CHARACTERS.akinyi;
 
-  tourRoot.id = "mavunobridge-character-tour";
-  tourRoot.className = "mb-tour-root";
-  tourRoot.setAttribute("aria-hidden", "true");
+    ui.avatarStage.innerHTML =
+      createAvatarSVG(selectedCharacter);
 
-  tourRoot.innerHTML = `
-    <div
-      class="mb-tour-backdrop"
-      data-mb-tour-close
-    ></div>
+    ui.characterName.textContent = character.name;
 
-    <section
-      class="mb-tour-dialog"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="mb-tour-title"
-      aria-describedby="mb-tour-description"
-    >
+    ui.characterRole.textContent = character.role;
 
-      <header class="mb-tour-header">
-        <div class="mb-tour-brand">
-          <span class="mb-tour-brand-mark" aria-hidden="true">
-            🌱
-          </span>
-
-          <span>MavunoBridge Guide</span>
-        </div>
-
-        <button
-          class="mb-tour-close"
-          type="button"
-          aria-label="Close tutorial"
-          data-mb-tour-close
-        >
-          ×
-        </button>
-      </header>
-
-      <div class="mb-tour-main">
-
-        <div class="mb-tour-character-card">
-
-          <div
-            class="mb-tour-avatar-stage"
-            id="mb-tour-avatar-stage"
-          ></div>
-
-          <div class="mb-tour-character-info">
-            <p
-              class="mb-tour-character-name"
-              id="mb-tour-character-name"
-            >
-              Akinyi
-            </p>
-
-            <p
-              class="mb-tour-character-role"
-              id="mb-tour-character-role"
-            >
-              Farmer Guide
-            </p>
-          </div>
-
-        </div>
-
-        <div class="mb-tour-content">
-
-          <p
-            class="mb-tour-eyebrow"
-            id="mb-tour-eyebrow"
-          >
-            WEBSITE TOUR
-          </p>
-
-          <h2
-            class="mb-tour-title"
-            id="mb-tour-title"
-          >
-            Karibu to MavunoBridge!
-          </h2>
-
-          <p
-            class="mb-tour-description"
-            id="mb-tour-description"
-          >
-            Discover how to use the marketplace.
-          </p>
-
-          <div
-            class="mb-tour-tip"
-            id="mb-tour-tip"
-          ></div>
-
-          <div class="mb-tour-progress-area">
-
-            <div class="mb-tour-progress-label">
-              <span id="mb-tour-step-label">
-                Step 1 of 7
-              </span>
-
-              <span id="mb-tour-percent">
-                14%
-              </span>
-            </div>
-
-            <div
-              class="mb-tour-progress-track"
-              role="progressbar"
-              aria-label="Tutorial progress"
-              aria-valuemin="0"
-              aria-valuemax="100"
-              aria-valuenow="14"
-              id="mb-tour-progress-track"
-            >
-              <div
-                class="mb-tour-progress-value"
-                id="mb-tour-progress-value"
-              ></div>
-            </div>
-
-          </div>
-
-          <p class="mb-tour-sound-note">
-            Audio depends on your browser's speech support and settings.
-          </p>
-
-        </div>
-
-      </div>
-
-      <footer class="mb-tour-footer">
-
-        <button
-          class="mb-tour-skip"
-          id="mb-tour-skip"
-          type="button"
-        >
-          Skip tutorial
-        </button>
-
-        <div class="mb-tour-actions">
-
-          <button
-            class="mb-tour-button mb-tour-button-secondary"
-            id="mb-tour-back"
-            type="button"
-          >
-            Back
-          </button>
-
-          <button
-            class="mb-tour-button mb-tour-button-primary"
-            id="mb-tour-next"
-            type="button"
-          >
-            Next
-          </button>
-
-        </div>
-
-      </footer>
-
-    </section>
-  `;
-
-  document.body.appendChild(tourRoot);
-
-
-  /* ------------------------------------------------------------
-     15. TOUR ELEMENT REFERENCES
-     ------------------------------------------------------------ */
-
-  const tourElements = {
-    root: tourRoot,
-
-    avatarStage:
-      tourRoot.querySelector("#mb-tour-avatar-stage"),
-
-    characterName:
-      tourRoot.querySelector("#mb-tour-character-name"),
-
-    characterRole:
-      tourRoot.querySelector("#mb-tour-character-role"),
-
-    eyebrow:
-      tourRoot.querySelector("#mb-tour-eyebrow"),
-
-    title:
-      tourRoot.querySelector("#mb-tour-title"),
-
-    description:
-      tourRoot.querySelector("#mb-tour-description"),
-
-    tip:
-      tourRoot.querySelector("#mb-tour-tip"),
-
-    stepLabel:
-      tourRoot.querySelector("#mb-tour-step-label"),
-
-    percent:
-      tourRoot.querySelector("#mb-tour-percent"),
-
-    progressTrack:
-      tourRoot.querySelector("#mb-tour-progress-track"),
-
-    progressValue:
-      tourRoot.querySelector("#mb-tour-progress-value"),
-
-    back:
-      tourRoot.querySelector("#mb-tour-back"),
-
-    next:
-      tourRoot.querySelector("#mb-tour-next"),
-
-    skip:
-      tourRoot.querySelector("#mb-tour-skip")
-  };
-
-
-  /* ------------------------------------------------------------
-     16. TOUR STATE
-     ------------------------------------------------------------ */
-
-  let currentStep = 0;
-  let tourIsOpen = false;
-  let currentFocusTarget = null;
-
-
-  /* ------------------------------------------------------------
-     17. STORAGE HELPERS
-     ------------------------------------------------------------ */
-
-  function hasSeenTour() {
-    try {
-      return localStorage.getItem(TOUR_SEEN_KEY) === "yes";
-    } catch (error) {
-      return false;
-    }
-  }
-
-
-  function markTourSeen() {
-    try {
-      localStorage.setItem(TOUR_SEEN_KEY, "yes");
-    } catch (error) {
-      // The tour remains usable if browser storage is unavailable.
-    }
-  }
-
-
-  /* ------------------------------------------------------------
-     18. CHARACTER RENDERING
-     ------------------------------------------------------------ */
-
-  function renderTourCharacter(characterKey) {
-    const character = CHARACTERS[characterKey] || CHARACTERS.akinyi;
-
-    tourElements.avatarStage.innerHTML =
-      createAvatarSVG(characterKey);
-
-    tourElements.characterName.textContent =
-      character.name;
-
-    tourElements.characterRole.textContent =
-      character.role;
+    ui.characterSelect.value = selectedCharacter;
 
     initializeAllAvatars();
   }
 
 
-  /* ------------------------------------------------------------
-     19. FIND OPTIONAL PAGE ELEMENTS
-     ------------------------------------------------------------ */
+  /* =========================================================
+     12. NATURAL BLINKING
+     ========================================================= */
 
-  function findStepTarget(step) {
-    if (!step || !Array.isArray(step.target)) {
+  function getAvatarSVGs() {
+    return Array.from(
+      document.querySelectorAll("svg[data-mb-avatar-svg]")
+    );
+  }
+
+
+  function setEyeState(svg, eyesOpen) {
+    const openGroup =
+      svg.querySelector("[data-mb-eye-open]");
+
+    const closedGroup =
+      svg.querySelector("[data-mb-eye-closed]");
+
+    if (openGroup) {
+      openGroup.style.display = eyesOpen ? "" : "none";
+    }
+
+    if (closedGroup) {
+      closedGroup.style.display = eyesOpen ? "none" : "";
+    }
+  }
+
+
+  function initializeBlinking(svg) {
+    if (svg.dataset.mbBlinkStarted === "true") {
+      return;
+    }
+
+    svg.dataset.mbBlinkStarted = "true";
+
+    setEyeState(svg, true);
+
+    function scheduleNextBlink() {
+      if (!svg.isConnected) return;
+
+      // A relaxed interval between blinks.
+      const delay = 2500 + Math.random() * 3300;
+
+      svg._mbBlinkTimer = setTimeout(() => {
+        if (!svg.isConnected) return;
+
+        setEyeState(svg, false);
+
+        const blinkDuration = 85 + Math.random() * 50;
+
+        svg._mbBlinkCloseTimer = setTimeout(() => {
+          if (!svg.isConnected) return;
+
+          setEyeState(svg, true);
+
+          scheduleNextBlink();
+        }, blinkDuration);
+
+      }, delay);
+    }
+
+    scheduleNextBlink();
+  }
+
+
+  function initializeAllAvatars() {
+    getAvatarSVGs().forEach(initializeBlinking);
+  }
+
+
+  /* =========================================================
+     13. TALKING MOUTH
+
+     This is the only mouth animation.
+
+     The mouth stays closed when the speech ends.
+     ========================================================= */
+
+  function setMouthFrame(svg, frame) {
+    svg.querySelectorAll("[data-mb-mouth-frame]")
+      .forEach((mouth) => {
+        const mouthFrame = Number(
+          mouth.getAttribute("data-mb-mouth-frame")
+        );
+
+        mouth.style.display =
+          mouthFrame === frame ? "" : "none";
+      });
+  }
+
+
+  function setAllMouthFrames(frame) {
+    getAvatarSVGs().forEach((svg) => {
+      setMouthFrame(svg, frame);
+    });
+  }
+
+
+  function startMouthAnimation() {
+    if (speechIsActive) return;
+
+    speechIsActive = true;
+
+    if (mouthTimer) {
+      clearInterval(mouthTimer);
+    }
+
+    let index = 0;
+
+    const sequence = [1, 2, 1, 0, 2, 1];
+
+    setAllMouthFrames(1);
+
+    mouthTimer = setInterval(() => {
+      if (!speechIsActive) return;
+
+      setAllMouthFrames(sequence[index]);
+
+      index = (index + 1) % sequence.length;
+
+    }, 125);
+  }
+
+
+  function stopMouthAnimation() {
+    speechIsActive = false;
+
+    if (mouthTimer) {
+      clearInterval(mouthTimer);
+      mouthTimer = null;
+    }
+
+    setAllMouthFrames(0);
+  }
+
+
+  /* =========================================================
+     14. SELECTABLE VOICES
+
+     Uses voices available in the browser or operating system.
+     ========================================================= */
+
+  function getSelectedVoice() {
+    if (!selectedVoiceURI) return null;
+
+    return voiceList.find(
+      (voice) => voice.voiceURI === selectedVoiceURI
+    ) || null;
+  }
+
+
+  function populateVoiceSelector() {
+    if (!("speechSynthesis" in window)) {
+      ui.voice.innerHTML =
+        '<option value="">Speech is not supported here</option>';
+
+      ui.voiceStatus.textContent =
+        "Your browser does not support speech synthesis.";
+
+      ui.testVoice.disabled = true;
+
+      return;
+    }
+
+    voiceList = window.speechSynthesis.getVoices() || [];
+
+    const previousVoice = selectedVoiceURI;
+
+    ui.voice.innerHTML = "";
+
+    const defaultOption = document.createElement("option");
+
+    defaultOption.value = "";
+    defaultOption.textContent = "System default voice";
+
+    ui.voice.appendChild(defaultOption);
+
+    voiceList.forEach((voice) => {
+      const option = document.createElement("option");
+
+      option.value = voice.voiceURI;
+
+      const languageLabel = voice.lang
+        ? " (" + voice.lang + ")"
+        : "";
+
+      option.textContent = voice.name + languageLabel;
+
+      ui.voice.appendChild(option);
+    });
+
+    const voiceStillExists = voiceList.some(
+      (voice) => voice.voiceURI === previousVoice
+    );
+
+    if (voiceStillExists) {
+      ui.voice.value = previousVoice;
+    } else {
+      selectedVoiceURI = "";
+      ui.voice.value = "";
+
+      saveStorage(VOICE_STORAGE_KEY, "");
+    }
+
+    if (voiceList.length === 0) {
+      ui.voiceStatus.textContent =
+        "The browser has not loaded its voices yet. Try again shortly.";
+    } else {
+      ui.voiceStatus.textContent =
+        voiceList.length +
+        " voices available. Choose one, then press Test voice.";
+    }
+  }
+
+
+  /* =========================================================
+     15. GLOBAL SPEECH CONNECTION
+
+     Existing browser-speech assistant scripts can trigger
+     mouth movement too. This wraps the browser method without
+     replacing the other assistant's voice callbacks.
+
+     The chosen voice is applied to speech utterances when
+     the selected voice is available.
+     ========================================================= */
+
+  function connectSpeechToWebsite() {
+    if (!("speechSynthesis" in window)) return;
+
+    const synthesis = window.speechSynthesis;
+
+    if (synthesis.__mbGuideSpeechConnected) return;
+
+    try {
+      const nativeSpeak = synthesis.speak;
+
+      if (typeof nativeSpeak !== "function") return;
+
+      synthesis.speak = function (utterance) {
+        if (
+          utterance &&
+          typeof utterance === "object"
+        ) {
+          const chosenVoice = getSelectedVoice();
+
+          if (chosenVoice) {
+            try {
+              utterance.voice = chosenVoice;
+            } catch (error) {
+              // Some browser implementations may reject the assignment.
+            }
+          }
+
+          try {
+            utterance.addEventListener("start", () => {
+              lastSpeakingUtterance = utterance;
+              startMouthAnimation();
+            });
+
+            const endHandler = () => {
+              if (lastSpeakingUtterance === utterance) {
+                lastSpeakingUtterance = null;
+                stopMouthAnimation();
+              }
+            };
+
+            utterance.addEventListener("end", endHandler);
+            utterance.addEventListener("error", endHandler);
+
+          } catch (error) {
+            // Tour speech has its own start and stop callbacks.
+          }
+        }
+
+        return nativeSpeak.call(this, utterance);
+      };
+
+      const nativeCancel = synthesis.cancel;
+
+      synthesis.cancel = function (...args) {
+        const result = nativeCancel.apply(this, args);
+
+        lastSpeakingUtterance = null;
+        stopMouthAnimation();
+
+        return result;
+      };
+
+      synthesis.__mbGuideSpeechConnected = true;
+
+    } catch (error) {
+      // Keep the tour usable if modifying these browser methods fails.
+    }
+  }
+
+
+  /* =========================================================
+     16. SPEAK A SENTENCE
+
+     Selected voice and language are used for the guide.
+     ========================================================= */
+
+  function stopSpeech() {
+    if ("speechSynthesis" in window) {
+      try {
+        window.speechSynthesis.cancel();
+      } catch (error) {
+        // Ignore unsupported cancellation.
+      }
+    }
+
+    activeUtterance = null;
+
+    lastSpeakingUtterance = null;
+
+    stopMouthAnimation();
+  }
+
+
+  function speak(text) {
+    if (!readAloudEnabled) return;
+
+    if (!("speechSynthesis" in window)) {
+      ui.voiceStatus.textContent =
+        "Your browser cannot play the guide's spoken voice.";
+
+      return;
+    }
+
+    if (!text || !text.trim()) return;
+
+    stopSpeech();
+
+    try {
+      const utterance = new SpeechSynthesisUtterance(text);
+
+      const voice = getSelectedVoice();
+
+      if (voice) {
+        utterance.voice = voice;
+        utterance.lang = voice.lang || "en-KE";
+      } else {
+        utterance.lang =
+          selectedLanguage === "sw" ? "sw-KE" : "en-KE";
+      }
+
+      utterance.rate = 0.94;
+      utterance.pitch = 1;
+      utterance.volume = 1;
+
+      utterance.onstart = () => {
+        activeUtterance = utterance;
+        startMouthAnimation();
+
+        ui.voiceStatus.textContent =
+          "The guide is speaking.";
+      };
+
+      utterance.onend = () => {
+        if (activeUtterance === utterance) {
+          activeUtterance = null;
+          stopMouthAnimation();
+
+          ui.voiceStatus.textContent =
+            "Finished speaking.";
+        }
+      };
+
+      utterance.onerror = (event) => {
+        if (activeUtterance === utterance) {
+          activeUtterance = null;
+          stopMouthAnimation();
+
+          if (event.error !== "canceled") {
+            ui.voiceStatus.textContent =
+              "Speech did not play. Try selecting another voice.";
+          }
+        }
+      };
+
+      activeUtterance = utterance;
+
+      window.speechSynthesis.speak(utterance);
+
+    } catch (error) {
+      stopMouthAnimation();
+
+      ui.voiceStatus.textContent =
+        "Unable to start speech in this browser.";
+    }
+  }
+
+
+  /* =========================================================
+     17. PAGE TARGET HIGHLIGHTING
+
+     The website is never covered by a full-screen layer.
+     The current section receives a temporary outline.
+     ========================================================= */
+
+  let highlightedElement = null;
+
+  function clearHighlight() {
+    if (!highlightedElement) return;
+
+    highlightedElement.classList.remove("mb-guide-highlighted");
+
+    highlightedElement.style.removeProperty("outline");
+    highlightedElement.style.removeProperty("outline-offset");
+    highlightedElement.style.removeProperty("border-radius");
+
+    highlightedElement = null;
+  }
+
+
+  function locateStepTarget(step) {
+    if (!step || !Array.isArray(step.targets)) {
       return null;
     }
 
-    for (const selector of step.target) {
+    for (const selector of step.targets) {
       try {
         const element = document.querySelector(selector);
 
         if (
           element &&
-          !tourRoot.contains(element) &&
-          element !== tourRoot
+          element !== widget &&
+          !widget.contains(element) &&
+          element !== compass
         ) {
           return element;
         }
       } catch (error) {
-        // Ignore invalid selectors and check the next one.
+        // Ignore invalid selectors.
       }
     }
 
@@ -2236,356 +2522,432 @@
   }
 
 
-  function clearFocusedTarget() {
-    if (currentFocusTarget) {
-      currentFocusTarget.classList.remove(
-        "mb-tour-current-target"
-      );
+  function highlightStepTarget(step) {
+    clearHighlight();
+
+    const target = locateStepTarget(step);
+
+    if (!target) {
+      return;
     }
 
-    currentFocusTarget = null;
-  }
+    highlightedElement = target;
 
+    target.classList.add("mb-guide-highlighted");
 
-  function updateFocusedTarget(step) {
-    clearFocusedTarget();
+    target.style.setProperty(
+      "outline",
+      "3px solid #D7AA4D",
+      "important"
+    );
 
-    const target = findStepTarget(step);
+    target.style.setProperty(
+      "outline-offset",
+      "3px",
+      "important"
+    );
 
-    if (!target) return;
-
-    currentFocusTarget = target;
+    target.style.setProperty(
+      "border-radius",
+      "6px",
+      "important"
+    );
 
     try {
       target.scrollIntoView({
+        behavior: "auto",
         block: "nearest",
-        inline: "nearest",
-        behavior: "auto"
+        inline: "nearest"
       });
     } catch (error) {
-      // Continue without scrolling if the browser doesn't support it.
+      // Continue with the written instructions if scrolling fails.
     }
   }
 
 
-  /* ------------------------------------------------------------
-     20. TOUR SPEECH
-     ------------------------------------------------------------ */
+  /* =========================================================
+     18. STEP RENDERING
+     ========================================================= */
 
-  function stopTourSpeech() {
-    try {
-      if ("speechSynthesis" in window) {
-        window.speechSynthesis.cancel();
-      }
-    } catch (error) {
-      // Text remains visible even if speech is unavailable.
-    }
-
-    stopMouthMovement();
+  function getCurrentWording(step) {
+    return selectedLanguage === "sw"
+      ? step.sw
+      : step.en;
   }
 
 
-  function speakTourText(text) {
-    if (!("speechSynthesis" in window)) return;
-
-    if (!text || !text.trim()) return;
-
-    stopTourSpeech();
-
-    try {
-      const utterance = new SpeechSynthesisUtterance(text);
-      const language = getPreferredLanguage();
-
-      utterance.lang = language === "sw" ? "sw-KE" : "en-KE";
-      utterance.rate = 0.94;
-      utterance.pitch = 1;
-      utterance.volume = 1;
-
-      const voices = window.speechSynthesis.getVoices();
-
-      if (voices && voices.length) {
-        let voice = null;
-
-        if (language === "sw") {
-          voice = voices.find((item) =>
-            item.lang.toLowerCase().startsWith("sw")
-          );
-        }
-
-        if (!voice) {
-          voice = voices.find((item) =>
-            item.lang.toLowerCase().startsWith(
-              language === "sw" ? "sw" : "en"
-            )
-          );
-        }
-
-        if (voice) {
-          utterance.voice = voice;
-        }
-      }
-
-      /*
-       * These handlers ensure the tour avatar still moves its
-       * mouth if the browser does not allow the speech wrapper.
-       */
-      utterance.onstart = () => {
-        startMouthMovement();
-      };
-
-      utterance.onend = () => {
-        stopMouthMovement();
-      };
-
-      utterance.onerror = () => {
-        stopMouthMovement();
-      };
-
-      window.speechSynthesis.speak(utterance);
-    } catch (error) {
-      stopMouthMovement();
-    }
-  }
-
-
-  /* ------------------------------------------------------------
-     21. DISPLAY A TOUR STEP
-     ------------------------------------------------------------ */
-
-  function renderTourStep(index, shouldSpeak = true) {
-    if (index < 0 || index >= TOUR_STEPS.length) return;
+  function renderStep(index, shouldSpeak = true) {
+    if (index < 0 || index >= STEPS.length) return;
 
     currentStep = index;
 
-    const step = TOUR_STEPS[currentStep];
-    const language = getPreferredLanguage();
+    const step = STEPS[currentStep];
 
-    const wording = language === "sw" ? step.sw : step.en;
+    const wording = getCurrentWording(step);
 
-    stopTourSpeech();
+    stopSpeech();
 
-    renderTourCharacter(step.character);
+    ui.title.textContent = wording.title;
 
-    tourElements.eyebrow.textContent =
-      "WEBSITE TOUR";
+    ui.description.textContent = wording.body;
 
-    tourElements.title.textContent =
-      wording.title;
+    ui.tip.textContent = wording.tip;
 
-    tourElements.description.textContent =
-      wording.body;
-
-    tourElements.tip.textContent =
-      wording.tip;
+    ui.eyebrow.textContent =
+      selectedLanguage === "sw"
+        ? "TOUR YA WEBSITE"
+        : "YOUR WEBSITE TOUR";
 
     const stepNumber = currentStep + 1;
-    const totalSteps = TOUR_STEPS.length;
+
     const percentage = Math.round(
-      (stepNumber / totalSteps) * 100
+      (stepNumber / STEPS.length) * 100
     );
 
-    tourElements.stepLabel.textContent =
-      "Step " + stepNumber + " of " + totalSteps;
+    ui.count.textContent =
+      "Step " + stepNumber + " of " + STEPS.length;
 
-    tourElements.percent.textContent =
+    ui.percent.textContent =
       percentage + "%";
 
-    tourElements.progressValue.style.width =
+    ui.progressValue.style.width =
       percentage + "%";
 
-    tourElements.progressTrack.setAttribute(
+    ui.progressTrack.setAttribute(
       "aria-valuenow",
       String(percentage)
     );
 
-    tourElements.back.disabled =
-      currentStep === 0;
+    ui.back.disabled = currentStep === 0;
 
-    tourElements.next.textContent =
-      currentStep === totalSteps - 1
+    ui.next.textContent =
+      currentStep === STEPS.length - 1
         ? "Finish"
         : "Next";
 
-    tourElements.skip.textContent =
-      "Skip tutorial";
+    highlightStepTarget(step);
 
-    updateFocusedTarget(step);
-
-    if (shouldSpeak) {
-      speakTourText(
-        wording.title + ". " + wording.body
-      );
+    if (shouldSpeak && readAloudEnabled) {
+      speak(wording.title + ". " + wording.body);
     }
   }
 
 
-  /* ------------------------------------------------------------
-     22. OPEN AND CLOSE THE TOUR
-     ------------------------------------------------------------ */
+  /* =========================================================
+     19. OPEN AND CLOSE THE COMPACT HELPER
+     ========================================================= */
 
-  function openTour() {
+  function openGuide() {
     if (tourIsOpen) return;
 
     tourIsOpen = true;
 
-    tourElements.root.classList.add("mb-tour-visible");
+    widget.classList.add("mb-guide-open");
 
-    tourElements.root.setAttribute("aria-hidden", "false");
+    compass.setAttribute("aria-expanded", "true");
 
-    document.body.style.overflow = "hidden";
+    if (currentStep < 0 || currentStep >= STEPS.length) {
+      currentStep = 0;
+    }
 
-    renderTourStep(0, true);
+    renderStep(currentStep, false);
 
-    tourElements.back.focus({
+    ui.next.focus({
       preventScroll: true
     });
   }
 
 
-  function closeTour(markAsSeen = true) {
+  function closeGuide() {
     tourIsOpen = false;
 
-    tourElements.root.classList.remove("mb-tour-visible");
+    widget.classList.remove("mb-guide-open");
 
-    tourElements.root.setAttribute("aria-hidden", "true");
+    compass.setAttribute("aria-expanded", "false");
 
-    document.body.style.overflow = "";
+    stopSpeech();
 
-    stopTourSpeech();
+    clearHighlight();
 
-    clearFocusedTarget();
+    saveStorage(GUIDE_STORAGE_KEY, "yes");
+  }
 
-    if (markAsSeen) {
-      markTourSeen();
+
+  function toggleGuide() {
+    if (tourIsOpen) {
+      closeGuide();
+    } else {
+      openGuide();
     }
   }
 
 
-  function goToNextStep() {
-    if (currentStep < TOUR_STEPS.length - 1) {
-      renderTourStep(currentStep + 1, true);
+  function nextStep() {
+    if (currentStep < STEPS.length - 1) {
+      renderStep(currentStep + 1, true);
       return;
     }
 
-    closeTour(true);
+    ui.title.textContent =
+      selectedLanguage === "sw"
+        ? "Uko ready kuendelea!"
+        : "You're ready to explore!";
+
+    ui.description.textContent =
+      selectedLanguage === "sw"
+        ? "Unaweza kutumia compass hapa chini kufungua guide tena anytime."
+        : "Use the compass button whenever you need the guide again.";
+
+    ui.tip.textContent =
+      selectedLanguage === "sw"
+        ? "Asante kwa kutumia MavunoBridge."
+        : "Thanks for exploring MavunoBridge.";
+
+    ui.count.textContent = "Tour completed";
+
+    ui.percent.textContent = "100%";
+
+    ui.progressValue.style.width = "100%";
+
+    ui.progressTrack.setAttribute("aria-valuenow", "100");
+
+    ui.next.textContent = "Close";
+
+    ui.back.disabled = false;
+
+    stopSpeech();
+
+    clearHighlight();
+
+    saveStorage(GUIDE_STORAGE_KEY, "yes");
+
+    // Mark completion so the next click on Back opens the final real step.
+    currentStep = STEPS.length;
   }
 
 
-  function goToPreviousStep() {
+  function previousStep() {
+    if (currentStep >= STEPS.length) {
+      currentStep = STEPS.length - 1;
+      renderStep(currentStep, true);
+      return;
+    }
+
     if (currentStep > 0) {
-      renderTourStep(currentStep - 1, true);
+      renderStep(currentStep - 1, true);
     }
   }
 
 
-  /* ------------------------------------------------------------
-     23. TOUR CONTROLS
-     ------------------------------------------------------------ */
+  /* =========================================================
+     20. CHARACTER SELECTOR
+     ========================================================= */
 
-  tourElements.next.addEventListener("click", () => {
-    goToNextStep();
+  ui.characterSelect.addEventListener("change", () => {
+    const requestedCharacter = ui.characterSelect.value;
+
+    if (!CHARACTERS[requestedCharacter]) return;
+
+    selectedCharacter = requestedCharacter;
+
+    saveStorage(
+      CHARACTER_STORAGE_KEY,
+      selectedCharacter
+    );
+
+    stopSpeech();
+
+    renderSelectedCharacter();
+
+    if (tourIsOpen && readAloudEnabled) {
+      const wording = getCurrentWording(STEPS[currentStep]);
+
+      if (wording) {
+        speak(
+          wording.title + ". " + wording.body
+        );
+      }
+    }
   });
 
 
-  tourElements.back.addEventListener("click", () => {
-    goToPreviousStep();
+  /* =========================================================
+     21. VOICE SELECTOR
+     ========================================================= */
+
+  ui.voice.addEventListener("change", () => {
+    selectedVoiceURI = ui.voice.value;
+
+    saveStorage(
+      VOICE_STORAGE_KEY,
+      selectedVoiceURI
+    );
+
+    stopSpeech();
+
+    if (selectedVoiceURI) {
+      const chosenVoice = getSelectedVoice();
+
+      ui.voiceStatus.textContent = chosenVoice
+        ? "Selected: " + chosenVoice.name +
+          (chosenVoice.lang ? " (" + chosenVoice.lang + ")" : "")
+        : "The selected voice is unavailable.";
+    } else {
+      ui.voiceStatus.textContent =
+        "Using the system default voice.";
+    }
   });
 
 
-  tourElements.skip.addEventListener("click", () => {
-    closeTour(true);
+  /* =========================================================
+     22. LANGUAGE SELECTOR
+     ========================================================= */
+
+  ui.language.addEventListener("change", () => {
+    selectedLanguage = ui.language.value === "sw"
+      ? "sw"
+      : "en";
+
+    saveStorage(
+      LANGUAGE_STORAGE_KEY,
+      selectedLanguage
+    );
+
+    stopSpeech();
+
+    if (tourIsOpen && currentStep < STEPS.length) {
+      renderStep(currentStep, readAloudEnabled);
+    }
   });
 
 
-  tourRoot
-    .querySelectorAll("[data-mb-tour-close]")
-    .forEach((button) => {
-      button.addEventListener("click", () => {
-        closeTour(true);
-      });
-    });
+  /* =========================================================
+     23. READ-ALOUD TOGGLE
+     ========================================================= */
 
+  ui.readAloud.addEventListener("change", () => {
+    readAloudEnabled = ui.readAloud.checked;
+
+    saveStorage(
+      SPEECH_STORAGE_KEY,
+      readAloudEnabled
+    );
+
+    if (!readAloudEnabled) {
+      stopSpeech();
+
+      ui.voiceStatus.textContent =
+        "Read-aloud is off. You can still use the written guide.";
+    } else {
+      ui.voiceStatus.textContent =
+        "Read-aloud is on.";
+    }
+  });
+
+
+  /* =========================================================
+     24. TEST SELECTED VOICE
+     ========================================================= */
+
+  ui.testVoice.addEventListener("click", () => {
+    if (!("speechSynthesis" in window)) {
+      ui.voiceStatus.textContent =
+        "Speech synthesis is not supported by this browser.";
+      return;
+    }
+
+    const sample = selectedLanguage === "sw"
+      ? "Karibu MavunoBridge! Niko hapa kukusaidia kutumia website."
+      : "Hello! Welcome to MavunoBridge. Let me show you around.";
+
+    speak(sample);
+  });
+
+
+  /* =========================================================
+     25. CONNECT BUTTONS
+     ========================================================= */
+
+  compass.addEventListener("click", toggleGuide);
+
+  ui.close.addEventListener("click", closeGuide);
+
+  ui.stopSpeech.addEventListener("click", stopSpeech);
+
+  ui.next.addEventListener("click", () => {
+    if (currentStep >= STEPS.length) {
+      closeGuide();
+      return;
+    }
+
+    nextStep();
+  });
+
+  ui.back.addEventListener("click", previousStep);
+
+  ui.skip.addEventListener("click", closeGuide);
+
+
+  /* =========================================================
+     26. CONNECT EXISTING TOUR BUTTONS
+     ========================================================= */
+
+  const EXISTING_TRIGGER_SELECTOR = [
+    "[data-open-tour]",
+    "[data-tour-open]",
+    "#tourButton",
+    "#websiteTourButton",
+    "#tutorialButton",
+    "#guideButton",
+    "#helpTourButton",
+    "#openTutorial",
+    ".website-tour-trigger",
+    ".tour-trigger"
+  ].join(",");
+
+  document.addEventListener("click", (event) => {
+    const clicked = event.target;
+
+    if (!clicked || typeof clicked.closest !== "function") {
+      return;
+    }
+
+    const trigger = clicked.closest(EXISTING_TRIGGER_SELECTOR);
+
+    if (!trigger) return;
+
+    if (trigger === compass) return;
+
+    event.preventDefault();
+
+    openGuide();
+  });
+
+
+  /* =========================================================
+     27. ESCAPE KEY
+     ========================================================= */
 
   document.addEventListener("keydown", (event) => {
     if (!tourIsOpen) return;
 
     if (event.key === "Escape") {
-      closeTour(true);
-    }
-
-    if (event.key === "ArrowRight") {
-      goToNextStep();
-    }
-
-    if (event.key === "ArrowLeft") {
-      goToPreviousStep();
+      closeGuide();
     }
   });
 
 
-  /* ------------------------------------------------------------
-     24. HOOK UP EXISTING TOUR BUTTONS
-     ------------------------------------------------------------ */
+  /* =========================================================
+     28. OPTIONAL SMART ASSIST AVATAR CONTAINERS
 
-  document.addEventListener("click", (event) => {
-    const target = event.target;
+     Only dedicated avatar containers are selected here.
 
-    if (!target || typeof target.closest !== "function") {
-      return;
-    }
+     This deliberately avoids general selectors like "main",
+     ".container", or ".assistant", which can accidentally
+     replace large parts of a website.
+     ========================================================= */
 
-    const trigger = target.closest(TOUR_TRIGGER_SELECTOR);
-
-    if (!trigger) return;
-
-    event.preventDefault();
-
-    openTour();
-  });
-
-
-  /* ------------------------------------------------------------
-     25. ADD A TOUR BUTTON WHEN THE PAGE HAS NO TOUR BUTTON
-     ------------------------------------------------------------ */
-
-  function addFallbackTourButton() {
-    if (document.querySelector(TOUR_TRIGGER_SELECTOR)) {
-      return;
-    }
-
-    if (document.getElementById("mb-tour-help-button")) {
-      return;
-    }
-
-    const button = document.createElement("button");
-
-    button.type = "button";
-    button.id = "mb-tour-help-button";
-    button.className = "mb-tour-help-button";
-
-    button.textContent = "Guide";
-
-    button.setAttribute(
-      "aria-label",
-      "Open the MavunoBridge website tutorial"
-    );
-
-    button.addEventListener("click", openTour);
-
-    document.body.appendChild(button);
-  }
-
-
-  /* ------------------------------------------------------------
-     26. OPTIONAL AVATAR MOUNTS FOR SMART ASSIST
-
-     These selectors target dedicated avatar containers only.
-
-     Existing page features and text outside these containers
-     are left alone.
-     ------------------------------------------------------------ */
-
-  const EXISTING_AVATAR_SELECTOR = [
+  const SMART_AVATAR_SELECTOR = [
     "[data-mavuno-avatar]",
     "[data-tour-avatar]",
     "#smartAssistantAvatar",
@@ -2594,48 +2956,33 @@
     "#smart-assist-avatar",
     ".mavuno-assistant-avatar",
     ".smart-assistant-avatar",
-    ".smart-assist-avatar",
-    ".assistant-avatar",
-    ".farmer-avatar"
+    ".smart-assist-avatar"
   ].join(",");
 
 
-  function chooseCharacterForElement(element) {
-    const preferred =
+  function chooseCharacterForContainer(element) {
+    const requested = (
       element.getAttribute("data-character") ||
       element.getAttribute("data-mavuno-avatar") ||
       element.getAttribute("data-avatar") ||
-      "";
+      ""
+    ).toLowerCase().trim();
 
-    const normalized = preferred.toLowerCase().trim();
-
-    if (CHARACTERS[normalized]) {
-      return normalized;
+    if (CHARACTERS[requested]) {
+      return requested;
     }
 
-    const identifyingText = (
-      element.id + " " + element.className + " " + normalized
+    const hint = (
+      element.id + " " + element.className
     ).toLowerCase();
 
-    if (
-      identifyingText.includes("sacco") ||
-      identifyingText.includes("cooperative")
-    ) {
-      return "otieno";
-    }
+    if (hint.includes("sacco")) return "otieno";
 
-    if (
-      identifyingText.includes("smart") ||
-      identifyingText.includes("assist") ||
-      identifyingText.includes("tech")
-    ) {
+    if (hint.includes("smart") || hint.includes("assist")) {
       return "kamau";
     }
 
-    if (
-      identifyingText.includes("market") ||
-      identifyingText.includes("buyer")
-    ) {
+    if (hint.includes("market") || hint.includes("buyer")) {
       return "wanjiku";
     }
 
@@ -2643,141 +2990,165 @@
   }
 
 
-  function mountAvatarInto(element) {
-    if (!(element instanceof HTMLElement)) return;
+  function mountAvatar(element, characterKey) {
+    if (!(element instanceof HTMLElement)) return false;
 
-    if (element.tagName === "IMG" || element.tagName === "SVG") {
-      return;
+    if (element === widget || widget.contains(element)) {
+      return false;
     }
 
-    if (tourRoot.contains(element)) return;
+    if (element === compass) return false;
 
-    if (element.dataset.mbAvatarMounted === "true") {
-      return;
+    if (element.dataset.mbGuideAvatarMounted === "true") {
+      return false;
     }
 
     /*
-     * Only this avatar container is replaced. No surrounding
-     * Smart Assist content or page layout is replaced.
+     * The selected element must be a dedicated avatar holder.
+     * This replaces only that holder's contents.
      */
-    const characterKey = chooseCharacterForElement(element);
+    const character = CHARACTERS[characterKey]
+      ? characterKey
+      : "akinyi";
 
-    element.innerHTML = createAvatarSVG(characterKey);
+    element.innerHTML = createAvatarSVG(character);
 
-    element.dataset.mbAvatarMounted = "true";
+    element.dataset.mbGuideAvatarMounted = "true";
 
-    element.classList.add("mb-avatar-mount");
+    element.classList.add("mb-guide-mounted-avatar");
 
     initializeAllAvatars();
+
+    return true;
   }
 
 
-  function mountExistingAvatars() {
-    let elements = [];
+  function mountExistingAvatarContainers() {
+    let containers = [];
 
     try {
-      elements = Array.from(
-        document.querySelectorAll(EXISTING_AVATAR_SELECTOR)
+      containers = Array.from(
+        document.querySelectorAll(SMART_AVATAR_SELECTOR)
       );
     } catch (error) {
       return;
     }
 
-    elements.forEach(mountAvatarInto);
+    containers.forEach((element) => {
+      const characterKey = chooseCharacterForContainer(element);
+
+      mountAvatar(element, characterKey);
+    });
   }
 
 
-  /* ------------------------------------------------------------
-     27. WATCH FOR A SMART ASSIST AVATAR ADDED LATER
+  /* =========================================================
+     29. WATCH FOR AVATAR PLACEHOLDERS ADDED LATER
+     ========================================================= */
 
-     If Smart Assist adds a dedicated avatar placeholder after
-     page load, this tries to mount the cartoon in that spot.
-
-     Already-mounted elements are ignored.
-     ------------------------------------------------------------ */
-
-  let avatarObserver = null;
-  let observerQueued = false;
-
-  function startAvatarObserver() {
+  function observeAvatarContainers() {
     if (!("MutationObserver" in window)) return;
 
     if (!document.body) return;
 
-    avatarObserver = new MutationObserver(() => {
-      if (observerQueued) return;
+    observer = new MutationObserver(() => {
+      if (observerScheduled) return;
 
-      observerQueued = true;
+      observerScheduled = true;
 
-      window.setTimeout(() => {
-        observerQueued = false;
+      setTimeout(() => {
+        observerScheduled = false;
 
-        mountExistingAvatars();
+        mountExistingAvatarContainers();
 
         initializeAllAvatars();
       }, 100);
     });
 
-    avatarObserver.observe(document.body, {
+    observer.observe(document.body, {
       childList: true,
       subtree: true
     });
   }
 
 
-  /* ------------------------------------------------------------
-     28. PUBLIC AVATAR API
+  /* =========================================================
+     30. PUBLIC API FOR OTHER WEBSITE SCRIPTS
 
-     This lets other MavunoBridge scripts tell the characters
-     when their own speech starts or finishes.
+     Other code can use:
 
-     Example:
        window.MavunoBridgeAvatars.startTalking();
        window.MavunoBridgeAvatars.stopTalking();
-     ------------------------------------------------------------ */
+
+     To place a character into a dedicated container:
+
+       window.MavunoBridgeAvatars.renderInto(
+         "#myAvatarContainer",
+         "akinyi"
+       );
+
+     Available character IDs:
+       akinyi
+       wanjiku
+       kamau
+       otieno
+     ========================================================= */
 
   window.MavunoBridgeAvatars = {
-    renderInto(element, characterKey = "akinyi") {
-      if (typeof element === "string") {
-        element = document.querySelector(element);
-      }
+    startTalking() {
+      startMouthAnimation();
+    },
 
-      if (!(element instanceof HTMLElement)) {
+    stopTalking() {
+      stopMouthAnimation();
+    },
+
+    speak(text) {
+      speak(String(text || ""));
+    },
+
+    stopSpeech() {
+      stopSpeech();
+    },
+
+    openGuide() {
+      openGuide();
+    },
+
+    closeGuide() {
+      closeGuide();
+    },
+
+    setCharacter(characterKey) {
+      if (!CHARACTERS[characterKey]) {
         return false;
       }
 
-      if (!CHARACTERS[characterKey]) {
-        characterKey = "akinyi";
-      }
+      selectedCharacter = characterKey;
 
-      element.innerHTML = createAvatarSVG(characterKey);
+      saveStorage(
+        CHARACTER_STORAGE_KEY,
+        characterKey
+      );
 
-      element.dataset.mbAvatarMounted = "true";
-
-      element.classList.add("mb-avatar-mount");
-
-      initializeAllAvatars();
+      renderSelectedCharacter();
 
       return true;
     },
 
-    startTalking() {
-      startMouthMovement();
-    },
+    renderInto(target, characterKey = "akinyi") {
+      const element = typeof target === "string"
+        ? document.querySelector(target)
+        : target;
 
-    stopTalking() {
-      stopMouthMovement();
-    },
-
-    setCharacter(element, characterKey) {
-      if (typeof element === "string") {
-        element = document.querySelector(element);
+      if (!element || !CHARACTERS[characterKey]) {
+        return false;
       }
 
-      return this.renderInto(element, characterKey);
+      return mountAvatar(element, characterKey);
     },
 
-    listCharacters() {
+    getCharacters() {
       return Object.keys(CHARACTERS).map((key) => ({
         id: key,
         name: CHARACTERS[key].name,
@@ -2787,44 +3158,59 @@
   };
 
 
-  /* ------------------------------------------------------------
-     29. INITIALIZE
-     ------------------------------------------------------------ */
+  /* =========================================================
+     31. INITIALIZE
+     ========================================================= */
 
-  function initializeMavunoBridgeTour() {
-    mountExistingAvatars();
+  function initializeGuide() {
+    loadPreferences();
+
+    ui.characterSelect.value = selectedCharacter;
+
+    ui.language.value = selectedLanguage;
+
+    ui.readAloud.checked = readAloudEnabled;
+
+    renderSelectedCharacter();
+
+    populateVoiceSelector();
+
+    connectSpeechToWebsite();
+
+    mountExistingAvatarContainers();
 
     initializeAllAvatars();
 
-    connectSpeechToAvatars();
+    observeAvatarContainers();
 
-    addFallbackTourButton();
+    if ("speechSynthesis" in window) {
+      window.speechSynthesis.addEventListener?.(
+        "voiceschanged",
+        populateVoiceSelector
+      );
 
-    startAvatarObserver();
-
-    /*
-     * A new visitor sees the tutorial automatically once.
-     * They can skip it. The Guide button remains available for
-     * visitors who have already completed or skipped the tour.
-     */
-    if (!hasSeenTour()) {
-      window.setTimeout(() => {
-        if (!hasSeenTour()) {
-          openTour();
-        }
-      }, 900);
+      // Some browsers populate their voices shortly after page load.
+      setTimeout(populateVoiceSelector, 500);
+      setTimeout(populateVoiceSelector, 1500);
     }
+
+    // Keep the website visible; never auto-open the panel.
+    widget.classList.remove("mb-guide-open");
+
+    compass.setAttribute("aria-expanded", "false");
+
+    tourIsOpen = false;
   }
 
 
   if (document.readyState === "loading") {
     document.addEventListener(
       "DOMContentLoaded",
-      initializeMavunoBridgeTour,
+      initializeGuide,
       { once: true }
     );
   } else {
-    initializeMavunoBridgeTour();
+    initializeGuide();
   }
 
 })();
