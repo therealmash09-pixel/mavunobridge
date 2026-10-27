@@ -44,7 +44,7 @@
     ["Legumes", "https://images.unsplash.com/photo-1515543904379-3d757afe72e4?auto=format&fit=crop&w=600&q=80"],
     ["Spices", "https://images.unsplash.com/photo-1532336414038-cf19250c5757?auto=format&fit=crop&w=600&q=80"],
     ["Herbal Products", "https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?auto=format&fit=crop&w=600&q=80"],
-    ["Livestock", "https://images.unsplash.com/photo-1516467508483-a7212febe31a?auto=format&fit=crop&w=600&q=80"],
+    ["Livestock", "https://cdn.britannica.com/77/245977-050-49358C4E/Cattle-feedlot-west-texas-beef-industry.jpg"],
     ["Livestock Produce", "https://images.unsplash.com/photo-1506976785307-8732e854ad03?auto=format&fit=crop&w=600&q=80"],
     ["Agricultural Inputs", "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=600&q=80"],
     ["Farm Tools & Equipment", "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTNjAixX4z-6m9SMY-FlStrqHLfbR5tC9NIv4En1VUhENAS5x_UQnF3hGSU&s=10"],
