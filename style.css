@@ -4403,3 +4403,92 @@ body {
     padding: 12px 16px;
   }
 }
+
+/* ==========================================================
+   MAVUNOBRIDGE — MOBILE PRODUCT PHOTO PROPORTIONS
+   Fix: images becoming too tall inside mobile listing cards.
+   Keep the two-column mobile card layout.
+   ========================================================== */
+
+@media (max-width: 600px) {
+
+  .listing-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .product-card {
+    display: grid;
+    grid-template-columns: minmax(112px, 36%) minmax(0, 1fr);
+    align-items: start;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  /*
+    The important fix:
+    Do not stretch the photo wrapper to match the
+    full height of the product description.
+  */
+  .product-image-wrap {
+    position: relative;
+    align-self: start;
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+  }
+
+  /*
+    Keep the photo inside its own proportional box.
+    Cover crops excess edges without distorting the photo.
+  */
+  .product-image {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    max-width: none;
+    object-fit: cover;
+    object-position: center;
+  }
+
+  .product-image-fallback {
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    align-self: start;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+  }
+
+  .product-body {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .product-body h3,
+  .product-description,
+  .quantity,
+  .location {
+    overflow-wrap: anywhere;
+  }
+}
+
+/* Slightly narrower phones */
+@media (max-width: 380px) {
+
+  .product-card {
+    grid-template-columns: minmax(100px, 34%) minmax(0, 1fr);
+  }
+
+  .product-body {
+    padding: 10px;
+  }
+
+  .product-image-wrap {
+    aspect-ratio: 3 / 4;
+  }
+}
