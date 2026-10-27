@@ -1,4 +1,3 @@
-
 /* =========================================================
    MAVUNOBRIDGE — ANIME FARMER TOUR
    Complete replacement: website-tour.js
@@ -353,7 +352,8 @@
   }
 
   /* =========================================================
-     ANIME AVATARS
+     ANIME AVATARS (REMODELLED)
+     Soft chibi-style faces, friendly eyes, small smiles.
      Self-contained SVG: no external image URLs required.
      ========================================================= */
 
@@ -363,123 +363,207 @@
     const kamau = id === "kamau";
     const wanjiru = id === "wanjiru";
     const akinyi = id === "akinyi";
+    const feminine = wanjiru || akinyi;
+    const line = "#3A2218";
 
+    /* ---------- Eyes ---------- */
+    const eyeRx = baba ? 6.6 : akinyi ? 8 : 7.4;
+    const eyeRy = baba ? 7.4 : akinyi ? 9.4 : 8.4;
+    const eyeY = 75;
+
+    function eye(side, cx) {
+      const irisRx = eyeRx - 1.6;
+      const irisRy = eyeRy - 1.4;
+      const outer = side === "left" ? -1 : 1;
+
+      const lash = feminine
+        ? `<path d="M${cx + outer * (eyeRx + 0.5)} ${eyeY - 2} l${outer * 3} -3"
+                 fill="none" stroke="${line}" stroke-width="2" stroke-linecap="round"/>`
+        : "";
+
+      return `
+        <g class="mbt-eye-group mbt-${side}-eye">
+          <defs>
+            <clipPath id="mbt-clip-${side}-${id}">
+              <ellipse cx="${cx}" cy="${eyeY}" rx="${eyeRx}" ry="${eyeRy}"/>
+            </clipPath>
+          </defs>
+
+          <ellipse cx="${cx}" cy="${eyeY}" rx="${eyeRx}" ry="${eyeRy}"
+                   fill="#FFFFFF" stroke="${line}" stroke-width="1"/>
+
+          <g clip-path="url(#mbt-clip-${side}-${id})">
+            <g class="mbt-pupil">
+              <ellipse cx="${cx}" cy="${eyeY}" rx="${irisRx}" ry="${irisRy}" fill="#6B3C27"/>
+              <ellipse cx="${cx}" cy="${eyeY + irisRy * 0.35}" rx="${irisRx * 0.72}" ry="${irisRy * 0.42}"
+                       fill="#9A6038" opacity=".65"/>
+              <ellipse cx="${cx}" cy="${eyeY}" rx="${irisRx * 0.52}" ry="${irisRy * 0.58}" fill="#1D110C"/>
+              <circle cx="${cx + 2}" cy="${eyeY - 3}" r="2.3" fill="#FFFFFF"/>
+              <circle cx="${cx - 2}" cy="${eyeY + 3}" r="1.1" fill="#FFFFFF" opacity=".9"/>
+            </g>
+          </g>
+
+          <path d="M${cx - eyeRx - 0.5} ${eyeY - 1} Q${cx} ${eyeY - eyeRy - 3} ${cx + eyeRx + 0.5} ${eyeY - 1}"
+                fill="none" stroke="${line}" stroke-width="2.6" stroke-linecap="round"/>
+          ${lash}
+        </g>`;
+    }
+
+    const eyes = eye("left", 51) + eye("right", 79);
+
+    /* ---------- Brows ---------- */
+    const browColor = baba ? "#BDB7AB" : f.hair;
+    const browWidth = feminine ? 2.6 : 3.4;
+    const brows = `
+      <path d="M42 62 Q51 57.5 59 61" fill="none" stroke="${browColor}"
+            stroke-width="${browWidth}" stroke-linecap="round"/>
+      <path d="M71 61 Q79 57.5 88 62" fill="none" stroke="${browColor}"
+            stroke-width="${browWidth}" stroke-linecap="round"/>`;
+
+    /* ---------- Hair behind the head ---------- */
     const hairBack = baba
-      ? `<path d="M31 60 Q19 22 52 17 Q88 9 103 38 L100 80 L34 82Z" fill="#D8D3C8"/>
-         <path d="M37 42 Q45 23 62 24 M79 24 Q96 31 98 47" fill="none" stroke="#F5F0E5" stroke-width="3" stroke-linecap="round"/>`
+      ? `<path d="M32 70 Q27 38 48 30 Q65 25 82 30 Q103 38 98 70 L94 62 L36 62Z" fill="#D3D0C7"/>`
       : kamau
-      ? `<path d="M29 61 Q24 23 64 17 Q98 21 106 57 L99 77 L35 74Z" fill="#21140E"/>
-         <path d="M35 42 L39 29 L50 33 L61 18 L70 30 L84 22 L90 36 L101 34 L99 51Z" fill="#302017"/>`
+      ? `<path d="M32 66 Q28 34 65 29 Q102 34 98 66 L94 58 L36 58Z" fill="${f.hair}"/>`
       : wanjiru
-      ? `<path d="M28 60 Q20 22 61 15 Q101 16 108 58 L101 92 L31 91Z" fill="#24150F"/>
-         <path d="M36 43 Q29 72 39 97 M96 43 Q105 73 92 97" fill="none" stroke="#493023" stroke-width="5" stroke-linecap="round"/>`
-      : `<path d="M26 60 Q23 20 62 17 Q101 17 107 58 L100 98 L31 94Z" fill="#24140E"/>
-         <g fill="#302016" stroke="#1B100B" stroke-width="1">
-           <circle cx="36" cy="29" r="14"/>
-           <circle cx="49" cy="19" r="15"/>
-           <circle cx="65" cy="17" r="16"/>
-           <circle cx="83" cy="23" r="15"/>
-           <circle cx="98" cy="36" r="13"/>
-           <circle cx="34" cy="44" r="12"/>
-           <circle cx="95" cy="47" r="12"/>
+      ? `<path d="M30 72 Q26 36 65 31 Q104 36 100 72 L99 94 Q82 88 65 88 Q48 88 31 94Z" fill="${f.hair}"/>`
+      : `<g fill="${f.hair}">
+           <circle cx="65" cy="23" r="17"/>
+           <circle cx="46" cy="29" r="13"/>
+           <circle cx="84" cy="29" r="13"/>
+           <circle cx="33" cy="42" r="11"/>
+           <circle cx="97" cy="42" r="11"/>
+           <circle cx="65" cy="36" r="16"/>
+           <circle cx="31" cy="80" r="5.5"/>
+           <circle cx="99" cy="80" r="5.5"/>
+           <circle cx="29" cy="68" r="5"/>
+           <circle cx="101" cy="68" r="5"/>
+         </g>
+         <g fill="#3A2418" opacity=".55">
+           <circle cx="60" cy="19" r="3"/>
+           <circle cx="74" cy="23" r="2.5"/>
+           <circle cx="44" cy="27" r="2.5"/>
+           <circle cx="86" cy="31" r="2.5"/>
          </g>`;
 
+    /* ---------- Ears ---------- */
+    const ears = `
+      <ellipse cx="33" cy="73" rx="4" ry="6" fill="${f.skin}"/>
+      <ellipse cx="97" cy="73" rx="4" ry="6" fill="${f.skin}"/>
+      ${wanjiru
+        ? `<circle cx="32" cy="82" r="3.4" fill="#F6D16B" stroke="#AF7628" stroke-width="1.2"/>
+           <circle cx="98" cy="82" r="3.4" fill="#F6D16B" stroke="#AF7628" stroke-width="1.2"/>`
+        : ""}`;
+
+    /* ---------- Face ---------- */
     const face = `
-      <path d="M33 45 Q34 28 65 28 Q95 29 97 46
-               L92 84 Q85 106 65 111
-               Q44 106 37 84Z"
-            fill="url(#mbt-skin-${id})"
-            stroke="${f.skin}"
-            stroke-width="1.5"/>
-      <path d="M38 48 Q42 35 60 34"
-            fill="none" stroke="#FFFFFF" stroke-width="3" opacity=".10"/>`;
+      <path d="M34 66 Q34 36 65 36 Q96 36 96 66 Q96 86 84 98 Q76 105 65 105 Q54 105 46 98 Q34 86 34 66Z"
+            fill="url(#mbt-skin-${id})" stroke="${f.skin}" stroke-width="1.2"/>
+      <path d="M40 54 Q45 43 58 41" fill="none" stroke="#FFFFFF" stroke-width="2.5"
+            stroke-linecap="round" opacity=".14"/>`;
 
-    const headwear = baba
-      ? `<path d="M14 43 Q20 14 64 12 Q104 14 117 43 Q67 53 14 43Z" fill="#EBCB7E" stroke="#A57A3B" stroke-width="2"/>
-         <path d="M8 43 Q63 34 122 43 Q104 58 63 57 Q27 56 8 43Z" fill="#D6A654" stroke="#9D7237" stroke-width="2"/>
-         <path d="M30 33 Q63 20 95 33 M42 27 L40 39 M83 27 L86 39" fill="none" stroke="#FFE5A0" stroke-width="2.4"/>`
+    const blush = `
+      <ellipse cx="42" cy="89" rx="6" ry="3.2" fill="#F58E8E" opacity="${baba ? ".12" : ".3"}"/>
+      <ellipse cx="88" cy="89" rx="6" ry="3.2" fill="#F58E8E" opacity="${baba ? ".12" : ".3"}"/>`;
+
+    /* ---------- Hair in front of the face ---------- */
+    const hairFront = baba
+      ? `<path d="M34 64 Q32 52 40 45 L45 53 Q39 58 38 70Z" fill="#D3D0C7"/>
+         <path d="M96 64 Q98 52 90 45 L85 53 Q91 58 92 70Z" fill="#D3D0C7"/>`
       : kamau
-      ? `<path d="M27 43 Q29 14 63 13 Q96 15 103 43 L96 51 L34 51Z" fill="#D9433B" stroke="#87251E" stroke-width="2"/>
-         <path d="M23 42 Q63 35 111 44 Q87 55 43 50Z" fill="#B92D28"/>
-         <path d="M49 24 Q63 19 78 24" stroke="#F4796B" stroke-width="2" fill="none"/>`
-      : wanjiru
-      ? `<path d="M25 50 Q14 28 34 17 Q61 1 86 14 Q113 28 101 52 L94 68 L34 64Z" fill="#EB8938" stroke="#A85124" stroke-width="2"/>
-         <path d="M28 30 Q50 43 96 22 M28 42 Q62 53 103 35 M42 14 Q63 30 82 14 M35 51 Q61 61 95 46" fill="none" stroke="#FFC16B" stroke-width="4" stroke-linecap="round"/>`
-      : `<path d="M30 33 Q41 15 62 22 Q83 14 99 33 L94 43 Q65 34 35 43Z" fill="#F3C831" stroke="#BB9119" stroke-width="2"/>
-         <path d="M34 31 Q32 17 43 17 M52 25 Q62 13 73 24 M80 25 Q93 15 96 30" fill="none" stroke="#FFE991" stroke-width="3" stroke-linecap="round"/>`;
-
-    const eyes = `
-      <g class="mbt-eye-group mbt-left-eye">
-        <path d="M33 70 Q45 52 60 70 Q47 91 33 70Z"
-              fill="#FFF9F1" stroke="#28170F" stroke-width="2.4"/>
-        <g class="mbt-pupil">
-          <ellipse cx="47" cy="70" rx="${akinyi ? 8 : 7}" ry="${akinyi ? 11 : 9.5}" fill="#6B3C27"/>
-          <ellipse cx="48" cy="70" rx="5.3" ry="7.5" fill="#21130E"/>
-          <circle cx="50" cy="66" r="3.1" fill="#FFFFFF"/>
-          <circle cx="44.5" cy="73.5" r="1.5" fill="#FFFFFF" opacity=".9"/>
-        </g>
-        <path d="M32 70 Q45 51 61 69" fill="none" stroke="#291810" stroke-width="3.5" stroke-linecap="round"/>
-      </g>
-
-      <g class="mbt-eye-group mbt-right-eye">
-        <path d="M69 70 Q84 52 97 70 Q83 91 69 70Z"
-              fill="#FFF9F1" stroke="#28170F" stroke-width="2.4"/>
-        <g class="mbt-pupil">
-          <ellipse cx="83" cy="70" rx="${akinyi ? 8 : 7}" ry="${akinyi ? 11 : 9.5}" fill="#6B3C27"/>
-          <ellipse cx="82" cy="70" rx="5.3" ry="7.5" fill="#21130E"/>
-          <circle cx="84" cy="66" r="3.1" fill="#FFFFFF"/>
-          <circle cx="78.5" cy="73.5" r="1.5" fill="#FFFFFF" opacity=".9"/>
-        </g>
-        <path d="M68 69 Q83 51 98 70" fill="none" stroke="#291810" stroke-width="3.5" stroke-linecap="round"/>
-      </g>`;
-
-    const brows = baba
-      ? `<path d="M35 59 Q47 53 59 60 M70 60 Q83 53 95 59" fill="none" stroke="#D5D0C5" stroke-width="4" stroke-linecap="round"/>`
-      : `<path d="M34 59 Q47 51 60 58 M69 58 Q83 51 96 59" fill="none" stroke="${f.hair}" stroke-width="4" stroke-linecap="round"/>`;
-
-    const facialHair = baba
-      ? `<path d="M38 82 Q43 91 51 91 Q64 100 78 91 Q86 91 92 81 L87 100 Q77 117 65 120 Q49 116 41 100Z" fill="#D7D2C8"/>
-         <path d="M46 95 Q64 102 82 95 M51 105 Q65 111 78 105" fill="none" stroke="#B7B1A7" stroke-width="2"/>`
-      : kamau
-      ? `<path d="M47 93 Q51 101 65 102 Q78 101 84 92 L78 103 L65 106 L52 102Z" fill="#25160F"/>`
+      ? `<path d="M34 62 Q30 36 65 31 Q100 36 96 62 Q92 50 82 49 Q74 55 65 49 Q56 55 48 49 Q38 50 34 62Z"
+               fill="${f.hair}"/>`
+      : akinyi
+      ? `<path d="M34 62 Q32 38 65 34 Q98 38 96 62 Q90 46 65 44 Q40 46 34 62Z" fill="${f.hair}"/>`
       : "";
 
+    /* ---------- Nose + mouth ---------- */
     const nose = `
-      <path d="M65 75 Q59 83 62 87 Q65 90 69 86"
-        fill="none" stroke="${f.skin}" stroke-width="2.4" stroke-linecap="round"/>`;
+      <path d="M63 86 Q65 88.5 67 86" fill="none" stroke="${f.skin}"
+            stroke-width="1.8" stroke-linecap="round" opacity=".85"/>
+      <path d="M63 86 Q65 88.5 67 86" fill="none" stroke="#000"
+            stroke-width="1" stroke-linecap="round" opacity=".15"/>`;
+
+    const beard = baba
+      ? `<path d="M36 80 Q38 98 50 104 Q65 114 80 104 Q92 98 94 80 Q88 90 80 91 Q65 86 50 91 Q42 90 36 80Z"
+               fill="#D3D0C7"/>
+         <path d="M48 100 Q65 108 82 100" fill="none" stroke="#B7B1A7" stroke-width="1.5"
+               stroke-linecap="round"/>`
+      : "";
+
+    const mouth = `
+      <ellipse class="mbt-mouth-open" cx="65" cy="95.5" rx="5.5" ry="1.6" fill="#4A1D1A"/>
+      <path class="mbt-teeth" d="M60.5 93.8 Q65 95.5 69.5 93.8" fill="none"
+            stroke="#FFF4EA" stroke-width="1.8" stroke-linecap="round"/>
+      <path class="mbt-mouth-line" d="M57 93 Q65 99.5 73 93" fill="none"
+            stroke="#6B2F25" stroke-width="2.2" stroke-linecap="round"/>`;
+
+    const mustache = baba
+      ? `<path d="M52 90 Q58 84.5 65 88.5 Q72 84.5 78 90 Q72 93 65 91 Q58 93 52 90Z" fill="#E4E0D7"
+               stroke="#B7B1A7" stroke-width=".8"/>`
+      : "";
+
+    /* ---------- Headwear ---------- */
+    const headwear = baba
+      ? `<path d="M40 47 Q41 19 65 18 Q89 19 90 47Z" fill="#EBCB7E" stroke="#A57A3B" stroke-width="1.6"/>
+         <path d="M41 41 Q65 48 89 41" fill="none" stroke="#8B5E2B" stroke-width="4"/>
+         <path d="M48 30 Q65 24 82 30" fill="none" stroke="#FFE5A0" stroke-width="2" stroke-linecap="round"/>
+         <ellipse cx="65" cy="47" rx="46" ry="8.5" fill="#D6A654" stroke="#9D7237" stroke-width="1.8"/>
+         <path d="M26 47 Q65 53 104 47" fill="none" stroke="#B88B40" stroke-width="1.5" opacity=".7"/>`
+      : kamau
+      ? `<path d="M36 50 Q36 22 65 21 Q94 22 94 50 Q65 44 36 50Z" fill="#D9433B" stroke="#87251E" stroke-width="1.6"/>
+         <path d="M65 22 L65 46" stroke="#B92D28" stroke-width="1.5"/>
+         <circle cx="65" cy="22" r="2.6" fill="#B92D28"/>
+         <path d="M48 30 Q56 25 64 26" fill="none" stroke="#F4796B" stroke-width="2" stroke-linecap="round"/>
+         <path d="M33 50 Q65 66 97 50 Q94 45 65 46 Q36 45 33 50Z" fill="#B92D28" stroke="#87251E" stroke-width="1.4"/>`
+      : wanjiru
+      ? `<path d="M31 58 Q26 30 52 20 Q66 14 82 18 Q104 28 99 58 Q82 46 65 46 Q48 46 31 58Z"
+               fill="#EB8938" stroke="#A85124" stroke-width="1.6"/>
+         <path d="M36 44 Q60 32 96 40 M34 52 Q62 40 99 50" fill="none" stroke="#FFC16B"
+               stroke-width="2.6" stroke-linecap="round"/>
+         <ellipse cx="88" cy="19" rx="11" ry="7" transform="rotate(-25 88 19)"
+                  fill="#EB8938" stroke="#A85124" stroke-width="1.6"/>
+         <path d="M80 21 Q88 15 96 17" fill="none" stroke="#FFC16B" stroke-width="2" stroke-linecap="round"/>`
+      : `<path d="M33 52 Q65 35 97 52 L95 59 Q65 44 35 59Z" fill="#F3C831" stroke="#BB9119" stroke-width="1.6"/>
+         <path d="M42 50 Q65 40 88 50" fill="none" stroke="#FFE991" stroke-width="2" stroke-linecap="round"/>`;
+
+    /* ---------- Neck, shoulders and outfit ---------- */
+    const shirt = `
+      <path d="M20 176 Q20 128 52 118 Q65 126 78 118 Q110 128 110 176Z"
+            fill="url(#mbt-clothes-${id})" stroke="#254832" stroke-width="1.4"/>
+      <path d="M30 140 Q26 154 26 168 M100 140 Q104 154 104 168" fill="none"
+            stroke="#FFFFFF" stroke-width="2" opacity=".15" stroke-linecap="round"/>`;
 
     const neck = `
-      <path d="M51 98 L51 116 Q65 127 79 116 L79 98Z" fill="${f.skin}"/>
-      <path d="M55 106 Q65 112 75 106" fill="none" stroke="${f.skinLight}" stroke-width="2" opacity=".55"/>`;
+      <path d="M56 98 L56 114 Q65 130 74 114 L74 98Z" fill="${f.skin}"/>
+      <ellipse cx="65" cy="106" rx="19" ry="4.5" fill="#000" opacity=".12"/>
+      <path d="M56 114 Q65 130 74 114" fill="none" stroke="#FFFFFF" stroke-width="2"
+            opacity=".75" stroke-linecap="round"/>`;
 
-    const shirt = `
-      <path d="M51 112 L36 119 Q16 126 12 170 L117 170 Q113 126 92 119 L79 112 Q65 128 51 112Z"
-        fill="${f.shirt}" stroke="#254832" stroke-width="1.6"/>
-      <path d="M51 112 L65 133 L79 112"
-        fill="none" stroke="#FFFFFF" stroke-width="2.5" opacity=".8"/>
-      <path d="M28 140 L23 162 M101 140 L106 162"
-        fill="none" stroke="#FFFFFF" stroke-width="2" opacity=".18"/>`;
-
-    const outfit = akinyi
-      ? `<path d="M36 124 L29 170 M94 124 L103 170" stroke="#F1C431" stroke-width="5" stroke-linecap="round"/>
-         <path d="M29 143 L44 143 M88 143 L103 143" stroke="#F1C431" stroke-width="3"/>`
+    const outfit = baba
+      ? `<path d="M80 146 h14 v12 h-14z" fill="none" stroke="#FFFFFF" stroke-width="1.6" opacity=".45"/>
+         <circle cx="65" cy="140" r="1.7" fill="#FFFFFF" opacity=".7"/>
+         <circle cx="65" cy="152" r="1.7" fill="#FFFFFF" opacity=".7"/>`
       : kamau
-      ? `<path d="M33 127 L48 146 M96 127 L81 146" stroke="#855522" stroke-width="5" stroke-linecap="round"/>`
+      ? `<path d="M40 126 L36 176 M90 126 L94 176" stroke="#855522" stroke-width="7" stroke-linecap="round"/>
+         <circle cx="38.5" cy="152" r="2.6" fill="#E2B54A"/>
+         <circle cx="91.5" cy="152" r="2.6" fill="#E2B54A"/>`
       : wanjiru
-      ? `<path d="M36 126 L28 164 M92 126 L101 164" stroke="#70482E" stroke-width="4" stroke-linecap="round"/>
-         <circle cx="33" cy="88" r="4" fill="#F6D16B" stroke="#AF7628" stroke-width="1.5"/>
-         <circle cx="98" cy="88" r="4" fill="#F6D16B" stroke="#AF7628" stroke-width="1.5"/>`
-      : `<path d="M52 117 L65 134 L78 117" fill="none" stroke="#E2EAD9" stroke-width="2"/>`;
+      ? `<path d="M54 118 Q65 134 76 118" fill="none" stroke="#F6D16B" stroke-width="3.2"
+               stroke-linecap="round" stroke-dasharray="0.1 5.6"/>`
+      : "";
 
     const produce = akinyi
       ? `<g>
-          <path d="M22 159 Q65 143 108 159 L109 170 L21 170Z" fill="#B77A45" stroke="#82502D" stroke-width="2"/>
-          <circle cx="41" cy="157" r="7" fill="#E83D31"/>
-          <circle cx="57" cy="153" r="8" fill="#D92F2C"/>
-          <circle cx="74" cy="156" r="8" fill="#EF4B37"/>
-          <circle cx="91" cy="157" r="7" fill="#D92F2C"/>
-          <path d="M55 148 l3 -4 l4 4 M73 150 l3 -4 l4 4" fill="none" stroke="#348545" stroke-width="2"/>
-        </g>`
+           <circle cx="42" cy="157" r="7" fill="#E83D31"/>
+           <circle cx="58" cy="153" r="8" fill="#D92F2C"/>
+           <circle cx="75" cy="155" r="8" fill="#EF4B37"/>
+           <circle cx="90" cy="158" r="6.5" fill="#D92F2C"/>
+           <path d="M55 147 l3 -4 l4 4 M72 149 l3 -4 l4 4" fill="none" stroke="#348545" stroke-width="2"
+                 stroke-linecap="round"/>
+           <path d="M26 161 Q65 152 104 161 L100 176 L30 176Z" fill="#B77A45" stroke="#82502D" stroke-width="1.8"/>
+           <path d="M34 168 H96" stroke="#82502D" stroke-width="1.2" opacity=".6"/>
+         </g>`
       : "";
 
     return `
@@ -497,34 +581,28 @@
           </linearGradient>
         </defs>
 
-        <ellipse cx="65" cy="168" rx="42" ry="5" fill="#24452C" opacity=".12"/>
+        <ellipse cx="65" cy="172" rx="42" ry="4" fill="#24452C" opacity=".12"/>
 
         <g class="mbt-character">
-          ${shirt.replace(f.shirt, `url(#mbt-clothes-${id})`)}
+          ${shirt}
+          ${neck}
           ${outfit}
+
           <g class="mbt-head">
             ${hairBack}
-
-            <ellipse cx="34" cy="77" rx="5.4" ry="8.5" fill="${f.skin}"/>
-            <ellipse cx="96" cy="77" rx="5.4" ry="8.5" fill="${f.skin}"/>
-
+            ${ears}
             ${face}
+            ${blush}
+            ${hairFront}
             ${brows}
             ${eyes}
             ${nose}
-
-            <ellipse cx="42" cy="86" rx="8" ry="4" fill="#F58E8E" opacity="${baba ? ".12" : ".3"}"/>
-            <ellipse cx="88" cy="86" rx="8" ry="4" fill="#F58E8E" opacity="${baba ? ".12" : ".3"}"/>
-
-            <ellipse class="mbt-mouth-open" cx="65" cy="98" rx="9" ry="2.2" fill="#421B18"/>
-            <path class="mbt-teeth" d="M57 96 Q65 100 73 96" fill="none" stroke="#FFF4EA" stroke-width="2"/>
-            <path class="mbt-mouth-line" d="M49 96 Q65 106 81 96" fill="none" stroke="#54251D" stroke-width="3" stroke-linecap="round"/>
-
-            ${facialHair}
+            ${beard}
+            ${mouth}
+            ${mustache}
             ${headwear}
           </g>
 
-          ${neck}
           ${produce}
         </g>
       </svg>`;
