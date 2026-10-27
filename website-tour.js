@@ -1,39 +1,28 @@
-/* =========================================================
-   MAVUNOBRIDGE — ANIMATED FARMER WEBSITE TOUR
-   COMPLETE REPLACEMENT — website-tour.js
+
+/* ============================================================
+   MAVUNOBRIDGE — ANIME FARMER TOUR
+   Complete replacement: website-tour.js
 
    FEATURES
-   ---------------------------------------------------------
-   ✓ Four farmer guides
-   ✓ Individual farmer personalities
-   ✓ More detailed / realistic farmer faces
-   ✓ Animated talking mouth
-   ✓ Farmer-specific voice personality
-   ✓ English / Sheng-English / Kiswahili
-   ✓ Browser voice selection
-   ✓ Page-aware narration
-   ✓ Marketplace tour
-   ✓ Smart Assist tour
-   ✓ SACCO Hub tour
-   ✓ Farmer tools tour
-   ✓ Buyer tools tour
-   ✓ Element spotlight
-   ✓ Back / Next / Skip / Replay
-   ✓ Responsive mobile layout
-   ✓ Mobile guide + panel do NOT overlap
-   ✓ Saves selected avatar / language / voice
-   ✓ No external libraries
-   ========================================================= */
+   - Four anime-style farmer guides
+   - Young Akinyi with curly hair and yellow headband
+   - Animated mouths while browser speech is active
+   - Blinking eyes and character movement
+   - Individual personalities and voice profiles
+   - English, casual Sheng-English, Kiswahili
+   - Voice selection
+   - Page-aware tour and element spotlight
+   - Back, Next, Skip, Finish, Replay
+   - Responsive design and mobile overlap protection
+   - Saves preferences in localStorage
+   - No external libraries or image hosting required
+   ============================================================ */
 
 (() => {
   "use strict";
 
-  if (window.__mavunoTourLoaded) return;
-  window.__mavunoTourLoaded = true;
-
-  /* =========================================================
-     STORAGE
-     ========================================================= */
+  if (window.__mavunoAnimeTourLoaded) return;
+  window.__mavunoAnimeTourLoaded = true;
 
   const STORAGE = {
     avatar: "mavunobridge_tour_avatar",
@@ -42,4205 +31,1526 @@
     completed: "mavunobridge_tour_completed"
   };
 
-  /* =========================================================
-     STATE
-     ========================================================= */
-
   const state = {
     avatar: localStorage.getItem(STORAGE.avatar) || "akinyi",
     language: localStorage.getItem(STORAGE.language) || "en",
     voiceURI: localStorage.getItem(STORAGE.voice) || "",
-
     step: 0,
     active: false,
+    setupOpen: false,
     speaking: false,
-
-    session: 0,
-    mouthTimer: null,
-
     voices: [],
-
     page: "marketplace",
-
+    speechSession: 0,
+    mouthTimer: null,
     panel: null,
     guide: null,
-    spotlight: null,
     overlay: null,
+    spotlight: null,
     launcher: null
   };
 
-  /* =========================================================
-     FARMER GUIDES
-     ========================================================= */
-
   const farmers = {
-
     baba: {
       name: "Baba Otieno",
-      role: "Elder grower",
-
-      personality: "Wise, calm & experienced",
-      personalityShort: "The wise farmer",
-      emoji: "👴🏾",
-
-      description:
-        "Baba Otieno is a calm and experienced farmer who believes good farming starts with patience, planning and knowing your land.",
-
-      intro: {
-        en:
-          "Habari! Mimi ni Baba Otieno. Nimekuwa kwa kilimo for many years, so nitakuonyesha MavunoBridge pole pole na kwa njia rahisi.",
-        mix:
-          "Sasa! Mimi ni Baba Otieno. Nimekuwa kwa farming for many years, so nitakuonyesha MavunoBridge pole pole, bila pressure.",
-        sw:
-          "Habari! Mimi ni Baba Otieno. Nimekuwa katika kilimo kwa miaka mingi, kwa hiyo nitakuongoza kwenye MavunoBridge kwa utulivu na kwa urahisi."
-      },
-
-      style:
-        "calm, patient, practical and encouraging",
-
+      role: "Experienced grower",
+      personality: "Wise & patient",
       pitch: 0.78,
       rate: 0.86,
-
-      skin: "#70442D",
-      skinLight: "#89583A",
+      skin: "#895437",
+      hair: "#D5D1C7",
       shirt: "#4F7A3A",
-      hair: "#D1D1D1",
-      hat: "#EBC76B",
-      hatDark: "#B88C35",
-
-      type: "elder"
+      accent: "#D7B36A",
+      hat: "#D8AC58",
+      greeting: {
+        en: "Karibu! I'm Baba Otieno. Let me share some farming wisdom with you.",
+        mix: "Karibu! I'm Baba Otieno. Niko hapa kukushow vile MavunoBridge inawork.",
+        sw: "Karibu! Mimi ni Baba Otieno. Nitakuonyesha jinsi ya kutumia MavunoBridge."
+      }
     },
 
     kamau: {
       name: "Kamau",
       role: "Maize farmer",
-
-      personality: "Energetic, practical & confident",
-      personalityShort: "The energetic farmer",
-      emoji: "👨🏾",
-
-      description:
-        "Kamau is an energetic maize farmer who likes practical solutions, clear prices and getting things done without wasting time.",
-
-      intro: {
-        en:
-          "Yo! I'm Kamau. I'm a maize farmer and I like things simple and practical. Let me show you how to move around MavunoBridge fast.",
-        mix:
-          "Sasa bro! Mimi ni Kamau. I'm a maize farmer na napenda things ziwe simple na practical. Let's move through MavunoBridge!",
-        sw:
-          "Habari! Mimi ni Kamau. Mimi ni mkulima wa mahindi na napenda njia rahisi na za vitendo. Hebu tuangalie MavunoBridge pamoja."
-      },
-
-      style:
-        "energetic, confident, direct and practical",
-
-      pitch: 1.0,
-      rate: 1.02,
-
-      skin: "#8F5935",
-      skinLight: "#A86D45",
-      shirt: "#E3A72F",
-      hair: "#21140F",
+      personality: "Energetic & practical",
+      pitch: 1.02,
+      rate: 1.08,
+      skin: "#9B603C",
+      hair: "#20150F",
+      shirt: "#E4A52C",
+      accent: "#C0392B",
       hat: "#C0392B",
-      hatDark: "#8E2C22",
-
-      type: "youngman"
+      greeting: {
+        en: "Sasa! I'm Kamau. Let's get moving and explore MavunoBridge!",
+        mix: "Sasa! I'm Kamau. Twende kazi, let's explore MavunoBridge!",
+        sw: "Habari! Mimi ni Kamau. Twende tukajifunze kutumia MavunoBridge!"
+      }
     },
 
     wanjiru: {
       name: "Mama Wanjiru",
       role: "Dairy & vegetable farmer",
-
-      personality: "Warm, caring & organized",
-      personalityShort: "The caring farmer",
-      emoji: "👩🏾",
-
-      description:
-        "Mama Wanjiru is warm and organized. She cares about farmers, buyers and the community, and likes checking details before making decisions.",
-
-      intro: {
-        en:
-          "Karibu! Mimi ni Mama Wanjiru. I love organized farming and helping people find good opportunities. Tutaenda hatua kwa hatua.",
-        mix:
-          "Karibu sana! Mimi ni Mama Wanjiru. Napenda farming yenye iko organized na helping farmers na buyers. Tutapitia kila kitu pole pole.",
-        sw:
-          "Karibu! Mimi ni Mama Wanjiru. Napenda kilimo kilichopangwa vizuri na kusaidia wakulima na wanunuzi. Tutapitia kila hatua pamoja."
-      },
-
-      style:
-        "warm, caring, organized and reassuring",
-
-      pitch: 1.08,
-      rate: 0.92,
-
-      skin: "#633A27",
-      skinLight: "#7A4B32",
-      shirt: "#1E7F74",
-      hair: "#21140F",
-      hat: "#E67E22",
-      hatDark: "#B95211",
-
-      type: "woman"
+      personality: "Warm & organized",
+      pitch: 1.04,
+      rate: 0.96,
+      skin: "#75432C",
+      hair: "#21150F",
+      shirt: "#207F75",
+      accent: "#E58B35",
+      hat: "#E58B35",
+      greeting: {
+        en: "Hello and welcome! I'm Mama Wanjiru. I'll guide you step by step.",
+        mix: "Hello! I'm Mama Wanjiru. Pole pole tutapitia kila kitu pamoja.",
+        sw: "Habari na karibu! Mimi ni Mama Wanjiru. Nitakuongoza hatua kwa hatua."
+      }
     },
 
     akinyi: {
       name: "Akinyi",
-      role: "Tomato grower",
-
-      personality: "Cheerful, curious & innovative",
-      personalityShort: "The modern farmer",
-      emoji: "👩🏾",
-
-      description:
-        "Akinyi is a cheerful tomato grower who enjoys technology, discovering new ideas and helping farmers use modern tools.",
-
-      intro: {
-        en:
-          "Hey! I'm Akinyi. I grow tomatoes and I love trying smart new ideas. Let's explore MavunoBridge together!",
-        mix:
-          "Hey! Mimi ni Akinyi. I grow tomatoes and napenda ku-try new ideas. Let's explore MavunoBridge pamoja!",
-        sw:
-          "Habari! Mimi ni Akinyi. Mimi ni mkulima wa nyanya na napenda kujifunza mawazo mapya. Hebu tuchunguze MavunoBridge pamoja!"
-      },
-
-      style:
-        "cheerful, curious, modern and enthusiastic",
-
-      pitch: 1.14,
-      rate: 1.0,
-
-      skin: "#9D6745",
-      skinLight: "#B77D56",
-      shirt: "#3C6E9F",
+      role: "Young tomato grower",
+      personality: "Curious & creative",
+      pitch: 1.18,
+      rate: 1.02,
+      skin: "#A86E49",
       hair: "#21140F",
-      hat: "#F4C430",
-      hatDark: "#C49B18",
-
-      type: "tomato"
+      shirt: "#426F9D",
+      accent: "#F2C52F",
+      hat: "#F2C52F",
+      greeting: {
+        en: "Hey! I'm Akinyi. Let's discover smarter ways to grow and sell!",
+        mix: "Hey! I'm Akinyi. Tuone vile tunaeza grow na kuuza smarter!",
+        sw: "Habari! Mimi ni Akinyi. Tujifunze njia bora za kulima na kuuza!"
+      }
     }
   };
 
-  /* =========================================================
-     TRANSLATIONS
-     ========================================================= */
-
   const words = {
-
     en: {
-      tour: "MavunoBridge Tour",
-      welcome: "Karibu to MavunoBridge!",
-      choose: "Choose your farmer guide",
-      language: "Tour language",
-      voice: "Voice",
-      browserVoice: "Automatic voice",
+      title: "Meet your farmer guide",
+      subtitle: "Choose a character to explore MavunoBridge.",
       personality: "Personality",
+      language: "Language",
+      voice: "Speaking voice",
       start: "Start tour",
       next: "Next",
       back: "Back",
       skip: "Skip tour",
-      finish: "Finish tour",
-      replay: "Replay tour",
+      finish: "Finish",
+      replay: "Replay",
+      close: "Close",
       step: "Step",
       done: "You're all set!",
-      doneText:
-        "Explore MavunoBridge and discover the tools available on this page.",
-      close: "Close tour",
-
-      langs: {
-        en: "English",
-        mix: "Sheng-English",
-        sw: "Kiswahili"
-      }
+      doneText: "Great work! You now know your way around MavunoBridge. You can replay this tour whenever you need help.",
+      launcher: "Take a tour",
+      setup: "Choose your guide",
+      unavailable: "This section is not available on the current page.",
+      mute: "Stop speaking",
+      traits: "Your guide"
     },
 
     mix: {
-      tour: "MavunoBridge Tour",
-      welcome: "Karibu MavunoBridge!",
-      choose: "Chagua farmer guide wako",
-      language: "Lugha ya tour",
-      voice: "Voice",
-      browserVoice: "Automatic voice",
+      title: "Meet your farmer guide",
+      subtitle: "Chagua character wako, then tuanze tour.",
       personality: "Personality",
-      start: "Anza tour",
+      language: "Language",
+      voice: "Voice ya guide",
+      start: "Twende!",
       next: "Next",
       back: "Back",
       skip: "Skip tour",
-      finish: "Maliza tour",
-      replay: "Replay tour",
+      finish: "Tumemaliza!",
+      replay: "Replay",
+      close: "Close",
       step: "Step",
-      done: "Uko sawa kabisa!",
-      doneText:
-        "Explore MavunoBridge uone tools ziko available kwa hii page.",
-      close: "Close tour",
-
-      langs: {
-        en: "English",
-        mix: "Sheng-English",
-        sw: "Kiswahili"
-      }
+      done: "Umeweza!",
+      doneText: "Poa sana! Sasa unajua vile MavunoBridge inawork. Unaweza replay hii tour ukihitaji help.",
+      launcher: "Take a tour",
+      setup: "Chagua guide wako",
+      unavailable: "Hii section haiko kwa page hii.",
+      mute: "Stop speaking",
+      traits: "Guide wako"
     },
 
     sw: {
-      tour: "Ziara ya MavunoBridge",
-      welcome: "Karibu MavunoBridge!",
-      choose: "Chagua mkulima atakayekuongoza",
-      language: "Lugha ya ziara",
-      voice: "Sauti",
-      browserVoice: "Sauti ya kiotomatiki",
+      title: "Kutana na mwongozo wako",
+      subtitle: "Chagua mhusika wako ili kuanza.",
       personality: "Tabia",
+      language: "Lugha",
+      voice: "Sauti",
       start: "Anza ziara",
       next: "Endelea",
       back: "Rudi",
       skip: "Ruka ziara",
-      finish: "Maliza ziara",
-      replay: "Anza ziara tena",
+      finish: "Maliza",
+      replay: "Rudia",
+      close: "Funga",
       step: "Hatua",
-      done: "Uko tayari!",
-      doneText:
-        "Chunguza MavunoBridge na ujifunze kuhusu huduma zilizopo kwenye ukurasa huu.",
-      close: "Funga ziara",
-
-      langs: {
-        en: "Kiingereza",
-        mix: "Sheng na Kiingereza",
-        sw: "Kiswahili"
-      }
+      done: "Umefanikiwa!",
+      doneText: "Vizuri sana! Sasa unajua jinsi ya kutumia MavunoBridge. Unaweza kurudia ziara hii wakati wowote.",
+      launcher: "Anza ziara",
+      setup: "Chagua mwongozo",
+      unavailable: "Sehemu hii haipatikani kwenye ukurasa huu.",
+      mute: "Simamisha sauti",
+      traits: "Mwongozo wako"
     }
   };
 
-  /* =========================================================
-     TOUR SCRIPTS
-     ========================================================= */
-
-  const scripts = {
-
+  const tours = {
     marketplace: {
-
       en: [
-        [
-          "Welcome to MavunoBridge",
-          "This is the agricultural marketplace. Explore products and services from farmers and other agricultural sellers.",
-          "header,.site-header,.navbar,#hero,.hero"
-        ],
-
-        [
-          "Explore product categories",
-          "Use the categories to find fruits, vegetables, grains, legumes and other agricultural products.",
-          "#categories,#categoryGrid,.category-grid,.categories,[data-categories]"
-        ],
-
-        [
-          "Search and filter",
-          "Use search and available filters to narrow down products by name, category or location.",
-          "#searchInput,#searchBar,input[type=search],.marketplace-filters"
-        ],
-
-        [
-          "Browse listings",
-          "Check product photos, prices, quantities and farmer details before choosing what works for you.",
-          "#listingGrid,#marketplaceGrid,#products,.product-grid,.marketplace"
-        ],
-
-        [
-          "List your produce",
-          "If you are a farmer, look for the sell or add listing option to share your produce with potential buyers.",
-          "#sellButton,#heroSellButton,#listingForm,#sellForm"
-        ],
-
-        [
-          "More tools",
-          "You can also explore Smart Assist for farming information and SACCO Hub for available opportunities.",
-          "a[href*=smart-assist],a[href*=sacco],nav"
-        ]
+        ["Welcome to MavunoBridge", "This is your agricultural marketplace. Farmers can showcase produce, while buyers can discover products and compare available offers.", null],
+        ["Search for produce", "Use the search bar to find products such as maize, tomatoes, beans, fruits and other farm produce.", 'input[type="search"], #searchInput, #searchBar, [data-search]'],
+        ["Explore categories", "Choose a category to browse the products you need. Different farmers can list the same type of product.", "#categoryGrid, .category-grid, [data-categories]"],
+        ["Browse product listings", "Check product photos, prices, locations and seller information before choosing what works for you.", "#listingGrid, .listing-grid, #productsGrid, .products-grid"],
+        ["Find a fair deal", "Compare prices, quantities and locations. Remember that prices can change depending on season and availability.", "#listingGrid, .listing-grid, #productsGrid"],
+        ["Ready to explore!", "You're ready to explore MavunoBridge. Open a listing to learn more, or continue browsing the marketplace.", null]
       ],
 
       mix: [
-
-        [
-          "Karibu MavunoBridge!",
-          "Hii ni agricultural marketplace. Explore products na services ambazo farmers wameweka.",
-          "header,.site-header,.navbar,#hero,.hero"
-        ],
-
-        [
-          "Explore categories",
-          "Chagua category kama fruits, vegetables, grains, legumes na zingine kupata bidhaa unatafuta.",
-          "#categories,#categoryGrid,.category-grid,.categories,[data-categories]"
-        ],
-
-        [
-          "Search na filters",
-          "Tumia search na filters kupunguza results kulingana na product, category ama location.",
-          "#searchInput,#searchBar,input[type=search],.marketplace-filters"
-        ],
-
-        [
-          "Browse listings",
-          "Angalia picha, price, quantity na farmer details kabla ya kuchagua product.",
-          "#listingGrid,#marketplaceGrid,#products,.product-grid,.marketplace"
-        ],
-
-        [
-          "List produce yako",
-          "Wewe ni farmer? Tafuta sell ama add listing uweke produce yako ionekane kwa potential buyers.",
-          "#sellButton,#heroSellButton,#listingForm,#sellForm"
-        ],
-
-        [
-          "Explore more tools",
-          "Pia unaweza kucheck Smart Assist kwa farming information na SACCO Hub kwa opportunities zilizopo.",
-          "a[href*=smart-assist],a[href*=sacco],nav"
-        ]
+        ["Karibu MavunoBridge!", "Hapa ndio marketplace. Farmers wanaweza list produce zao, na buyers wanaweza browse offers.", null],
+        ["Search products", "Tumia search bar kutafuta maize, tomatoes, beans, fruits na products zingine.", 'input[type="search"], #searchInput, #searchBar, [data-search]'],
+        ["Chagua category", "Click category unataka. Kuna different farmers wanaweza list product kama hiyo.", "#categoryGrid, .category-grid, [data-categories]"],
+        ["Angalia listings", "Check picha, price, location na seller details kabla uamue kununua.", "#listingGrid, .listing-grid, #productsGrid, .products-grid"],
+        ["Compare deals", "Linganisha prices na quantity. Bei zinaweza change kulingana na season na location.", "#listingGrid, .listing-grid, #productsGrid"],
+        ["Uko ready!", "Sasa unaweza explore marketplace, kufungua listing na kucompare offers.", null]
       ],
 
       sw: [
-
-        [
-          "Karibu MavunoBridge",
-          "Hili ni soko la bidhaa za kilimo. Chunguza bidhaa na huduma zilizowekwa kwenye tovuti.",
-          "header,.site-header,.navbar,#hero,.hero"
-        ],
-
-        [
-          "Chunguza makundi ya bidhaa",
-          "Chagua kundi kama matunda, mboga, nafaka na jamii ya mikunde ili kupata bidhaa unazohitaji.",
-          "#categories,#categoryGrid,.category-grid,.categories,[data-categories]"
-        ],
-
-        [
-          "Tafuta na uchuje",
-          "Tumia sehemu ya kutafuta na vichujio kupunguza matokeo kulingana na bidhaa au eneo.",
-          "#searchInput,#searchBar,input[type=search],.marketplace-filters"
-        ],
-
-        [
-          "Angalia bidhaa",
-          "Kagua picha, bei, kiasi na maelezo ya mkulima kabla ya kuchagua bidhaa.",
-          "#listingGrid,#marketplaceGrid,#products,.product-grid,.marketplace"
-        ],
-
-        [
-          "Weka bidhaa zako",
-          "Ikiwa wewe ni mkulima, tafuta sehemu ya kuuza au kuongeza bidhaa ili wanunuzi waweze kuziona.",
-          "#sellButton,#heroSellButton,#listingForm,#sellForm"
-        ],
-
-        [
-          "Huduma nyingine",
-          "Unaweza pia kuchunguza Smart Assist kwa taarifa za kilimo na SACCO Hub kwa fursa zilizopo.",
-          "a[href*=smart-assist],a[href*=sacco],nav"
-        ]
+        ["Karibu MavunoBridge", "Hii ni soko la kilimo. Wakulima wanaweza kuweka bidhaa zao na wanunuzi wanaweza kuzitafuta.", null],
+        ["Tafuta bidhaa", "Tumia sehemu ya kutafuta kupata mahindi, nyanya, maharagwe, matunda na bidhaa nyingine.", 'input[type="search"], #searchInput, #searchBar, [data-search]'],
+        ["Chagua kundi", "Chagua kundi la bidhaa unayotaka kuona.", "#categoryGrid, .category-grid, [data-categories]"],
+        ["Angalia bidhaa", "Angalia picha, bei, eneo na maelezo ya muuzaji kabla ya kuchagua.", "#listingGrid, .listing-grid, #productsGrid, .products-grid"],
+        ["Linganisha bei", "Linganisha bei na kiasi cha bidhaa. Bei zinaweza kubadilika kulingana na msimu na eneo.", "#listingGrid, .listing-grid, #productsGrid"],
+        ["Uko tayari!", "Sasa unaweza kutafuta bidhaa na kuchagua ofa inayokufaa.", null]
       ]
     },
 
     smart: {
-
       en: [
-        [
-          "Welcome to Smart Assist",
-          "This page is for exploring farming support and information available in MavunoBridge.",
-          "header,h1,.page-header"
-        ],
-
-        [
-          "Explore the assistant",
-          "Look through the tools and guidance that are available on this page.",
-          "#smartAssist,#smart-assist,.smart-assist,main"
-        ],
-
-        [
-          "Ask or enter information",
-          "If an input box is available, use it to enter your farming question or the details requested.",
-          "#questionInput,#chatInput,#askInput,textarea,input[type=text]"
-        ],
-
-        [
-          "Review the guidance",
-          "Read the displayed guidance carefully. Check local conditions and trusted agricultural advice before making farming decisions.",
-          "#response,#answer,#chatMessages,.chat-messages,.assistant-response,main"
-        ],
-
-        [
-          "Back to the marketplace",
-          "When you're ready, return to the marketplace to explore agricultural products and services.",
-          "a[href*=index],a[href*=marketplace],nav"
-        ]
+        ["Welcome to Smart Assist", "This section helps you explore farming guidance and practical ideas for your farm.", null],
+        ["Ask for farming help", "Look for the available assistant controls and enter a farming question.", "textarea, input[type='text'], #questionInput, #chatInput"],
+        ["Explore suggestions", "Use available suggestions to explore crop care, pest management and farming topics.", "#suggestions, .suggestions, .quick-prompts"],
+        ["Check local conditions", "When weather or location features are connected, use them to help inform your farming decisions.", "#weatherWidget, .weather-widget, [data-weather]"],
+        ["Keep learning", "Use Smart Assist as a source of guidance, and verify important crop or pest decisions with a qualified local agricultural expert.", null]
       ],
 
       mix: [
-
-        [
-          "Karibu Smart Assist",
-          "Hii page inakusaidia kuchunguza farming support na information ambayo iko available hapa.",
-          "header,h1,.page-header"
-        ],
-
-        [
-          "Explore assistant",
-          "Angalia tools na guidance ambazo ziko kweli kwa hii page.",
-          "#smartAssist,#smart-assist,.smart-assist,main"
-        ],
-
-        [
-          "Weka swali lako",
-          "Kama kuna input box, andika farming question yako ama details zinazohitajika.",
-          "#questionInput,#chatInput,#askInput,textarea,input[type=text]"
-        ],
-
-        [
-          "Soma guidance",
-          "Soma majibu vizuri. Check local conditions na trusted agricultural advice kabla ya kufanya farming decisions.",
-          "#response,#answer,#chatMessages,.chat-messages,.assistant-response,main"
-        ],
-
-        [
-          "Rudi marketplace",
-          "Ukiwa ready, rudi marketplace uone agricultural products na services.",
-          "a[href*=index],a[href*=marketplace],nav"
-        ]
+        ["Karibu Smart Assist", "Hapa utapata farming guidance na ideas za kusaidia shamba yako.", null],
+        ["Uliza swali", "Tafuta assistant input, then andika swali kuhusu farming.", "textarea, input[type='text'], #questionInput, #chatInput"],
+        ["Explore suggestions", "Tumia suggestions kupata ideas kuhusu crops, pests na crop care.", "#suggestions, .suggestions, .quick-prompts"],
+        ["Angalia conditions", "Kama weather feature iko connected, itumie kuhelp kupanga kazi za shamba.", "#weatherWidget, .weather-widget, [data-weather]"],
+        ["Endelea kujifunza", "Kwa decisions muhimu kuhusu pests au crops, confirm na agricultural expert wa eneo lako.", null]
       ],
 
       sw: [
-
-        [
-          "Karibu Smart Assist",
-          "Ukurasa huu unakusaidia kuchunguza taarifa na usaidizi wa kilimo unaopatikana.",
-          "header,h1,.page-header"
-        ],
-
-        [
-          "Chunguza msaidizi",
-          "Angalia zana na maelekezo yanayoonekana kwenye ukurasa huu.",
-          "#smartAssist,#smart-assist,.smart-assist,main"
-        ],
-
-        [
-          "Weka swali au taarifa",
-          "Ikiwa kuna kisanduku cha kuandika, weka swali lako la kilimo au taarifa zinazohitajika.",
-          "#questionInput,#chatInput,#askInput,textarea,input[type=text]"
-        ],
-
-        [
-          "Soma maelekezo",
-          "Soma maelezo kwa makini. Hakikisha unazingatia hali ya eneo lako na ushauri wa wataalamu wa kilimo.",
-          "#response,#answer,#chatMessages,.chat-messages,.assistant-response,main"
-        ],
-
-        [
-          "Rudi sokoni",
-          "Ukiwa tayari, rudi sokoni kuchunguza bidhaa na huduma za kilimo.",
-          "a[href*=index],a[href*=marketplace],nav"
-        ]
+        ["Karibu Smart Assist", "Hapa unaweza kupata mwongozo na mawazo ya kusaidia shughuli za kilimo.", null],
+        ["Uliza swali", "Tafuta sehemu ya kuandika swali lako kuhusu kilimo.", "textarea, input[type='text'], #questionInput, #chatInput"],
+        ["Angalia mapendekezo", "Tumia mapendekezo kujifunza kuhusu mazao na wadudu waharibifu.", "#suggestions, .suggestions, .quick-prompts"],
+        ["Angalia hali ya eneo", "Ikiwa taarifa za hali ya hewa zimeunganishwa, zitumie kupanga kazi za shamba.", "#weatherWidget, .weather-widget, [data-weather]"],
+        ["Endelea kujifunza", "Kwa maamuzi muhimu kuhusu mazao, pata ushauri kutoka kwa mtaalamu wa kilimo wa eneo lako.", null]
       ]
     },
 
     sacco: {
-
       en: [
-        [
-          "Welcome to SACCO Hub",
-          "This page helps you explore SACCO-related information and opportunities displayed by MavunoBridge.",
-          "header,h1,.page-header"
-        ],
-
-        [
-          "Explore available options",
-          "Review the SACCOs or opportunities listed here. Availability depends on what has been added to the site.",
-          "#saccoHub,#sacco,.sacco-hub,main"
-        ],
-
-        [
-          "Check the details",
-          "Read eligibility, contact information and requirements carefully before making a decision.",
-          ".sacco-card,.opportunity-card,#saccoGrid,.sacco-grid"
-        ],
-
-        [
-          "Make informed choices",
-          "Verify an organisation's details directly before sharing personal information or making payments.",
-          "main"
-        ],
-
-        [
-          "Continue exploring",
-          "Return to the marketplace or visit Smart Assist for other available tools.",
-          "nav,a[href*=index],a[href*=smart-assist]"
-        ]
+        ["Welcome to SACCO Hub", "Explore the SACCO and farmer opportunity information available on this page.", null],
+        ["Browse opportunities", "Review available SACCOs, membership opportunities and the details shown for each option.", "#saccoGrid, .sacco-grid, #opportunities, .opportunities"],
+        ["Check requirements", "Before joining, confirm membership requirements, fees, savings rules and contact details directly with the organization.", null],
+        ["Make an informed choice", "Compare options carefully and ask questions before making financial commitments.", null]
       ],
 
       mix: [
-
-        [
-          "Karibu SACCO Hub",
-          "Hapa unaweza explore SACCO information na opportunities ambazo zimewekwa kwa MavunoBridge.",
-          "header,h1,.page-header"
-        ],
-
-        [
-          "Explore options",
-          "Angalia SACCOs ama opportunities zilizoorodheshwa. Availability inategemea content imewekwa kwa site.",
-          "#saccoHub,#sacco,.sacco-hub,main"
-        ],
-
-        [
-          "Check details",
-          "Soma eligibility, contact details na requirements vizuri kabla ya kuamua.",
-          ".sacco-card,.opportunity-card,#saccoGrid,.sacco-grid"
-        ],
-
-        [
-          "Chagua kwa uangalifu",
-          "Verify organisation details directly kabla ya kushare personal information ama kutuma pesa.",
-          "main"
-        ],
-
-        [
-          "Endelea kuchunguza",
-          "Rudi marketplace ama tembelea Smart Assist kwa tools zingine zilizopo.",
-          "nav,a[href*=index],a[href*=smart-assist]"
-        ]
+        ["Karibu SACCO Hub", "Hapa unaweza explore SACCOs na opportunities za farmers.", null],
+        ["Browse opportunities", "Angalia SACCOs zilizolist na details za kila option.", "#saccoGrid, .sacco-grid, #opportunities, .opportunities"],
+        ["Check requirements", "Confirm membership rules, fees, savings na contact details kabla ujiunge.", null],
+        ["Chagua wisely", "Compare options na uliza maswali kabla ya kufanya financial commitment.", null]
       ],
 
       sw: [
-
-        [
-          "Karibu SACCO Hub",
-          "Hapa unaweza kuchunguza taarifa za SACCO na fursa zinazoonyeshwa kwenye MavunoBridge.",
-          "header,h1,.page-header"
-        ],
-
-        [
-          "Chunguza chaguo zilizopo",
-          "Angalia SACCO na fursa zilizoorodheshwa. Upatikanaji hutegemea taarifa zilizowekwa kwenye tovuti.",
-          "#saccoHub,#sacco,.sacco-hub,main"
-        ],
-
-        [
-          "Kagua maelezo",
-          "Soma masharti, taarifa za mawasiliano na mahitaji kwa makini kabla ya kuamua.",
-          ".sacco-card,.opportunity-card,#saccoGrid,.sacco-grid"
-        ],
-
-        [
-          "Fanya maamuzi kwa uangalifu",
-          "Thibitisha taarifa za shirika kabla ya kutoa taarifa binafsi au kutuma pesa.",
-          "main"
-        ],
-
-        [
-          "Endelea kuchunguza",
-          "Rudi sokoni au tembelea Smart Assist kwa zana nyingine zilizopo.",
-          "nav,a[href*=index],a[href*=smart-assist]"
-        ]
+        ["Karibu SACCO Hub", "Hapa unaweza kuchunguza SACCO na fursa za wakulima.", null],
+        ["Angalia fursa", "Pitia SACCO na maelezo ya fursa zinazopatikana.", "#saccoGrid, .sacco-grid, #opportunities, .opportunities"],
+        ["Thibitisha masharti", "Thibitisha ada, masharti ya uanachama na maelezo ya mawasiliano.", null],
+        ["Chagua kwa uangalifu", "Linganisha chaguo na uliza maswali kabla ya kutoa fedha.", null]
       ]
     },
 
     farmer: {
-
       en: [
-        [
-          "Welcome, farmer!",
-          "Let's look at the listing tools available on this page.",
-          "header,h1,.page-header"
-        ],
-
-        [
-          "Enter product details",
-          "Add the product name and choose the correct agricultural category.",
-          "#productName,#product,#category,#productCategory,form"
-        ],
-
-        [
-          "Add price and quantity",
-          "Enter the price and quantity requested by the form. Check the units before submitting.",
-          "#price,#quantity,#listingForm,#sellForm,form"
-        ],
-
-        [
-          "Add photos and location",
-          "If the form supports them, add clear product photos and your correct county or location.",
-          "#photo,#image,#county,#location,input[type=file],form"
-        ],
-
-        [
-          "Review before submitting",
-          "Double-check the details before submitting your listing. Use the confirmation shown by the website to check whether it worked.",
-          "#submitListing,#addListing,#listingForm button[type=submit],#sellForm button[type=submit],form button[type=submit]"
-        ]
+        ["Welcome, farmer!", "This section is for learning how to present your products and farm information to potential buyers.", null],
+        ["Start a listing", "Look for the sell or add-listing control to see the available product form.", "#sellButton, #heroSellButton, #addListing, [data-add-listing]"],
+        ["Add product details", "Enter accurate product information, quantity, location, price and contact details in the available fields.", "#listingForm, #productForm, form"],
+        ["Add clear photos", "Use clear, genuine product photos so buyers can understand what you are offering.", 'input[type="file"]'],
+        ["Review before publishing", "Check your details carefully before saving or publishing your listing.", "#saveListing, #submitListing, button[type='submit']"]
       ],
 
       mix: [
-
-        [
-          "Karibu farmer!",
-          "Tuangalie listing tools ambazo ziko kwa hii page.",
-          "header,h1,.page-header"
-        ],
-
-        [
-          "Weka product details",
-          "Andika jina la product na uchague agricultural category inayofaa.",
-          "#productName,#product,#category,#productCategory,form"
-        ],
-
-        [
-          "Weka price na quantity",
-          "Weka price na quantity kulingana na form. Hakikisha units ni correct.",
-          "#price,#quantity,#listingForm,#sellForm,form"
-        ],
-
-        [
-          "Ongeza picha na location",
-          "Kama form inaruhusu, weka clear product photos na county ama location yako sahihi.",
-          "#photo,#image,#county,#location,input[type=file],form"
-        ],
-
-        [
-          "Kagua kabla ya kutuma",
-          "Check details zote kabla ya kusubmit. Angalia confirmation ya website kuhakikisha kama imekubali listing.",
-          "#submitListing,#addListing,#listingForm button[type=submit],#sellForm button[type=submit],form button[type=submit]"
-        ]
+        ["Karibu farmer!", "Hii section inakusaidia kuonyesha products zako kwa potential buyers.", null],
+        ["Anza listing", "Tafuta sell au add listing button.", "#sellButton, #heroSellButton, #addListing, [data-add-listing]"],
+        ["Jaza details", "Weka product, quantity, location, price na contact details zilizo correct.", "#listingForm, #productForm, form"],
+        ["Add picha", "Tumia clear na genuine photos za product yako.", 'input[type="file"]'],
+        ["Review kwanza", "Check details zote kabla ya kusave au kupublish listing.", "#saveListing, #submitListing, button[type='submit']"]
       ],
 
       sw: [
-
-        [
-          "Karibu mkulima!",
-          "Tuangalie zana za kuweka bidhaa zinazopatikana kwenye ukurasa huu.",
-          "header,h1,.page-header"
-        ],
-
-        [
-          "Weka maelezo ya bidhaa",
-          "Andika jina la bidhaa na uchague kundi sahihi la kilimo.",
-          "#productName,#product,#category,#productCategory,form"
-        ],
-
-        [
-          "Weka bei na kiasi",
-          "Weka bei na kiasi kinachohitajika kwenye fomu. Hakikisha vipimo ni sahihi.",
-          "#price,#quantity,#listingForm,#sellForm,form"
-        ],
-
-        [
-          "Ongeza picha na eneo",
-          "Ikiwa fomu inaruhusu, weka picha zilizo wazi na kaunti au eneo lako sahihi.",
-          "#photo,#image,#county,#location,input[type=file],form"
-        ],
-
-        [
-          "Kagua kabla ya kutuma",
-          "Kagua maelezo yote kabla ya kutuma. Angalia ujumbe wa uthibitisho ili kujua kama bidhaa imekubaliwa.",
-          "#submitListing,#addListing,#listingForm button[type=submit],#sellForm button[type=submit],form button[type=submit]"
-        ]
+        ["Karibu mkulima!", "Sehemu hii inakusaidia kuonyesha bidhaa zako kwa wanunuzi.", null],
+        ["Anza kuweka bidhaa", "Tafuta kitufe cha kuuza au kuongeza bidhaa.", "#sellButton, #heroSellButton, #addListing, [data-add-listing]"],
+        ["Jaza maelezo", "Weka jina la bidhaa, kiasi, eneo, bei na mawasiliano sahihi.", "#listingForm, #productForm, form"],
+        ["Weka picha", "Tumia picha halisi na zilizo wazi za bidhaa yako.", 'input[type="file"]'],
+        ["Kagua kabla ya kuchapisha", "Hakikisha maelezo yote ni sahihi kabla ya kuhifadhi bidhaa.", "#saveListing, #submitListing, button[type='submit']"]
       ]
     },
 
     buyer: {
-
       en: [
-        [
-          "Welcome, buyer!",
-          "Let's explore how to browse products on MavunoBridge.",
-          "header,h1,.page-header"
-        ],
-
-        [
-          "Search for products",
-          "Use the search field if available to find a product by name.",
-          "#searchInput,#searchBar,input[type=search]"
-        ],
-
-        [
-          "Browse and compare",
-          "Compare the displayed prices, quantities, locations and product details.",
-          "#listingGrid,#marketplaceGrid,#products,.product-grid,main"
-        ],
-
-        [
-          "Check farmer details",
-          "Review the seller information shown on a listing before contacting the farmer.",
-          ".product-card,.listing-card,.product-details,main"
-        ],
-
-        [
-          "Choose carefully",
-          "Confirm price, quantity, delivery and payment arrangements directly with the seller before making a purchase.",
-          "#cartButton,#cart,main"
-        ]
+        ["Welcome, buyer!", "Let's explore how to find products and compare farmer offers.", null],
+        ["Search and filter", "Use search and the available filters to narrow down your choices.", 'input[type="search"], #searchInput, #searchBar, select'],
+        ["Compare listings", "Compare product quality, quantity, price and location before choosing.", "#listingGrid, .listing-grid, #productsGrid"],
+        ["Contact the seller", "Use the contact options shown on a listing to ask questions about availability and collection.", "#listingGrid, .listing-grid, #productsGrid"],
+        ["Shop thoughtfully", "Confirm important details with the seller before arranging payment or collection.", null]
       ],
 
       mix: [
-
-        [
-          "Karibu buyer!",
-          "Tuangalie vile unaweza browse products kwa MavunoBridge.",
-          "header,h1,.page-header"
-        ],
-
-        [
-          "Search products",
-          "Tumia search field kama iko ili kupata product kwa jina.",
-          "#searchInput,#searchBar,input[type=search]"
-        ],
-
-        [
-          "Browse na compare",
-          "Compare prices, quantities, locations na product details zinazoonyeshwa.",
-          "#listingGrid,#marketplaceGrid,#products,.product-grid,main"
-        ],
-
-        [
-          "Check farmer details",
-          "Angalia seller information kwa listing kabla ya kucontact farmer.",
-          ".product-card,.listing-card,.product-details,main"
-        ],
-
-        [
-          "Chagua kwa makini",
-          "Confirm price, quantity, delivery na payment arrangements na seller kabla ya kununua.",
-          "#cartButton,#cart,main"
-        ]
+        ["Karibu buyer!", "Tuone vile unaweza kupata products na kucompare offers za farmers.", null],
+        ["Search na filters", "Tumia search na filters kupunguza options.", 'input[type="search"], #searchInput, #searchBar, select'],
+        ["Compare listings", "Linganisha quality, quantity, price na location.", "#listingGrid, .listing-grid, #productsGrid"],
+        ["Contact seller", "Tumia contact options kuuliza kuhusu availability na collection.", "#listingGrid, .listing-grid, #productsGrid"],
+        ["Nunua carefully", "Confirm details muhimu na seller kabla ya payment au collection.", null]
       ],
 
       sw: [
-
-        [
-          "Karibu mnunuzi!",
-          "Tuangalie jinsi ya kuchunguza bidhaa kwenye MavunoBridge.",
-          "header,h1,.page-header"
-        ],
-
-        [
-          "Tafuta bidhaa",
-          "Tumia sehemu ya kutafuta ikiwa ipo ili kupata bidhaa kwa jina.",
-          "#searchInput,#searchBar,input[type=search]"
-        ],
-
-        [
-          "Chunguza na kulinganisha",
-          "Linganisha bei, kiasi, maeneo na maelezo ya bidhaa yanayoonyeshwa.",
-          "#listingGrid,#marketplaceGrid,#products,.product-grid,main"
-        ],
-
-        [
-          "Kagua taarifa za mkulima",
-          "Soma taarifa za muuzaji kwenye tangazo kabla ya kuwasiliana naye.",
-          ".product-card,.listing-card,.product-details,main"
-        ],
-
-        [
-          "Chagua kwa uangalifu",
-          "Thibitisha bei, kiasi, usafirishaji na malipo na muuzaji kabla ya kununua.",
-          "#cartButton,#cart,main"
-        ]
+        ["Karibu mnunuzi!", "Tutajifunza jinsi ya kutafuta bidhaa na kulinganisha ofa.", null],
+        ["Tafuta na chuja", "Tumia sehemu ya kutafuta na vichujio vilivyopo.", 'input[type="search"], #searchInput, #searchBar, select'],
+        ["Linganisha bidhaa", "Linganisha ubora, kiasi, bei na eneo.", "#listingGrid, .listing-grid, #productsGrid"],
+        ["Wasiliana na muuzaji", "Tumia mawasiliano yaliyowekwa kuuliza kuhusu bidhaa na mahali pa kuipokea.", "#listingGrid, .listing-grid, #productsGrid"],
+        ["Nunua kwa uangalifu", "Thibitisha maelezo muhimu na muuzaji kabla ya kulipa au kuchukua bidhaa.", null]
       ]
     }
   };
 
-  /* =========================================================
-     HTML ESCAPE
-     ========================================================= */
+  const $ = (selector, root = document) =>
+    root.querySelector(selector);
 
-  function escapeHTML(value) {
-    return String(value).replace(/[&<>"']/g, char => ({
+  const escapeHTML = value =>
+    String(value).replace(/[&<>"']/g, char => ({
       "&": "&amp;",
       "<": "&lt;",
       ">": "&gt;",
       '"': "&quot;",
       "'": "&#39;"
     })[char]);
+
+  function t(key) {
+    return words[state.language]?.[key] || words.en[key] || key;
   }
 
-  /* =========================================================
-     PAGE DETECTION
-     ========================================================= */
+  function currentFarmer() {
+    return farmers[state.avatar] || farmers.akinyi;
+  }
 
   function detectPage() {
+    const path = (
+      location.pathname + location.hash
+    ).toLowerCase();
 
-    const path = location.pathname.toLowerCase();
-    const title = document.title.toLowerCase();
-    const bodyPage =
-      (document.body?.dataset.page || "").toLowerCase();
-
-    const combined =
-      `${path} ${title} ${bodyPage}`;
-
-    if (/smart[-_ ]?assist|smart_assist/.test(combined)) {
+    if (/smart-assist|smartassist|assistant/.test(path)) {
       return "smart";
     }
 
-    if (/sacco/.test(combined)) {
+    if (/sacco|opportunit/.test(path)) {
       return "sacco";
     }
 
-    if (/farmer|listing|sell-product|add-product/.test(combined)) {
-      return "farmer";
+    if (/buyer/.test(path)) {
+      return "buyer";
     }
 
-    if (/buyer|checkout/.test(combined)) {
-      return "buyer";
+    if (/farmer|sell/.test(path)) {
+      return "farmer";
     }
 
     return "marketplace";
   }
 
-  function currentWords() {
-    return words[state.language] || words.en;
-  }
-
   function getSteps() {
-
-    const page =
-      scripts[state.page] || scripts.marketplace;
-
+    const page = tours[state.page] || tours.marketplace;
     return page[state.language] || page.en;
   }
 
-  /* =========================================================
-     REALISTIC FARMER AVATAR SVG
-     ========================================================= */
+  /* ----------------------------------------------------------
+     ANIME FARMER SVG
+     Each portrait is drawn separately so the mouth and eyes
+     can animate independently during speech.
+     ---------------------------------------------------------- */
 
-  function avatarSVG(id, talking = false) {
+  function avatarSVG(id, large = false) {
+    const f = farmers[id] || farmers.akinyi;
 
-    const f =
-      farmers[id] || farmers.akinyi;
+    const isBaba = id === "baba";
+    const isKamau = id === "kamau";
+    const isWanjiru = id === "wanjiru";
+    const isAkinyi = id === "akinyi";
 
-    const mouth = talking
+    const hair = isBaba
+      ? `<path d="M34 51 Q27 18 64 16 Q98 15 98 52 L92 65 L39 64 Z" fill="#D5D1C7"/>
+         <path d="M38 45 Q43 25 61 24 M77 25 Q92 34 93 49" fill="none" stroke="#F0ECE3" stroke-width="3" stroke-linecap="round"/>`
+      : isKamau
+      ? `<path d="M32 51 Q28 18 65 19 Q96 20 97 53 L91 41 Q74 29 61 38 Q46 45 36 56 Z" fill="#20150F"/>`
+      : isWanjiru
+      ? `<path d="M29 57 Q22 20 64 18 Q104 20 100 60 L94 77 L35 76 Z" fill="#20150F"/>
+         <path d="M37 41 Q50 53 46 79 M88 42 Q78 55 84 79" fill="none" stroke="#493023" stroke-width="4" stroke-linecap="round"/>`
+      : `<path d="M29 56 Q24 19 64 17 Q103 18 100 58 L95 83 Q91 51 77 40 Q62 30 45 45 L35 76 Z" fill="#20150F"/>
+         <path d="M33 37 Q24 17 46 12 Q64 6 78 15 Q102 20 94 41 Q74 27 55 29 Q42 30 33 37 Z" fill="#2A1A13"/>
+         <path d="M40 24 Q35 11 48 12 M56 18 Q65 7 75 17 M80 25 Q94 15 91 32" fill="none" stroke="#493023" stroke-width="5" stroke-linecap="round"/>`;
 
-      ? `
-        <ellipse
-          cx="100"
-          cy="118"
-          rx="8"
-          ry="6"
-          fill="#57251F"
-        />
+    const hat = isBaba
+      ? `<path d="M12 49 Q18 14 63 12 Q106 14 114 49 Q66 59 12 49 Z" fill="#E8C477" stroke="#A57A3B" stroke-width="2"/>
+         <path d="M8 48 Q63 39 118 48 Q98 62 64 60 Q29 60 8 48 Z" fill="#D8AC58" stroke="#A57A3B" stroke-width="2"/>
+         <path d="M34 30 Q62 20 88 30" fill="none" stroke="#F4D99A" stroke-width="2"/>`
+      : isKamau
+      ? `<path d="M27 43 Q28 17 62 16 Q91 17 100 42 L94 51 L34 51 Z" fill="#C0392B" stroke="#7E211B" stroke-width="2"/>
+         <path d="M26 42 Q64 35 106 43 Q84 54 44 50 Z" fill="#D94A3F"/>`
+      : isWanjiru
+      ? `<path d="M26 51 Q13 26 39 15 Q67 0 91 21 Q112 37 97 58 L87 68 L35 64 Z" fill="#E58B35" stroke="#AC5725" stroke-width="2"/>
+         <path d="M29 36 Q57 46 96 25 M33 47 Q62 55 99 37 M42 21 Q66 33 85 18" fill="none" stroke="#F7BC65" stroke-width="4" stroke-linecap="round"/>`
+      : `<path d="M32 32 Q44 12 64 19 Q87 12 96 33 L91 40 Q64 31 36 41 Z" fill="#F2C52F" stroke="#C99913" stroke-width="2"/>
+         <path d="M35 29 Q31 20 38 17 Q48 13 52 23 M74 21 Q87 11 92 22" fill="none" stroke="#FFE887" stroke-width="3" stroke-linecap="round"/>`;
 
-        <ellipse
-          cx="100"
-          cy="116"
-          rx="4"
-          ry="2"
-          fill="#F4B7A8"
-        />
-      `
+    const eyes = isBaba
+      ? `<path class="mbt-eye" d="M39 60 Q48 55 56 61 Q48 68 39 60 Z" fill="#FFF7E9"/>
+         <path class="mbt-eye" d="M70 61 Q79 55 88 60 Q79 68 70 61 Z" fill="#FFF7E9"/>
+         <circle class="mbt-pupil" cx="48" cy="61" r="3.5" fill="#241710"/>
+         <circle class="mbt-pupil" cx="79" cy="61" r="3.5" fill="#241710"/>
+         <path d="M36 55 Q47 50 57 55 M68 55 Q80 50 90 55" fill="none" stroke="#665042" stroke-width="3" stroke-linecap="round"/>`
+      : `<path class="mbt-eye" d="M37 61 Q47 51 57 61 Q47 70 37 61 Z" fill="#FFF8F0"/>
+         <path class="mbt-eye" d="M70 61 Q80 51 90 61 Q80 70 70 61 Z" fill="#FFF8F0"/>
+         <ellipse class="mbt-pupil" cx="48" cy="61" rx="4.2" ry="5.5" fill="#24150F"/>
+         <ellipse class="mbt-pupil" cx="80" cy="61" rx="4.2" ry="5.5" fill="#24150F"/>
+         <circle cx="49.5" cy="59" r="1.7" fill="#FFFFFF"/>
+         <circle cx="81.5" cy="59" r="1.7" fill="#FFFFFF"/>
+         <path d="M35 56 Q47 49 58 56 M69 56 Q81 49 92 56" fill="none" stroke="#281810" stroke-width="3.2" stroke-linecap="round"/>`;
 
-      : `
-        <path
-          d="M91 117 Q100 123 109 117"
-          fill="none"
-          stroke="#5C2A24"
-          stroke-width="2.7"
-          stroke-linecap="round"
-        />
-      `;
+    const facialHair = isBaba
+      ? `<path d="M37 76 Q45 86 63 84 Q82 86 90 75 L87 92 Q77 108 63 109 Q47 106 39 92 Z" fill="#E2DED5"/>
+         <path d="M43 83 Q62 91 83 82 M49 96 Q63 101 77 96" fill="none" stroke="#BEBAB2" stroke-width="2"/>`
+      : isKamau
+      ? `<path d="M44 80 Q48 88 63 89 Q77 88 84 79 L79 91 Q64 99 49 91 Z" fill="#21150F"/>`
+      : "";
 
-    let headwear = "";
+    const mouth = isBaba
+      ? `<path class="mbt-mouth-line" d="M47 76 Q63 88 80 76" fill="none" stroke="#542D20" stroke-width="3" stroke-linecap="round"/>
+         <ellipse class="mbt-mouth-open" cx="63" cy="81" rx="10" ry="1.5" fill="#431E1B"/>
+         <path class="mbt-teeth" d="M54 79 Q63 83 72 79" fill="none" stroke="#FFF4E8" stroke-width="2"/>`
+      : `<path class="mbt-mouth-line" d="M47 77 Q63 87 80 77" fill="none" stroke="#542D20" stroke-width="3" stroke-linecap="round"/>
+         <ellipse class="mbt-mouth-open" cx="63" cy="81" rx="9" ry="1.5" fill="#451C1A"/>
+         <path class="mbt-teeth" d="M54 79 Q63 83 72 79" fill="none" stroke="#FFF4E8" stroke-width="2"/>`;
 
-    /* ---------------------------------------------------------
-       BABA OTIENO
-       --------------------------------------------------------- */
+    const earrings = isWanjiru || isAkinyi
+      ? `<circle cx="31" cy="75" r="3" fill="#F3CC64" stroke="#A87626" stroke-width="1"/>
+         <circle cx="95" cy="75" r="3" fill="#F3CC64" stroke="#A87626" stroke-width="1"/>`
+      : "";
 
-    if (id === "baba") {
+    const neck = `<path d="M51 94 L51 111 Q63 121 75 111 L75 94 Z" fill="${f.skin}"/>
+      <path d="M54 101 Q63 108 72 101" fill="none" stroke="#70442E" stroke-width="1.5" opacity=".55"/>`;
 
-      headwear = `
-        <path
-          d="M58 68
-             Q63 29 100 27
-             Q137 29 142 68
-             Z"
-          fill="${f.hat}"
-          stroke="${f.hatDark}"
-          stroke-width="2.5"
-        />
+    const shirt = `<path d="M51 105 L34 110 Q15 117 12 151 L114 151 Q111 117 92 110 L75 105 Q64 119 51 105 Z" fill="${f.shirt}" stroke="#294B3A" stroke-width="1.5"/>
+      <path d="M51 105 L63 121 L75 105" fill="none" stroke="#FFFFFF" stroke-width="2" opacity=".7"/>
+      <path d="M27 126 L23 145 M98 126 L103 145" fill="none" stroke="#FFFFFF" stroke-width="2" opacity=".18"/>`;
 
-        <ellipse
-          cx="100"
-          cy="68"
-          rx="51"
-          ry="10"
-          fill="${f.hat}"
-          stroke="${f.hatDark}"
-          stroke-width="2.5"
-        />
+    const accessories = isAkinyi
+      ? `<path d="M30 112 L22 148 M94 112 L103 148" stroke="#F2C52F" stroke-width="5" stroke-linecap="round"/>
+         <path d="M27 125 L43 125 M83 125 L99 125" stroke="#F2C52F" stroke-width="3"/>`
+      : isKamau
+      ? `<path d="M31 119 L48 136 M94 119 L78 136" stroke="#69451F" stroke-width="5" stroke-linecap="round"/>`
+      : isWanjiru
+      ? `<path d="M43 114 L32 148 M84 114 L97 148" stroke="#6B4934" stroke-width="4" stroke-linecap="round"/>`
+      : `<path d="M32 116 L45 137 M93 116 L80 137" stroke="#4C5D3A" stroke-width="5" stroke-linecap="round"/>`;
 
-        <path
-          d="M67 50 Q100 40 133 50"
-          fill="none"
-          stroke="#C29A42"
-          stroke-width="2"
-        />
-
-        <path
-          d="M72 41 Q100 34 128 41"
-          fill="none"
-          stroke="#C29A42"
-          stroke-width="2"
-        />
-
-        <path
-          d="M79 33 Q100 28 121 33"
-          fill="none"
-          stroke="#F3D887"
-          stroke-width="2"
-        />
-      `;
-    }
-
-    /* ---------------------------------------------------------
-       KAMAU
-       --------------------------------------------------------- */
-
-    else if (id === "kamau") {
-
-      headwear = `
-        <path
-          d="M63 67
-             Q60 35 100 30
-             Q140 35 137 67
-             Z"
-          fill="${f.hat}"
-          stroke="${f.hatDark}"
-          stroke-width="2.5"
-        />
-
-        <path
-          d="M64 61
-             Q100 49 136 61
-             L139 70
-             Q100 59 61 70
-             Z"
-          fill="${f.hatDark}"
-        />
-
-        <path
-          d="M100 32 L100 62"
-          stroke="#A32C21"
-          stroke-width="2"
-        />
-
-        <path
-          d="M79 40 Q100 34 121 40"
-          fill="none"
-          stroke="#E86B5D"
-          stroke-width="2"
-        />
-      `;
-    }
-
-    /* ---------------------------------------------------------
-       MAMA WANJIRU
-       --------------------------------------------------------- */
-
-    else if (id === "wanjiru") {
-
-      headwear = `
-        <path
-          d="M57 80
-             Q54 40 100 30
-             Q146 40 143 80
-             L132 72
-             Q100 53 68 72
-             Z"
-          fill="${f.hat}"
-          stroke="${f.hatDark}"
-          stroke-width="2.5"
-        />
-
-        <path
-          d="M67 57 Q100 43 133 57"
-          fill="none"
-          stroke="#F7B77B"
-          stroke-width="3"
-        />
-
-        <path
-          d="M64 68 Q100 51 136 68"
-          fill="none"
-          stroke="#F7B77B"
-          stroke-width="3"
-        />
-
-        <path
-          d="M76 40 Q100 30 124 40"
-          fill="none"
-          stroke="#286F83"
-          stroke-width="3"
-        />
-      `;
-    }
-
-    /* ---------------------------------------------------------
-       AKINYI
-       --------------------------------------------------------- */
-
-    else {
-
-      headwear = `
-        <path
-          d="M68 67
-             Q61 35 100 27
-             Q139 35 132 67
-             Z"
-          fill="#21140F"
-        />
-
-        <circle
-          cx="72"
-          cy="46"
-          r="20"
-          fill="#21140F"
-        />
-
-        <circle
-          cx="128"
-          cy="46"
-          r="20"
-          fill="#21140F"
-        />
-
-        <path
-          d="M64 51
-             Q100 35 136 51
-             L131 64
-             Q100 52 69 64
-             Z"
-          fill="#21140F"
-        />
-
-        <path
-          d="M70 48
-             Q100 35 130 48
-             L128 59
-             Q100 49 72 59
-             Z"
-          fill="${f.hat}"
-        />
-
-        <path
-          d="M73 49 Q100 39 127 49"
-          fill="none"
-          stroke="#F9D95B"
-          stroke-width="2"
-        />
-      `;
-    }
-
-    /* ---------------------------------------------------------
-       BEARD
-       --------------------------------------------------------- */
-
-    const beard =
-      id === "baba"
-
-        ? `
-          <path
-            d="M75 109
-               Q72 139 100 151
-               Q128 139 125 109
-               Q116 128 100 130
-               Q84 128 75 109
-               Z"
-            fill="#D2D2D2"
-          />
-
-          <path
-            d="M81 132 Q100 142 119 132"
-            fill="none"
-            stroke="#B1B1B1"
-            stroke-width="2"
-          />
-        `
-
-        : "";
-
-    /* ---------------------------------------------------------
-       TOMATO BASKET
-       --------------------------------------------------------- */
-
-    const tomatoes =
-      id === "akinyi"
-
-        ? `
-          <path
-            d="M52 169
-               L60 143
-               L140 143
-               L148 169
-               Z"
-            fill="#A8753B"
-            stroke="#704822"
-            stroke-width="2"
-          />
-
-          <path
-            d="M60 153 L140 153
-               M62 161 L138 161
-               M76 144 L76 168
-               M100 144 L100 168
-               M124 144 L124 168"
-            stroke="#765025"
-            stroke-width="2"
-          />
-
-          <circle
-            cx="80"
-            cy="143"
-            r="12"
-            fill="#D83A2C"
-          />
-
-          <circle
-            cx="100"
-            cy="137"
-            r="13"
-            fill="#E04431"
-          />
-
-          <circle
-            cx="120"
-            cy="143"
-            r="12"
-            fill="#D83A2C"
-          />
-
-          <path
-            d="M76 132 L80 136 L84 132
-               M96 125 L100 130 L104 125
-               M116 132 L120 136 L124 132"
-            fill="none"
-            stroke="#4F7A3A"
-            stroke-width="3"
-            stroke-linecap="round"
-          />
-        `
-        : "";
+    const produce = isAkinyi
+      ? `<g transform="translate(0 3)">
+          <path d="M28 147 Q63 133 99 147 L104 158 L22 158 Z" fill="#B97A45" stroke="#83502C" stroke-width="2"/>
+          <circle cx="40" cy="144" r="7" fill="#E64A36"/>
+          <circle cx="56" cy="141" r="8" fill="#D9392D"/>
+          <circle cx="72" cy="143" r="7" fill="#F04F3A"/>
+          <circle cx="87" cy="145" r="7" fill="#D9392D"/>
+          <path d="M54 134 l3 -5 l4 4 M70 136 l3 -5 l4 4" fill="none" stroke="#387C42" stroke-width="2"/>
+        </g>`
+      : "";
 
     return `
-      <svg
-        class="mbt-avatar-svg"
-        viewBox="0 0 200 200"
-        role="img"
-        aria-label="${escapeHTML(f.name)}, ${escapeHTML(f.role)}"
-        xmlns="http://www.w3.org/2000/svg"
-      >
+      <svg class="mbt-anime-avatar ${large ? "mbt-large-avatar" : ""}"
+           viewBox="0 0 126 160"
+           role="img"
+           aria-label="${escapeHTML(f.name)}, ${escapeHTML(f.role)}"
+           xmlns="http://www.w3.org/2000/svg">
 
         <defs>
-
-          <clipPath id="mbtClip-${id}">
-            <circle cx="100" cy="100" r="96"/>
-          </clipPath>
-
-          <linearGradient
-            id="mbtSky-${id}"
-            x1="0"
-            y1="0"
-            x2="0"
-            y2="1"
-          >
-            <stop
-              offset="0"
-              stop-color="#BFD8E5"
-            />
-
-            <stop
-              offset=".58"
-              stop-color="#E8D8B8"
-            />
-
-            <stop
-              offset="1"
-              stop-color="#F0C991"
-            />
+          <linearGradient id="mbt-skin-${id}" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="${f.skin}"/>
+            <stop offset="100%" stop-color="#5D3526"/>
           </linearGradient>
-
-          <linearGradient
-            id="mbtFace-${id}"
-            x1="0"
-            y1="0"
-            x2=".8"
-            y2="1"
-          >
-            <stop
-              offset="0"
-              stop-color="${f.skinLight}"
-            />
-
-            <stop
-              offset="1"
-              stop-color="${f.skin}"
-            />
+          <linearGradient id="mbt-shirt-${id}" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="${f.shirt}"/>
+            <stop offset="100%" stop-color="#244A3A"/>
           </linearGradient>
-
-          <linearGradient
-            id="mbtShirt-${id}"
-            x1="0"
-            y1="0"
-            x2="0"
-            y2="1"
-          >
-            <stop
-              offset="0"
-              stop-color="${f.shirt}"
-            />
-
-            <stop
-              offset="1"
-              stop-color="#163A27"
-              stop-opacity=".28"
-            />
-          </linearGradient>
-
         </defs>
 
-        <g clip-path="url(#mbtClip-${id})">
+        <g class="mbt-character">
+          ${shirt.replace(f.shirt, `url(#mbt-shirt-${id})`)}
+          ${accessories}
 
-          <!-- SKY -->
+          <g class="mbt-head">
+            ${hair}
 
-          <circle
-            cx="100"
-            cy="100"
-            r="96"
-            fill="url(#mbtSky-${id})"
-          />
+            <path d="M31 48 Q31 28 63 28 Q95 28 95 49 L91 78 Q87 101 63 104 Q39 101 35 78 Z"
+                  fill="url(#mbt-skin-${id})"
+                  stroke="#593321"
+                  stroke-width="1.4"/>
 
-          <!-- SUN -->
+            <path d="M37 51 Q42 36 61 35 Q83 35 90 52"
+                  fill="none" stroke="#FFFFFF" stroke-width="2" opacity=".1"/>
 
-          <circle
-            cx="161"
-            cy="36"
-            r="17"
-            fill="#FFE7A1"
-            opacity=".65"
-          />
+            <ellipse cx="33" cy="69" rx="5" ry="8" fill="${f.skin}"/>
+            <ellipse cx="94" cy="69" rx="5" ry="8" fill="${f.skin}"/>
 
-          <!-- CLOUDS -->
+            <path d="M35 71 Q39 77 35 80 M92 71 Q88 77 92 80"
+                  fill="none" stroke="#70442E" stroke-width="1.5" opacity=".65"/>
 
-          <ellipse
-            cx="39"
-            cy="42"
-            rx="27"
-            ry="10"
-            fill="white"
-            opacity=".28"
-          />
+            ${eyes}
 
-          <ellipse
-            cx="150"
-            cy="57"
-            rx="31"
-            ry="11"
-            fill="white"
-            opacity=".22"
-          />
+            <path d="M63 62 Q58 71 60 75 Q63 78 67 75"
+                  fill="none" stroke="#70442E" stroke-width="2.2" stroke-linecap="round"/>
 
-          <!-- FARM LAND -->
+            <ellipse cx="43" cy="73" rx="7" ry="3.5" fill="#D98C79" opacity=".25"/>
+            <ellipse cx="83" cy="73" rx="7" ry="3.5" fill="#D98C79" opacity=".25"/>
 
-          <path
-            d="
-              M0 113
-              Q32 83 68 105
-              T136 98
-              T200 106
-              V200
-              H0
-              Z
-            "
-            fill="#91B66C"
-          />
+            ${facialHair}
+            ${mouth}
+            ${earrings}
+            ${hat}
+          </g>
 
-          <path
-            d="
-              M0 138
-              Q37 106 77 128
-              T150 119
-              T200 130
-              V200
-              H0
-              Z
-            "
-            fill="#719E56"
-          />
-
-          <!-- FARM ROWS -->
-
-          <path
-            d="M4 157 Q46 139 87 157 T180 153"
-            fill="none"
-            stroke="#5D8846"
-            stroke-width="4"
-            opacity=".65"
-          />
-
-          <path
-            d="M18 174 Q56 157 94 174 T185 170"
-            fill="none"
-            stroke="#5D8846"
-            stroke-width="4"
-            opacity=".55"
-          />
-
-          <!-- BODY -->
-
-          <path
-            d="
-              M38 201
-              Q42 154 68 142
-              Q100 130 132 142
-              Q158 154 162 201
-              Z
-            "
-            fill="url(#mbtShirt-${id})"
-          />
-
-          <!-- NECK -->
-
-          <path
-            d="
-              M84 115
-              L84 146
-              L116 146
-              L116 115
-              Z
-            "
-            fill="url(#mbtFace-${id})"
-          />
-
-          <!-- SHIRT COLLAR -->
-
-          <path
-            d="
-              M83 143
-              L100 164
-              L117 143
-              L113 139
-              L100 153
-              L87 139
-              Z
-            "
-            fill="#F4EFE0"
-            opacity=".94"
-          />
-
-          <!-- SHOULDERS -->
-
-          <path
-            d="
-              M39 200
-              Q43 161 69 146
-              L77 200
-              Z
-            "
-            fill="${f.shirt}"
-            opacity=".9"
-          />
-
-          <path
-            d="
-              M161 200
-              Q157 161 131 146
-              L123 200
-              Z
-            "
-            fill="${f.shirt}"
-            opacity=".9"
-          />
-
-          <!-- EARS -->
-
-          <ellipse
-            cx="68"
-            cy="91"
-            rx="9"
-            ry="13"
-            fill="${f.skin}"
-          />
-
-          <ellipse
-            cx="132"
-            cy="91"
-            rx="9"
-            ry="13"
-            fill="${f.skin}"
-          />
-
-          <path
-            d="M66 88 Q71 91 66 97"
-            fill="none"
-            stroke="${f.skinLight}"
-            stroke-width="2"
-          />
-
-          <path
-            d="M134 88 Q129 91 134 97"
-            fill="none"
-            stroke="${f.skinLight}"
-            stroke-width="2"
-          />
-
-          <!-- FACE -->
-
-          <ellipse
-            cx="100"
-            cy="91"
-            rx="35"
-            ry="44"
-            fill="url(#mbtFace-${id})"
-          />
-
-          <!-- FACE LIGHT -->
-
-          <ellipse
-            cx="91"
-            cy="77"
-            rx="15"
-            ry="22"
-            fill="#FFFFFF"
-            opacity=".055"
-          />
-
-          <!-- CHEEKS -->
-
-          <ellipse
-            cx="77"
-            cy="106"
-            rx="9"
-            ry="6"
-            fill="#E97D73"
-            opacity=".17"
-          />
-
-          <ellipse
-            cx="123"
-            cy="106"
-            rx="9"
-            ry="6"
-            fill="#E97D73"
-            opacity=".17"
-          />
-
-          <!-- HEADWEAR / HAIR -->
-
-          ${headwear}
-
-          <!-- EYEBROWS -->
-
-          <path
-            d="M75 81 Q85 75 94 81"
-            fill="none"
-            stroke="#241710"
-            stroke-width="4"
-            stroke-linecap="round"
-          />
-
-          <path
-            d="M106 81 Q115 75 125 81"
-            fill="none"
-            stroke="#241710"
-            stroke-width="4"
-            stroke-linecap="round"
-          />
-
-          <!-- EYES -->
-
-          <ellipse
-            cx="86"
-            cy="91"
-            rx="7.5"
-            ry="5.8"
-            fill="#FFF"
-          />
-
-          <ellipse
-            cx="114"
-            cy="91"
-            rx="7.5"
-            ry="5.8"
-            fill="#FFF"
-          />
-
-          <ellipse
-            cx="87"
-            cy="91"
-            rx="3.5"
-            ry="4"
-            fill="#23150F"
-          />
-
-          <ellipse
-            cx="113"
-            cy="91"
-            rx="3.5"
-            ry="4"
-            fill="#23150F"
-          />
-
-          <circle
-            cx="88"
-            cy="89.5"
-            r="1.2"
-            fill="#FFF"
-          />
-
-          <circle
-            cx="114"
-            cy="89.5"
-            r="1.2"
-            fill="#FFF"
-          />
-
-          <!-- NOSE -->
-
-          <path
-            d="
-              M100 94
-              Q95 103 99 107
-              Q103 109 106 106
-            "
-            fill="none"
-            stroke="#70422F"
-            stroke-width="2.3"
-            stroke-linecap="round"
-          />
-
-          <path
-            d="M96 108 Q100 110 104 108"
-            fill="none"
-            stroke="#6B3B2C"
-            stroke-width="1.5"
-          />
-
-          <!-- MOUTH -->
-
-          ${mouth}
-
-          <!-- BABA BEARD -->
-
-          ${beard}
-
-          <!-- AKINYI EARRINGS -->
-
-          ${
-            id === "akinyi"
-
-              ? `
-                <circle
-                  cx="70"
-                  cy="110"
-                  r="4.5"
-                  fill="#F4C430"
-                />
-
-                <circle
-                  cx="130"
-                  cy="110"
-                  r="4.5"
-                  fill="#F4C430"
-                />
-              `
-              : ""
-          }
-
-          <!-- WANJIRU EARRINGS -->
-
-          ${
-            id === "wanjiru"
-
-              ? `
-                <circle
-                  cx="70"
-                  cy="110"
-                  r="4.5"
-                  fill="#F1C40F"
-                />
-
-                <circle
-                  cx="130"
-                  cy="110"
-                  r="4.5"
-                  fill="#F1C40F"
-                />
-              `
-              : ""
-          }
-
-          <!-- KAMAU SHIRT DETAIL -->
-
-          ${
-            id === "kamau"
-
-              ? `
-                <path
-                  d="M72 151 L128 151"
-                  stroke="#B87A12"
-                  stroke-width="2"
-                  opacity=".6"
-                />
-
-                <path
-                  d="M82 165 L118 165"
-                  stroke="#B87A12"
-                  stroke-width="2"
-                  opacity=".6"
-                />
-              `
-              : ""
-          }
-
-          <!-- BABA FACIAL DETAIL -->
-
-          ${
-            id === "baba"
-
-              ? `
-                <path
-                  d="M78 84 Q100 73 122 84"
-                  stroke="#BDBDBD"
-                  stroke-width="3"
-                  fill="none"
-                />
-              `
-              : ""
-          }
-
-          <!-- TOMATO BASKET -->
-
-          ${tomatoes}
-
+          ${neck}
+          ${produce}
         </g>
-
-        <!-- OUTER FRAME -->
-
-        <circle
-          cx="100"
-          cy="100"
-          r="95"
-          fill="none"
-          stroke="#FFFFFF"
-          stroke-width="5"
-        />
-
-        <circle
-          cx="100"
-          cy="100"
-          r="95"
-          fill="none"
-          stroke="#315A3D"
-          stroke-width="1.5"
-          opacity=".55"
-        />
-
       </svg>
     `;
   }
 
-  /* =========================================================
-     PERSONALITY TEXT
-     ========================================================= */
-
-  function personalityText(farmer) {
-
-    if (state.language === "sw") {
-      return `${farmer.personality}. ${farmer.description}`;
-    }
-
-    if (state.language === "mix") {
-      return `${farmer.personality}. ${farmer.description}`;
-    }
-
-    return `${farmer.personality}. ${farmer.description}`;
-  }
-
-  /* =========================================================
+  /* ----------------------------------------------------------
      STYLES
-     ========================================================= */
+     ---------------------------------------------------------- */
 
   function addStyles() {
-
-    if (document.getElementById("mavuno-tour-styles")) {
-      return;
-    }
+    if ($("#mbt-anime-styles")) return;
 
     const style = document.createElement("style");
-
-    style.id = "mavuno-tour-styles";
+    style.id = "mbt-anime-styles";
 
     style.textContent = `
-
-      /* =====================================================
-         GLOBAL
-         ===================================================== */
-
-      #mbt-launcher,
-      #mbt-panel,
-      #mbt-guide,
-      #mbt-spotlight,
-      #mbt-overlay {
+      #mbt-guide, #mbt-panel, #mbt-launcher,
+      #mbt-overlay, #mbt-spotlight {
         box-sizing: border-box;
       }
 
-      /* =====================================================
-         LAUNCHER
-         ===================================================== */
-
-      #mbt-launcher {
+      #mbt-guide {
         position: fixed;
-        z-index: 99990;
-
-        right: 18px;
-        bottom: 18px;
-
-        border: 0;
-        border-radius: 999px;
-
-        padding: 12px 18px;
-
-        background: #285438;
-        color: #fff;
-
-        font:
-          700 14px/1.3
-          system-ui,
-          sans-serif;
-
-        cursor: pointer;
-
-        box-shadow:
-          0 8px 25px #0003;
-
-        transition:
-          transform .2s ease,
-          background .2s ease;
+        top: 14px;
+        left: 14px;
+        width: 88px;
+        z-index: 99994;
+        pointer-events: none;
+        transition: opacity .2s ease, transform .2s ease;
       }
 
-      #mbt-launcher:hover {
-        background: #1d402c;
-        transform: translateY(-2px);
+      .mbt-guide-card {
+        background: #fff;
+        border: 1px solid #e1e9df;
+        border-radius: 17px;
+        padding: 6px;
+        box-shadow: 0 7px 24px #17291b22;
+        text-align: center;
       }
 
-      /* =====================================================
-         DARK OVERLAY
-         ===================================================== */
+      .mbt-avatar-frame {
+        overflow: hidden;
+        border-radius: 13px;
+        background: #f1f7ec;
+        border: 1px solid #e1e9df;
+      }
+
+      #mbt-guide .mbt-avatar-frame {
+        width: 74px;
+        height: 78px;
+        margin: auto;
+      }
+
+      .mbt-anime-avatar {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+
+      .mbt-character {
+        transform-origin: 63px 145px;
+        animation: mbt-character-idle 3s ease-in-out infinite;
+      }
+
+      #mbt-guide .mbt-guide-name {
+        margin-top: 5px;
+        color: #21452c;
+        font-size: 10px;
+        line-height: 1.2;
+        font-weight: 800;
+      }
+
+      #mbt-guide .mbt-guide-personality {
+        color: #64806a;
+        font-size: 8px;
+        line-height: 1.2;
+        margin-top: 3px;
+      }
+
+      #mbt-guide.mbt-personality-baba .mbt-character {
+        animation-duration: 4s;
+      }
+
+      #mbt-guide.mbt-personality-kamau .mbt-character {
+        animation-duration: 1.7s;
+      }
+
+      #mbt-guide.mbt-personality-wanjiru .mbt-character {
+        animation-duration: 3.2s;
+      }
+
+      #mbt-guide.mbt-personality-akinyi .mbt-character {
+        animation-duration: 2.2s;
+      }
+
+      .mbt-mouth-open, .mbt-teeth {
+        opacity: 0;
+        transform-box: fill-box;
+        transform-origin: center;
+      }
+
+      .mbt-mouth-line {
+        opacity: 1;
+      }
+
+      .mbt-speaking .mbt-mouth-open {
+        opacity: 1;
+        animation: mbt-mouth-talk .19s ease-in-out infinite alternate;
+      }
+
+      .mbt-speaking .mbt-mouth-line {
+        opacity: .15;
+      }
+
+      .mbt-speaking .mbt-teeth {
+        opacity: .95;
+      }
+
+      .mbt-speaking .mbt-character {
+        animation: mbt-character-talk .34s ease-in-out infinite alternate;
+      }
+
+      .mbt-blink .mbt-eye,
+      .mbt-blink .mbt-pupil {
+        transform-box: fill-box;
+        transform-origin: center;
+        animation: mbt-blink .13s ease-in-out;
+      }
+
+      @keyframes mbt-mouth-talk {
+        from { transform: scaleY(.35) scaleX(.85); }
+        to { transform: scaleY(2.5) scaleX(1.05); }
+      }
+
+      @keyframes mbt-blink {
+        0%, 100% { transform: scaleY(1); }
+        50% { transform: scaleY(.08); }
+      }
+
+      @keyframes mbt-character-idle {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-2px); }
+      }
+
+      @keyframes mbt-character-talk {
+        from { transform: translateY(0) rotate(-.4deg); }
+        to { transform: translateY(-2px) rotate(.4deg); }
+      }
 
       #mbt-overlay {
         position: fixed;
         inset: 0;
-
         z-index: 99991;
-
-        background:
-          rgb(15 29 20 / 48%);
-
+        background: rgb(13 26 16 / 47%);
         pointer-events: none;
       }
-
-      /* =====================================================
-         SPOTLIGHT
-         ===================================================== */
 
       #mbt-spotlight {
         position: fixed;
-
         z-index: 99992;
-
         pointer-events: none;
-
-        border:
-          3px solid #EBC76B;
-
-        border-radius: 15px;
-
-        box-shadow:
-          0 0 0 5px
-          rgb(235 199 107 / 24%),
-
-          0 0 35px
-          rgb(235 199 107 / 40%);
-
-        transition:
-          all .25s ease;
+        border: 3px solid #fff;
+        border-radius: 13px;
+        box-shadow: 0 0 0 9999px rgb(13 26 16 / 47%),
+                    0 0 25px rgb(255 255 255 / 45%);
+        transition: all .22s ease;
       }
-
-      /* =====================================================
-         FARMER GUIDE
-         DESKTOP = TOP LEFT
-         This prevents collision with the bottom panel.
-         ===================================================== */
-
-      #mbt-guide {
-        position: fixed;
-
-        z-index: 99994;
-
-        left: 18px;
-        top: 18px;
-
-        width: 130px;
-
-        text-align: center;
-
-        pointer-events: none;
-
-        animation:
-          mbt-float
-          2.8s
-          ease-in-out
-          infinite;
-      }
-
-      .mbt-avatar-frame {
-        width: 112px;
-        height: 112px;
-
-        margin: auto;
-
-        border-radius: 50%;
-
-        padding: 4px;
-
-        background: #fff;
-
-        box-shadow:
-          0 10px 30px #0003;
-
-        overflow: hidden;
-      }
-
-      .mbt-avatar-svg {
-        display: block;
-
-        width: 100%;
-        height: 100%;
-      }
-
-      #mbt-guide-name {
-        display: inline-block;
-
-        margin-top: 6px;
-
-        padding: 5px 10px;
-
-        background: #fff;
-
-        color: #23442e;
-
-        border-radius: 999px;
-
-        font:
-          750 12px
-          system-ui,
-          sans-serif;
-
-        box-shadow:
-          0 3px 12px #0002;
-      }
-
-      #mbt-guide-personality {
-        display: inline-block;
-
-        margin-top: 4px;
-
-        max-width: 125px;
-
-        padding: 4px 8px;
-
-        background:
-          rgb(29 64 44 / 94%);
-
-        color: #fff;
-
-        border-radius: 999px;
-
-        font:
-          700 9px
-          system-ui,
-          sans-serif;
-
-        line-height: 1.2;
-      }
-
-      /* =====================================================
-         MAIN PANEL
-         ===================================================== */
 
       #mbt-panel {
         position: fixed;
-
         z-index: 99995;
-
         right: 18px;
         bottom: 18px;
-
-        width:
-          min(
-            430px,
-            calc(100vw - 36px)
-          );
-
-        max-height:
-          min(
-            82vh,
-            760px
-          );
-
-        overflow-y: auto;
-
-        padding: 18px;
-
-        border:
-          1px solid #dce7d8;
-
-        border-radius: 20px;
-
+        width: min(410px, calc(100vw - 36px));
+        max-height: calc(100dvh - 36px);
+        overflow: auto;
         background: #fff;
-
-        color: #20352a;
-
-        box-shadow:
-          0 18px 55px #0003;
-
-        font:
-          14px/1.5
-          system-ui,
-          sans-serif;
-
-        scrollbar-width: thin;
+        color: #203827;
+        border: 1px solid #e1e9df;
+        border-radius: 22px;
+        padding: 18px;
+        box-shadow: 0 18px 55px rgb(0 0 0 / 25%);
+        font-family: inherit;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
       }
 
-      #mbt-panel * {
-        box-sizing: border-box;
-      }
+      #mbt-panel * { box-sizing: border-box; }
 
-      /* =====================================================
-         HEADER
-         ===================================================== */
-
-      .mbt-topline {
+      .mbt-panel-heading {
         display: flex;
-
         align-items: flex-start;
-
-        justify-content:
-          space-between;
-
-        gap: 10px;
+        gap: 12px;
       }
 
-      .mbt-eyebrow {
-        color: #477e4e;
-
-        font-size: 11px;
-
-        font-weight: 800;
-
-        letter-spacing: .1em;
-
-        text-transform: uppercase;
+      .mbt-panel-avatar {
+        flex: 0 0 90px;
+        height: 110px;
+        overflow: hidden;
+        border-radius: 15px;
+        background: #f1f7ec;
       }
 
-      .mbt-title {
-        margin:
-          3px 0 8px;
-
-        color: #153322;
-
-        font-size: 21px;
-
+      .mbt-panel-title {
+        font-size: 19px;
+        font-weight: 850;
         line-height: 1.2;
+        margin: 3px 0 6px;
       }
 
-      .mbt-close {
-        flex:
-          0 0 auto;
+      .mbt-muted {
+        color: #68776b;
+        font-size: 13px;
+        line-height: 1.5;
+      }
 
-        border: 0;
+      .mbt-personality-tag {
+        display: inline-block;
+        margin-top: 7px;
+        padding: 5px 8px;
+        border-radius: 20px;
+        background: #edf5e9;
+        color: #315f38;
+        font-size: 11px;
+        font-weight: 750;
+      }
 
-        border-radius: 10px;
+      .mbt-label {
+        display: block;
+        margin: 14px 0 6px;
+        font-size: 12px;
+        font-weight: 800;
+        color: #35513a;
+      }
 
-        padding:
-          6px 10px;
+      .mbt-select, .mbt-button {
+        min-height: 40px;
+        font: inherit;
+        border-radius: 11px;
+      }
 
-        background: #edf3e9;
+      .mbt-select {
+        width: 100%;
+        padding: 8px 10px;
+        border: 1px solid #d5e1d2;
+        background: white;
+        color: #203827;
+      }
 
-        color: #23442e;
+      .mbt-avatar-choices {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 7px;
+        margin-top: 13px;
+      }
 
+      .mbt-avatar-choice {
+        min-width: 0;
+        padding: 5px;
+        background: #fff;
+        border: 1px solid #dfe7dd;
+        border-radius: 13px;
+        color: #29462f;
+        font: inherit;
         cursor: pointer;
-
-        font-size: 18px;
       }
 
-      .mbt-close:hover {
-        background: #dfeadb;
+      .mbt-avatar-choice[aria-pressed="true"] {
+        border: 2px solid #4c874b;
+        background: #f0f7eb;
+      }
+
+      .mbt-avatar-choice .mbt-avatar-frame {
+        height: 76px;
+      }
+
+      .mbt-avatar-choice span {
+        display: block;
+        font-size: 10px;
+        font-weight: 800;
+        margin-top: 5px;
+        overflow-wrap: anywhere;
       }
 
       .mbt-description {
-        margin:
-          8px 0 14px;
-      }
-
-      /* =====================================================
-         PERSONALITY BOX
-         ===================================================== */
-
-      .mbt-personality-box {
-        display: flex;
-
-        gap: 10px;
-
-        align-items: center;
-
-        margin:
-          10px 0 14px;
-
-        padding: 10px;
-
-        border:
-          1px solid #dce8d8;
-
-        border-radius: 13px;
-
-        background:
-          linear-gradient(
-            135deg,
-            #f6faf3,
-            #edf5e9
-          );
-      }
-
-      .mbt-personality-icon {
-        width: 40px;
-        height: 40px;
-
-        flex:
-          0 0 40px;
-
-        display: grid;
-
-        place-items: center;
-
-        border-radius: 50%;
-
-        background: #fff;
-
-        box-shadow:
-          0 3px 10px #0001;
-
-        font-size: 22px;
-      }
-
-      .mbt-personality-text {
-        min-width: 0;
-      }
-
-      .mbt-personality-label {
-        color: #477e4e;
-
-        font-size: 10px;
-
-        font-weight: 800;
-
-        text-transform: uppercase;
-
-        letter-spacing: .06em;
-      }
-
-      .mbt-personality-value {
-        margin-top: 2px;
-
-        color: #20352a;
-
-        font-size: 12px;
-
-        font-weight: 750;
-      }
-
-      /* =====================================================
-         FORM FIELDS
-         ===================================================== */
-
-      .mbt-field {
-        margin-top: 12px;
-      }
-
-      .mbt-field label {
-        display: block;
-
-        margin-bottom: 5px;
-
-        font-size: 12px;
-
-        font-weight: 750;
-      }
-
-      .mbt-field select {
-        width: 100%;
-
-        min-height: 40px;
-
-        border:
-          1px solid #d4dfd1;
-
-        border-radius: 10px;
-
-        padding:
-          8px 10px;
-
-        background: #fff;
-
-        color: #20352a;
-
-        font: inherit;
-      }
-
-      .mbt-field select:focus {
-        outline:
-          2px solid
-          rgb(71 126 78 / 25%);
-
-        border-color:
-          #477e4e;
-      }
-
-      /* =====================================================
-         AVATAR SELECTOR
-         ===================================================== */
-
-      .mbt-avatar-options {
-        display: grid;
-
-        grid-template-columns:
-          repeat(
-            4,
-            minmax(0, 1fr)
-          );
-
-        gap: 7px;
-      }
-
-      .mbt-avatar-option {
-        min-width: 0;
-
-        border:
-          2px solid #e0e8dc;
-
-        border-radius: 12px;
-
-        padding:
-          5px 3px;
-
-        background: #f7faf5;
-
-        color: #20352a;
-
-        cursor: pointer;
-
-        font: inherit;
-
-        transition:
-          transform .15s ease,
-          border-color .15s ease,
-          background .15s ease;
-      }
-
-      .mbt-avatar-option:hover {
-        transform:
-          translateY(-2px);
-
-        border-color:
-          #9db89c;
-      }
-
-      .mbt-avatar-option[aria-pressed="true"] {
-        border-color:
-          #477e4e;
-
-        background:
-          #eaf3e5;
-
-        box-shadow:
-          0 4px 14px
-          rgb(71 126 78 / 15%);
-      }
-
-      .mbt-avatar-option .mbt-avatar-svg {
-        max-width: 72px;
-
-        margin: auto;
-      }
-
-      .mbt-avatar-option span {
-        display: block;
-
-        overflow-wrap:
-          anywhere;
-
-        font-size: 10px;
-
-        font-weight: 750;
-      }
-
-      .mbt-avatar-personality {
-        display: block;
-
-        margin-top: 2px;
-
-        color: #68786d;
-
-        font-size: 8px;
-
-        line-height: 1.15;
-      }
-
-      /* =====================================================
-         PROGRESS
-         ===================================================== */
-
-      .mbt-progress {
-        height: 6px;
-
-        margin:
-          12px 0;
-
-        overflow: hidden;
-
-        border-radius: 99px;
-
-        background:
-          #e9efe5;
-      }
-
-      .mbt-progress > div {
-        height: 100%;
-
-        width: 0;
-
-        background:
-          #477e4e;
-
-        transition:
-          width .2s ease;
+        margin-top: 15px;
+        padding: 13px;
+        background: #f5f8f2;
+        border-radius: 14px;
+        font-size: 14px;
+        line-height: 1.55;
       }
 
       .mbt-step-count {
-        color: #5f7064;
-
-        font-size: 12px;
-
-        font-weight: 750;
+        color: #5d795e;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: .04em;
+        text-transform: uppercase;
       }
 
-      /* =====================================================
-         BUTTONS
-         ===================================================== */
+      .mbt-step-title {
+        margin: 5px 0 8px;
+        font-size: 20px;
+        line-height: 1.25;
+        font-weight: 850;
+      }
+
+      .mbt-step-text {
+        font-size: 14px;
+        line-height: 1.65;
+        color: #526356;
+        overflow-wrap: anywhere;
+      }
+
+      .mbt-progress {
+        height: 5px;
+        overflow: hidden;
+        border-radius: 8px;
+        background: #e8eee5;
+        margin: 14px 0;
+      }
+
+      .mbt-progress-fill {
+        height: 100%;
+        background: #56894e;
+        transition: width .2s ease;
+      }
 
       .mbt-actions {
         display: flex;
-
         flex-wrap: wrap;
-
-        gap: 8px;
-
-        margin-top: 15px;
+        gap: 7px;
+        margin-top: 16px;
       }
 
       .mbt-button {
-        flex:
-          1 1 auto;
-
-        min-height: 40px;
-
-        border: 0;
-
-        border-radius: 11px;
-
-        padding:
-          10px 13px;
-
-        background:
-          #285438;
-
-        color: #fff;
-
+        flex: 1 1 auto;
+        padding: 9px 12px;
+        border: 1px solid #dce6d8;
+        background: #fff;
+        color: #2a4830;
+        font-size: 12px;
+        font-weight: 800;
         cursor: pointer;
-
-        font:
-          750 13px
-          system-ui,
-          sans-serif;
-
-        transition:
-          transform .15s ease,
-          background .15s ease;
       }
 
-      .mbt-button:hover {
-        background:
-          #1d402c;
-
-        transform:
-          translateY(-1px);
+      .mbt-button-primary {
+        background: #397844;
+        color: #fff;
+        border-color: #397844;
       }
 
-      .mbt-button.secondary {
-        background:
-          #edf3e9;
-
-        color:
-          #23442e;
+      .mbt-button:focus-visible,
+      .mbt-select:focus-visible,
+      .mbt-avatar-choice:focus-visible {
+        outline: 3px solid #e5b73e;
+        outline-offset: 2px;
       }
 
-      .mbt-button.secondary:hover {
-        background:
-          #dfeadb;
+      #mbt-launcher {
+        position: fixed;
+        right: 16px;
+        bottom: 16px;
+        z-index: 99990;
+        border: 0;
+        border-radius: 30px;
+        padding: 12px 17px;
+        background: #2f713c;
+        color: #fff;
+        font: inherit;
+        font-size: 13px;
+        font-weight: 800;
+        box-shadow: 0 8px 24px rgb(0 0 0 / 20%);
+        cursor: pointer;
       }
 
-      .mbt-button:disabled {
-        opacity: .45;
-
-        cursor:
-          not-allowed;
-
-        transform: none;
-      }
-
-      .mbt-note {
-        margin-top: 10px;
-
-        color:
-          #617165;
-
-        font-size: 11px;
-      }
-
-      /* =====================================================
-         ANIMATIONS
-         ===================================================== */
-
-      @keyframes mbt-float {
-
-        0%,
-        100% {
-          transform:
-            translateY(0)
-            rotate(0deg);
-        }
-
-        50% {
-          transform:
-            translateY(-7px)
-            rotate(-1deg);
-        }
-      }
-
-      @keyframes mbt-wave {
-
-        0%,
-        100% {
-          transform:
-            rotate(0);
-        }
-
-        25% {
-          transform:
-            rotate(-8deg);
-        }
-
-        75% {
-          transform:
-            rotate(8deg);
-        }
-      }
-
-      #mbt-guide.mbt-waving {
-        animation:
-          mbt-wave
-          .5s
-          ease-in-out
-          3;
-      }
-
-      /* =====================================================
-         MOBILE
-         
-         IMPORTANT:
-         Guide is at the TOP.
-         Panel is at the BOTTOM.
-         Panel has a reserved gap so they cannot overlap.
-         ===================================================== */
-
-      @media (max-width: 600px) {
-
+      @media (max-width: 700px) {
         #mbt-guide {
-          left: 8px;
-          top: 8px;
-
-          width: 78px;
+          top: max(6px, env(safe-area-inset-top));
+          left: 6px;
+          width: 53px;
         }
 
-        .mbt-avatar-frame {
-          width: 64px;
-          height: 64px;
+        #mbt-guide .mbt-guide-card {
+          padding: 3px;
+          border-radius: 12px;
         }
 
-        #mbt-guide-name {
-          max-width: 78px;
-
-          margin-top: 3px;
-
-          padding:
-            3px 6px;
-
-          font-size: 9px;
+        #mbt-guide .mbt-avatar-frame {
+          width: 45px;
+          height: 48px;
+          border-radius: 9px;
         }
 
-        #mbt-guide-personality {
-          max-width: 78px;
-
-          padding:
-            3px 5px;
-
-          font-size: 7px;
+        #mbt-guide .mbt-guide-name,
+        #mbt-guide .mbt-guide-personality {
+          display: none;
         }
 
         #mbt-panel {
           left: 8px;
           right: 8px;
-
-          bottom: 8px;
-
-          width:
-            auto;
-
-          /*
-           * This creates enough vertical space
-           * for the avatar above.
-           */
-          max-height:
-            calc(
-              100dvh - 105px
-            );
-
-          padding:
-            14px;
-
-          border-radius:
-            17px;
+          bottom: max(8px, env(safe-area-inset-bottom));
+          width: auto;
+          max-height: calc(100dvh - 92px);
+          padding: 14px;
+          border-radius: 18px;
         }
 
-        .mbt-title {
-          font-size: 19px;
+        body.mbt-tour-panel-open #mbt-guide {
+          opacity: 0;
+          transform: scale(.65);
         }
 
-        .mbt-avatar-options {
-          gap: 5px;
-        }
-
-        .mbt-avatar-option {
-          padding:
-            4px 2px;
-        }
-
-        .mbt-avatar-option .mbt-avatar-svg {
-          max-width: 58px;
-        }
-
-        .mbt-avatar-option span {
-          font-size: 8px;
-        }
-
-        .mbt-avatar-personality {
-          font-size: 7px;
-        }
-
-        .mbt-personality-box {
-          padding: 8px;
-        }
-
-        .mbt-personality-icon {
-          width: 34px;
-          height: 34px;
-
-          flex-basis: 34px;
-
-          font-size: 18px;
-        }
-
-        .mbt-actions {
-          gap: 6px;
-        }
-
-        .mbt-button {
-          min-height: 38px;
-
-          padding:
-            9px 10px;
-
-          font-size: 12px;
-        }
-
-        #mbt-launcher {
-          right: 10px;
-          bottom: 10px;
-
-          padding:
-            10px 14px;
-        }
+        .mbt-panel-title { font-size: 17px; }
+        .mbt-panel-avatar { flex-basis: 76px; height: 95px; }
+        .mbt-avatar-choice .mbt-avatar-frame { height: 62px; }
+        .mbt-avatar-choice span { font-size: 9px; }
+        .mbt-step-title { font-size: 18px; }
+        #mbt-launcher { right: 8px; bottom: 8px; }
       }
-
-      /* =====================================================
-         VERY SMALL PHONES
-         ===================================================== */
-
-      @media (max-width: 380px) {
-
-        #mbt-guide {
-          width: 65px;
-        }
-
-        .mbt-avatar-frame {
-          width: 55px;
-          height: 55px;
-        }
-
-        #mbt-guide-name {
-          max-width: 65px;
-
-          font-size: 8px;
-        }
-
-        #mbt-guide-personality {
-          display: none;
-        }
-
-        #mbt-panel {
-          max-height:
-            calc(
-              100dvh - 88px
-            );
-
-          padding:
-            11px;
-        }
-
-        .mbt-title {
-          font-size: 17px;
-        }
-
-        .mbt-description {
-          font-size: 12px;
-        }
-
-        .mbt-field {
-          margin-top: 9px;
-        }
-
-        .mbt-actions {
-          margin-top: 10px;
-        }
-      }
-
-      /* =====================================================
-         REDUCED MOTION
-         ===================================================== */
 
       @media (prefers-reduced-motion: reduce) {
-
-        #mbt-guide,
-        #mbt-guide.mbt-waving {
-          animation:
-            none !important;
+        .mbt-character,
+        .mbt-speaking .mbt-mouth-open,
+        .mbt-speaking .mbt-character,
+        .mbt-blink .mbt-eye,
+        .mbt-blink .mbt-pupil {
+          animation: none !important;
         }
 
-        #mbt-spotlight,
-        .mbt-progress > div {
-          transition:
-            none !important;
-        }
+        * { scroll-behavior: auto !important; }
       }
     `;
 
     document.head.appendChild(style);
   }
 
-  /* =========================================================
-     ELEMENT CREATOR
-     ========================================================= */
+  function makeElement(tag, attrs = {}, html = "") {
+    const element = document.createElement(tag);
 
-  function makeElement(
-    tag,
-    id,
-    parent = document.body
-  ) {
+    Object.entries(attrs).forEach(([key, value]) => {
+      if (key === "className") {
+        element.className = value;
+      } else if (key === "text") {
+        element.textContent = value;
+      } else {
+        element.setAttribute(key, value);
+      }
+    });
 
-    const element =
-      document.createElement(tag);
-
-    if (id) {
-      element.id = id;
-    }
-
-    parent.appendChild(element);
-
+    if (html) element.innerHTML = html;
     return element;
   }
 
-  /* =========================================================
-     STOP SPEECH
-     ========================================================= */
+  /* ----------------------------------------------------------
+     SPEECH + MOUTH ANIMATION
+     ---------------------------------------------------------- */
 
-  function stopSpeech() {
+  function setSpeaking(on) {
+    state.speaking = on;
 
-    state.session++;
+    if (state.guide) {
+      state.guide.classList.toggle("mbt-speaking", on);
+    }
 
-    state.speaking = false;
+    document.querySelectorAll(".mbt-anime-avatar").forEach(avatar => {
+      avatar.classList.toggle("mbt-speaking", on);
+    });
 
     if (state.mouthTimer) {
-
-      clearInterval(
-        state.mouthTimer
-      );
-
+      clearInterval(state.mouthTimer);
       state.mouthTimer = null;
     }
 
-    if ("speechSynthesis" in window) {
+    if (on) {
+      state.mouthTimer = setInterval(() => {
+        if (!state.speaking) return;
 
+        document.querySelectorAll(".mbt-anime-avatar").forEach(avatar => {
+          avatar.querySelectorAll(".mbt-mouth-open").forEach(mouth => {
+            const opening = 0.6 + Math.random() * 1.6;
+            mouth.style.transform = `scaleY(${opening})`;
+          });
+        });
+      }, 115);
+    } else {
+      document.querySelectorAll(".mbt-mouth-open").forEach(mouth => {
+        mouth.style.transform = "";
+      });
+    }
+  }
+
+  function stopSpeech() {
+    state.speechSession++;
+
+    if ("speechSynthesis" in window) {
       window.speechSynthesis.cancel();
     }
 
-    if (state.guide) {
-      renderGuide(false);
-    }
+    setSpeaking(false);
   }
-
-  /* =========================================================
-     LOAD BROWSER VOICES
-     ========================================================= */
 
   function loadVoices() {
+    if (!("speechSynthesis" in window)) return;
 
-    if (!("speechSynthesis" in window)) {
-      return;
-    }
+    state.voices = window.speechSynthesis.getVoices();
 
-    state.voices =
-      window.speechSynthesis
-        .getVoices() || [];
-
-    if (state.panel) {
-
-      const select =
-        state.panel.querySelector(
-          "#mbt-voice"
-        );
-
-      if (select) {
-        fillVoiceOptions(select);
-      }
+    if (state.panel && state.panel.isConnected) {
+      const select = $("#mbt-voice-select", state.panel);
+      if (select) fillVoiceOptions(select);
     }
   }
 
-  /* =========================================================
-     VOICE OPTIONS
-     ========================================================= */
-
   function voiceOptionsForLanguage() {
-
     const prefix = {
+      en: "en",
+      mix: "en",
+      sw: "sw"
+    }[state.language] || "en";
 
-      en: [
-        "en-KE",
-        "en-GB",
-        "en-US",
-        "en"
-      ],
-
-      mix: [
-        "en-KE",
-        "en-GB",
-        "en-US",
-        "en"
-      ],
-
-      sw: [
-        "sw-KE",
-        "sw-TZ",
-        "sw"
-      ]
-
-    }[state.language] || ["en"];
-
-    const voices =
-      state.voices.slice();
-
-    return voices.sort(
-      (a, b) => {
-
-        const aIndex =
-          prefix.findIndex(
-            p =>
-              a.lang
-                .toLowerCase()
-                .startsWith(
-                  p.toLowerCase()
-                )
-          );
-
-        const bIndex =
-          prefix.findIndex(
-            p =>
-              b.lang
-                .toLowerCase()
-                .startsWith(
-                  p.toLowerCase()
-                )
-          );
-
-        return (
-          (aIndex < 0 ? 999 : aIndex) -
-          (bIndex < 0 ? 999 : bIndex)
-        );
-      }
+    const voices = state.voices.filter(voice =>
+      voice.lang.toLowerCase().startsWith(prefix)
     );
+
+    return voices.length ? voices : state.voices;
   }
 
   function fillVoiceOptions(select) {
-
-    const t =
-      currentWords();
-
-    const previous =
-      state.voiceURI;
+    const voices = voiceOptionsForLanguage();
 
     select.innerHTML = "";
 
-    const automatic =
-      document.createElement(
-        "option"
-      );
+    const automatic = makeElement("option", {
+      value: "",
+      text: "Automatic voice"
+    });
 
-    automatic.value = "";
+    select.appendChild(automatic);
 
-    automatic.textContent =
-      t.browserVoice;
-
-    select.appendChild(
-      automatic
-    );
-
-    voiceOptionsForLanguage()
-      .forEach(voice => {
-
-        const option =
-          document.createElement(
-            "option"
-          );
-
-        option.value =
-          voice.voiceURI;
-
-        option.textContent =
-          `${voice.name} (${voice.lang})`;
-
-        select.appendChild(
-          option
-        );
+    voices.forEach(voice => {
+      const option = makeElement("option", {
+        value: voice.voiceURI,
+        text: `${voice.name} (${voice.lang})`
       });
 
-    select.value =
-      previous;
+      select.appendChild(option);
+    });
 
-    if (
-      select.value !==
-      previous
-    ) {
-      select.value = "";
+    select.value = voices.some(v => v.voiceURI === state.voiceURI)
+      ? state.voiceURI
+      : "";
+
+    if (state.voiceURI && !select.value) {
+      state.voiceURI = "";
+      localStorage.removeItem(STORAGE.voice);
     }
   }
 
-  /* =========================================================
-     CHOOSE VOICE
-     ========================================================= */
+  function chooseVoice(utterance) {
+    const available = voiceOptionsForLanguage();
 
-  function chooseVoice() {
+    const selected = available.find(v => v.voiceURI === state.voiceURI);
 
-    const voices =
-      voiceOptionsForLanguage();
-
-    if (state.voiceURI) {
-
-      const chosen =
-        voices.find(
-          voice =>
-            voice.voiceURI ===
-            state.voiceURI
-        );
-
-      if (chosen) {
-        return chosen;
-      }
-    }
-
-    const preferredPrefix =
-      state.language === "sw"
-        ? "sw"
-        : "en";
-
-    return (
-      voices.find(
-        voice =>
-          voice.lang
-            .toLowerCase()
-            .startsWith(
-              preferredPrefix
-            )
-      )
-      ||
-      voices[0]
-      ||
-      null
-    );
-  }
-
-  /* =========================================================
-     SPEECH
-     ========================================================= */
-
-  function speak(text) {
-
-    stopSpeech();
-
-    if (
-      !("speechSynthesis" in window) ||
-      !text
-    ) {
+    if (selected) {
+      utterance.voice = selected;
       return;
     }
 
-    const session =
-      state.session;
+    const languagePrefix = state.language === "sw" ? "sw" : "en";
 
-    const farmer =
-      farmers[state.avatar] ||
-      farmers.akinyi;
+    const fallback = available.find(v =>
+      v.lang.toLowerCase().startsWith(languagePrefix)
+    );
 
-    const utterance =
-      new SpeechSynthesisUtterance(
-        text
-      );
+    if (fallback) utterance.voice = fallback;
+  }
 
-    const voice =
-      chooseVoice();
+  function speak(text) {
+    stopSpeech();
 
-    if (voice) {
-      utterance.voice =
-        voice;
-    }
+    if (!("speechSynthesis" in window) || !text) return;
 
-    utterance.lang =
-      state.language === "sw"
-        ? "sw-KE"
-        : "en-KE";
+    const session = state.speechSession;
+    const farmer = currentFarmer();
 
-    /*
-     * Personality affects voice.
-     */
+    const utterance = new SpeechSynthesisUtterance(text);
 
-    utterance.pitch =
-      farmer.pitch;
+    utterance.pitch = farmer.pitch;
+    utterance.rate = farmer.rate;
 
-    utterance.rate =
-      farmer.rate;
+    chooseVoice(utterance);
 
     utterance.onstart = () => {
-
-      if (
-        session !==
-        state.session
-      ) {
-        return;
-      }
-
-      state.speaking = true;
-
-      if (state.guide) {
-        renderGuide(true);
-      }
-
-      state.mouthTimer =
-        setInterval(
-          () => {
-
-            if (
-              session !==
-                state.session ||
-              !state.speaking
-            ) {
-              return;
-            }
-
-            renderGuide(
-              Math.random() > 0.45
-            );
-
-          },
-          150
-        );
+      if (session === state.speechSession) setSpeaking(true);
     };
 
     utterance.onend = () => {
-
-      if (
-        session !==
-        state.session
-      ) {
-        return;
-      }
-
-      state.speaking = false;
-
-      if (state.mouthTimer) {
-
-        clearInterval(
-          state.mouthTimer
-        );
-
-        state.mouthTimer = null;
-      }
-
-      if (state.guide) {
-        renderGuide(false);
-      }
+      if (session === state.speechSession) setSpeaking(false);
     };
 
     utterance.onerror = () => {
-
-      if (
-        session !==
-        state.session
-      ) {
-        return;
-      }
-
-      state.speaking = false;
-
-      if (state.mouthTimer) {
-
-        clearInterval(
-          state.mouthTimer
-        );
-
-        state.mouthTimer = null;
-      }
-
-      if (state.guide) {
-        renderGuide(false);
-      }
+      if (session === state.speechSession) setSpeaking(false);
     };
 
-    window.speechSynthesis
-      .speak(utterance);
+    window.speechSynthesis.speak(utterance);
   }
 
-  /* =========================================================
-     PERSONALITY INTRO
-     ========================================================= */
+  /* ----------------------------------------------------------
+     GUIDE AND TOUR UI
+     ---------------------------------------------------------- */
 
-  function getPersonalityIntro() {
-
-    const farmer =
-      farmers[state.avatar] ||
-      farmers.akinyi;
-
-    return (
-      farmer.intro[state.language] ||
-      farmer.intro.en
-    );
-  }
-
-  /* =========================================================
-     GUIDE RENDER
-     ========================================================= */
-
-  function renderGuide(
-    talking = state.speaking
-  ) {
+  function renderGuide() {
+    const farmer = currentFarmer();
 
     if (!state.guide) {
-      return;
+      state.guide = makeElement("div", {
+        id: "mbt-guide",
+        "aria-hidden": "true"
+      });
+
+      document.body.appendChild(state.guide);
     }
 
-    const farmer =
-      farmers[state.avatar] ||
-      farmers.akinyi;
+    state.guide.className = `mbt-personality-${state.avatar}`;
 
     state.guide.innerHTML = `
-
-      <div class="mbt-avatar-frame">
-        ${avatarSVG(
-          state.avatar,
-          talking
-        )}
-      </div>
-
-      <div id="mbt-guide-name">
-        ${escapeHTML(
-          farmer.name
-        )}
-      </div>
-
-      <div id="mbt-guide-personality">
-        ${escapeHTML(
-          farmer.personalityShort
-        )}
+      <div class="mbt-guide-card">
+        <div class="mbt-avatar-frame">${avatarSVG(state.avatar)}</div>
+        <div class="mbt-guide-name">${escapeHTML(farmer.name)}</div>
+        <div class="mbt-guide-personality">${escapeHTML(farmer.personality)}</div>
       </div>
     `;
   }
 
-  /* =========================================================
-     CREATE GUIDE
-     ========================================================= */
-
-  function createGuide() {
-
-    if (state.guide) {
-      return;
+  function createTourElements() {
+    if (!state.overlay) {
+      state.overlay = makeElement("div", { id: "mbt-overlay" });
+      document.body.appendChild(state.overlay);
     }
 
-    state.guide =
-      makeElement(
-        "div",
-        "mbt-guide"
-      );
+    if (!state.spotlight) {
+      state.spotlight = makeElement("div", { id: "mbt-spotlight" });
+      state.spotlight.hidden = true;
+      document.body.appendChild(state.spotlight);
+    }
 
-    state.guide.setAttribute(
-      "aria-live",
-      "polite"
-    );
+    if (!state.launcher) {
+      state.launcher = makeElement("button", {
+        id: "mbt-launcher",
+        type: "button",
+        text: t("launcher")
+      });
 
+      state.launcher.addEventListener("click", openSetup);
+      document.body.appendChild(state.launcher);
+    }
+
+    state.overlay.hidden = true;
+  }
+
+  function ensurePanel() {
+    if (state.panel) return;
+
+    state.panel = makeElement("section", {
+      id: "mbt-panel",
+      role: "dialog",
+      "aria-modal": "false",
+      "aria-label": "MavunoBridge farmer tour"
+    });
+
+    state.panel.addEventListener("click", handlePanelClick);
+    state.panel.addEventListener("change", handlePanelChange);
+
+    document.body.appendChild(state.panel);
+  }
+
+  function avatarChoices() {
+    return Object.entries(farmers).map(([id, farmer]) => `
+      <button type="button"
+        class="mbt-avatar-choice"
+        data-avatar="${id}"
+        aria-pressed="${state.avatar === id ? "true" : "false"}">
+        <div class="mbt-avatar-frame">${avatarSVG(id)}</div>
+        <span>${escapeHTML(farmer.name)}</span>
+      </button>
+    `).join("");
+  }
+
+  function renderSetup() {
+    const farmer = currentFarmer();
+
+    state.setupOpen = true;
+    state.active = false;
+
+    stopSpeech();
+    clearSpotlight();
+
+    document.body.classList.add("mbt-tour-panel-open");
+
+    if (state.launcher) state.launcher.hidden = true;
+    if (state.overlay) state.overlay.hidden = true;
+
+    ensurePanel();
+
+    state.panel.innerHTML = `
+      <div class="mbt-panel-heading">
+        <div class="mbt-panel-avatar">${avatarSVG(state.avatar, true)}</div>
+        <div>
+          <div class="mbt-panel-title">${escapeHTML(t("title"))}</div>
+          <div class="mbt-muted">${escapeHTML(t("subtitle"))}</div>
+          <div class="mbt-personality-tag">${escapeHTML(farmer.personality)}</div>
+        </div>
+      </div>
+
+      <div class="mbt-avatar-choices">${avatarChoices()}</div>
+
+      <label class="mbt-label" for="mbt-language-select">${escapeHTML(t("language"))}</label>
+      <select id="mbt-language-select" class="mbt-select">
+        <option value="en">English</option>
+        <option value="mix">Sheng + English</option>
+        <option value="sw">Kiswahili</option>
+      </select>
+
+      <label class="mbt-label" for="mbt-voice-select">${escapeHTML(t("voice"))}</label>
+      <select id="mbt-voice-select" class="mbt-select"></select>
+
+      <div class="mbt-description">
+        <strong>${escapeHTML(farmer.name)}</strong><br>
+        ${escapeHTML(farmer.role)}<br>
+        <span class="mbt-muted">${escapeHTML(farmer.personality)}</span>
+      </div>
+
+      <div class="mbt-actions">
+        <button class="mbt-button" data-action="preview">${escapeHTML("Hear greeting")}</button>
+        <button class="mbt-button mbt-button-primary" data-action="start">${escapeHTML(t("start"))}</button>
+        <button class="mbt-button" data-action="close">${escapeHTML(t("close"))}</button>
+      </div>
+    `;
+
+    $("#mbt-language-select", state.panel).value = state.language;
+    fillVoiceOptions($("#mbt-voice-select", state.panel));
+
+    state.panel.hidden = false;
     renderGuide();
   }
 
-  /* =========================================================
-     FIND TARGET
-     ========================================================= */
+  function renderStep(shouldSpeak = true) {
+    const steps = getSteps();
 
-  function findTarget(selector) {
-
-    if (!selector) {
-      return null;
+    if (!steps.length) {
+      renderFinish();
+      return;
     }
 
-    const candidates =
-      selector
-        .split(",")
-        .map(
-          s => s.trim()
-        );
+    state.step = Math.max(0, Math.min(state.step, steps.length - 1));
 
-    for (
-      const candidate of candidates
-    ) {
+    const [title, description, selector] = steps[state.step];
+    const farmer = currentFarmer();
 
+    state.active = true;
+    state.setupOpen = false;
+
+    document.body.classList.add("mbt-tour-panel-open");
+
+    if (state.launcher) state.launcher.hidden = true;
+    if (state.overlay) state.overlay.hidden = false;
+
+    ensurePanel();
+
+    state.panel.innerHTML = `
+      <div class="mbt-panel-heading">
+        <div class="mbt-panel-avatar">${avatarSVG(state.avatar, true)}</div>
+        <div>
+          <div class="mbt-muted">${escapeHTML(farmer.name)} · ${escapeHTML(farmer.role)}</div>
+          <div class="mbt-personality-tag">${escapeHTML(farmer.personality)}</div>
+        </div>
+      </div>
+
+      <div class="mbt-progress">
+        <div class="mbt-progress-fill" style="width:${((state.step + 1) / steps.length) * 100}%"></div>
+      </div>
+
+      <div class="mbt-step-count">${escapeHTML(t("step"))} ${state.step + 1} / ${steps.length}</div>
+      <h2 class="mbt-step-title">${escapeHTML(title)}</h2>
+      <div class="mbt-step-text">${escapeHTML(description)}</div>
+
+      <div class="mbt-actions">
+        <button class="mbt-button" data-action="back" ${state.step === 0 ? "disabled" : ""}>${escapeHTML(t("back"))}</button>
+        <button class="mbt-button" data-action="repeat">${escapeHTML(t("replay"))}</button>
+        <button class="mbt-button mbt-button-primary" data-action="next">${escapeHTML(state.step === steps.length - 1 ? t("finish") : t("next"))}</button>
+        <button class="mbt-button" data-action="skip">${escapeHTML(t("skip"))}</button>
+      </div>
+    `;
+
+    state.panel.hidden = false;
+
+    renderGuide();
+    showSpotlight(selector);
+
+    if (shouldSpeak) {
+      const greeting = state.step === 0
+        ? `${farmer.greeting[state.language]} ${title}. ${description}`
+        : `${title}. ${description}`;
+
+      speak(greeting);
+    }
+  }
+
+  function renderFinish() {
+    stopSpeech();
+    clearSpotlight();
+
+    state.active = false;
+    state.setupOpen = false;
+
+    localStorage.setItem(STORAGE.completed, "true");
+
+    if (state.overlay) state.overlay.hidden = true;
+
+    if (state.panel) {
+      state.panel.innerHTML = `
+        <div class="mbt-panel-heading">
+          <div class="mbt-panel-avatar">${avatarSVG(state.avatar, true)}</div>
+          <div>
+            <div class="mbt-panel-title">${escapeHTML(t("done"))}</div>
+            <div class="mbt-muted">${escapeHTML(currentFarmer().name)}</div>
+          </div>
+        </div>
+
+        <div class="mbt-description">${escapeHTML(t("doneText"))}</div>
+
+        <div class="mbt-actions">
+          <button class="mbt-button" data-action="replay">${escapeHTML(t("replay"))}</button>
+          <button class="mbt-button mbt-button-primary" data-action="close">${escapeHTML(t("close"))}</button>
+        </div>
+      `;
+
+      state.panel.hidden = false;
+    }
+
+    speak(t("doneText"));
+  }
+
+  /* ----------------------------------------------------------
+     SPOTLIGHT
+     ---------------------------------------------------------- */
+
+  function findTarget(selector) {
+    if (!selector) return null;
+
+    const selectors = selector.split(",").map(s => s.trim());
+
+    for (const item of selectors) {
       try {
+        const target = $(item);
 
-        const elements =
-          document.querySelectorAll(
-            candidate
-          );
-
-        for (
-          const element of elements
+        if (
+          target &&
+          !target.closest("#mbt-panel") &&
+          !target.closest("#mbt-guide") &&
+          !target.closest("#mbt-launcher") &&
+          !target.closest("#mbt-overlay") &&
+          !target.closest("#mbt-spotlight") &&
+          target.getClientRects().length
         ) {
-
-          if (
-            !element ||
-            element.closest(
-              "#mbt-panel,#mbt-guide,#mbt-launcher"
-            )
-          ) {
-            continue;
-          }
-
-          const rect =
-            element.getBoundingClientRect();
-
-          const style =
-            getComputedStyle(
-              element
-            );
-
-          if (
-            rect.width > 0 &&
-            rect.height > 0 &&
-            style.display !== "none" &&
-            style.visibility !== "hidden"
-          ) {
-            return element;
-          }
+          return target;
         }
-
-      } catch (error) {
-        /*
-         * Ignore invalid selectors.
-         */
+      } catch (_) {
+        // Ignore invalid selectors and try the next candidate.
       }
     }
 
     return null;
   }
 
-  /* =========================================================
-     CLEAR SPOTLIGHT
-     ========================================================= */
-
   function clearSpotlight() {
-
-    if (state.spotlight) {
-      state.spotlight.style.display =
-        "none";
-    }
-
-    if (state.overlay) {
-      state.overlay.style.display =
-        "none";
-    }
+    if (state.spotlight) state.spotlight.hidden = true;
   }
 
-  /* =========================================================
-     SHOW SPOTLIGHT
-     ========================================================= */
+  function showSpotlight(selector) {
+    clearSpotlight();
 
-  function showSpotlight(element) {
+    if (!state.active || !selector) return;
 
-    if (!element) {
-      clearSpotlight();
-      return;
-    }
+    const target = findTarget(selector);
+    if (!target) return;
 
-    if (!state.overlay) {
-
-      state.overlay =
-        makeElement(
-          "div",
-          "mbt-overlay"
-        );
-    }
-
-    if (!state.spotlight) {
-
-      state.spotlight =
-        makeElement(
-          "div",
-          "mbt-spotlight"
-        );
-    }
-
-    const reduced =
-      matchMedia(
-        "(prefers-reduced-motion: reduce)"
-      ).matches;
-
-    element.scrollIntoView({
-
-      behavior:
-        reduced
-          ? "auto"
-          : "smooth",
-
+    target.scrollIntoView({
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+        ? "auto"
+        : "smooth",
       block: "center",
-
       inline: "nearest"
     });
 
-    const position = () => {
+    const update = () => {
+      if (!state.spotlight || !state.active) return;
 
-      const rect =
-        element.getBoundingClientRect();
+      const rect = target.getBoundingClientRect();
 
-      const pad = 5;
+      if (!rect.width || !rect.height) {
+        clearSpotlight();
+        return;
+      }
 
-      state.spotlight.style.display =
-        "block";
-
-      state.spotlight.style.top =
-        `${Math.max(
-          4,
-          rect.top - pad
-        )}px`;
-
-      state.spotlight.style.left =
-        `${Math.max(
-          4,
-          rect.left - pad
-        )}px`;
-
-      state.spotlight.style.width =
-        `${Math.min(
-          innerWidth - 8,
-          rect.width +
-            pad * 2
-        )}px`;
-
-      state.spotlight.style.height =
-        `${Math.min(
-          innerHeight - 8,
-          rect.height +
-            pad * 2
-        )}px`;
-
-      state.overlay.style.display =
-        "block";
+      state.spotlight.style.left = `${Math.max(0, rect.left - 4)}px`;
+      state.spotlight.style.top = `${Math.max(0, rect.top - 4)}px`;
+      state.spotlight.style.width = `${rect.width + 8}px`;
+      state.spotlight.style.height = `${rect.height + 8}px`;
+      state.spotlight.hidden = false;
     };
 
-    requestAnimationFrame(
-      position
-    );
-
-    setTimeout(
-      position,
-      300
-    );
+    requestAnimationFrame(update);
   }
 
-  /* =========================================================
-     PANEL
-     ========================================================= */
+  /* ----------------------------------------------------------
+     CONTROLS
+     ---------------------------------------------------------- */
 
-  function ensurePanel() {
+  function selectAvatar(id) {
+    if (!farmers[id]) return;
 
-    if (state.panel) {
-      return;
-    }
-
-    state.panel =
-      makeElement(
-        "section",
-        "mbt-panel"
-      );
-
-    state.panel.setAttribute(
-      "role",
-      "dialog"
-    );
-
-    state.panel.setAttribute(
-      "aria-modal",
-      "false"
-    );
-
-    state.panel.setAttribute(
-      "aria-label",
-      "MavunoBridge guided tour"
-    );
-
-    state.panel.addEventListener(
-      "click",
-      handlePanelClick
-    );
-
-    state.panel.addEventListener(
-      "change",
-      handlePanelChange
-    );
-  }
-
-  /* =========================================================
-     SETUP SCREEN
-     ========================================================= */
-
-  function renderSetup() {
-
-    const t =
-      currentWords();
-
-    const farmer =
-      farmers[state.avatar] ||
-      farmers.akinyi;
-
-    state.panel.innerHTML = `
-
-      <div class="mbt-topline">
-
-        <div>
-          <div class="mbt-eyebrow">
-            MavunoBridge
-          </div>
-
-          <h2 class="mbt-title">
-            ${escapeHTML(
-              t.welcome
-            )}
-          </h2>
-        </div>
-
-        <button
-          class="mbt-close"
-          data-action="close"
-          aria-label="${escapeHTML(
-            t.close
-          )}"
-        >
-          ×
-        </button>
-
-      </div>
-
-      <p class="mbt-description">
-        ${escapeHTML(
-          t.choose
-        )}
-      </p>
-
-      <!-- PERSONALITY -->
-
-      <div class="mbt-personality-box">
-
-        <div class="mbt-personality-icon">
-          ${farmer.emoji}
-        </div>
-
-        <div class="mbt-personality-text">
-
-          <div class="mbt-personality-label">
-            ${escapeHTML(
-              t.personality
-            )}
-          </div>
-
-          <div class="mbt-personality-value">
-            ${escapeHTML(
-              farmer.personality
-            )}
-          </div>
-
-        </div>
-
-      </div>
-
-      <!-- AVATARS -->
-
-      <div class="mbt-avatar-options">
-
-        ${Object.entries(
-          farmers
-        )
-          .map(
-            ([id, farmer]) => `
-
-              <button
-                class="mbt-avatar-option"
-                data-avatar="${id}"
-                aria-pressed="${
-                  id === state.avatar
-                }"
-                title="${escapeHTML(
-                  farmer.description
-                )}"
-              >
-
-                ${avatarSVG(
-                  id,
-                  false
-                )}
-
-                <span>
-                  ${escapeHTML(
-                    farmer.name
-                  )}
-                </span>
-
-                <small class="mbt-avatar-personality">
-                  ${escapeHTML(
-                    farmer.personalityShort
-                  )}
-                </small>
-
-              </button>
-            `
-          )
-          .join("")
-        }
-
-      </div>
-
-      <!-- LANGUAGE -->
-
-      <div class="mbt-field">
-
-        <label
-          for="mbt-language"
-        >
-          ${escapeHTML(
-            t.language
-          )}
-        </label>
-
-        <select
-          id="mbt-language"
-        >
-
-          ${Object.entries(
-            t.langs
-          )
-            .map(
-              ([id, name]) => `
-
-                <option
-                  value="${id}"
-                  ${
-                    id ===
-                    state.language
-                      ? "selected"
-                      : ""
-                  }
-                >
-                  ${escapeHTML(
-                    name
-                  )}
-                </option>
-              `
-            )
-            .join("")
-          }
-
-        </select>
-
-      </div>
-
-      <!-- VOICE -->
-
-      <div class="mbt-field">
-
-        <label
-          for="mbt-voice"
-        >
-          ${escapeHTML(
-            t.voice
-          )}
-        </label>
-
-        <select
-          id="mbt-voice"
-        ></select>
-
-      </div>
-
-      <p class="mbt-note">
-        Voice choices depend on the voices installed in your browser or device.
-      </p>
-
-      <div class="mbt-actions">
-
-        <button
-          class="mbt-button"
-          data-action="start"
-        >
-          ${escapeHTML(
-            t.start
-          )}
-        </button>
-
-        <button
-          class="mbt-button secondary"
-          data-action="close"
-        >
-          ${escapeHTML(
-            t.skip
-          )}
-        </button>
-
-      </div>
-    `;
-
-    fillVoiceOptions(
-      state.panel.querySelector(
-        "#mbt-voice"
-      )
-    );
+    state.avatar = id;
+    localStorage.setItem(STORAGE.avatar, id);
 
     renderGuide();
-  }
 
-  /* =========================================================
-     TOUR STEP
-     ========================================================= */
-
-  function renderStep() {
-
-    const t =
-      currentWords();
-
-    const steps =
-      getSteps();
-
-    const step =
-      steps[state.step];
-
-    if (!step) {
-      renderFinish();
-      return;
-    }
-
-    const farmer =
-      farmers[state.avatar] ||
-      farmers.akinyi;
-
-    state.panel.innerHTML = `
-
-      <div class="mbt-topline">
-
-        <div>
-
-          <div class="mbt-eyebrow">
-            ${escapeHTML(
-              t.tour
-            )}
-          </div>
-
-          <h2 class="mbt-title">
-            ${escapeHTML(
-              step[0]
-            )}
-          </h2>
-
-        </div>
-
-        <button
-          class="mbt-close"
-          data-action="close"
-          aria-label="${escapeHTML(
-            t.close
-          )}"
-        >
-          ×
-        </button>
-
-      </div>
-
-      <p class="mbt-description">
-        ${escapeHTML(
-          step[1]
-        )}
-      </p>
-
-      <div class="mbt-personality-box">
-
-        <div class="mbt-personality-icon">
-          ${farmer.emoji}
-        </div>
-
-        <div class="mbt-personality-text">
-
-          <div class="mbt-personality-label">
-            ${escapeHTML(
-              farmer.name
-            )}
-          </div>
-
-          <div class="mbt-personality-value">
-            ${escapeHTML(
-              farmer.personalityShort
-            )}
-          </div>
-
-        </div>
-
-      </div>
-
-      <div class="mbt-step-count">
-
-        ${escapeHTML(
-          t.step
-        )}
-        ${state.step + 1}
-        /
-        ${steps.length}
-
-      </div>
-
-      <div
-        class="mbt-progress"
-        aria-hidden="true"
-      >
-
-        <div
-          style="
-            width:
-            ${
-              (
-                (state.step + 1) /
-                steps.length
-              ) * 100
-            }%;
-          "
-        ></div>
-
-      </div>
-
-      <div class="mbt-field">
-
-        <label
-          for="mbt-language"
-        >
-          ${escapeHTML(
-            t.language
-          )}
-        </label>
-
-        <select
-          id="mbt-language"
-        >
-
-          ${Object.entries(
-            t.langs
-          )
-            .map(
-              ([id, name]) => `
-
-                <option
-                  value="${id}"
-                  ${
-                    id ===
-                    state.language
-                      ? "selected"
-                      : ""
-                  }
-                >
-                  ${escapeHTML(
-                    name
-                  )}
-                </option>
-              `
-            )
-            .join("")
-          }
-
-        </select>
-
-      </div>
-
-      <div class="mbt-field">
-
-        <label
-          for="mbt-voice"
-        >
-          ${escapeHTML(
-            t.voice
-          )}
-        </label>
-
-        <select
-          id="mbt-voice"
-        ></select>
-
-      </div>
-
-      <div class="mbt-actions">
-
-        <button
-          class="mbt-button secondary"
-          data-action="back"
-          ${
-            state.step === 0
-              ? "disabled"
-              : ""
-          }
-        >
-          ${escapeHTML(
-            t.back
-          )}
-        </button>
-
-        <button
-          class="mbt-button"
-          data-action="next"
-        >
-          ${escapeHTML(
-            state.step ===
-            steps.length - 1
-              ? t.finish
-              : t.next
-          )}
-        </button>
-
-        <button
-          class="mbt-button secondary"
-          data-action="close"
-        >
-          ${escapeHTML(
-            t.skip
-          )}
-        </button>
-
-      </div>
-    `;
-
-    fillVoiceOptions(
-      state.panel.querySelector(
-        "#mbt-voice"
-      )
-    );
-
-    renderGuide();
-  }
-
-  /* =========================================================
-     FINISH
-     ========================================================= */
-
-  function renderFinish() {
-
-    const t =
-      currentWords();
-
-    state.panel.innerHTML = `
-
-      <div class="mbt-topline">
-
-        <div>
-
-          <div class="mbt-eyebrow">
-            MavunoBridge
-          </div>
-
-          <h2 class="mbt-title">
-            ${escapeHTML(
-              t.done
-            )}
-          </h2>
-
-        </div>
-
-        <button
-          class="mbt-close"
-          data-action="close"
-          aria-label="${escapeHTML(
-            t.close
-          )}"
-        >
-          ×
-        </button>
-
-      </div>
-
-      <p class="mbt-description">
-        ${escapeHTML(
-          t.doneText
-        )}
-      </p>
-
-      <div class="mbt-actions">
-
-        <button
-          class="mbt-button"
-          data-action="replay"
-        >
-          ${escapeHTML(
-            t.replay
-          )}
-        </button>
-
-        <button
-          class="mbt-button secondary"
-          data-action="close"
-        >
-          ${escapeHTML(
-            t.finish
-          )}
-        </button>
-
-      </div>
-    `;
-
-    clearSpotlight();
-
-    stopSpeech();
-
-    state.active = false;
-
-    /*
-     * The selected farmer gives the final message.
-     */
-
-    const farmer =
-      farmers[state.avatar] ||
-      farmers.akinyi;
-
-    const finalText =
-      state.language === "sw"
-
-        ? `${farmer.name} anasema: ${t.doneText}`
-
-        : state.language === "mix"
-
-        ? `${farmer.name} anasema: ${t.doneText}`
-
-        : `${farmer.name} says: ${t.doneText}`;
-
-    speak(finalText);
-  }
-
-  /* =========================================================
-     UPDATE STEP
-     ========================================================= */
-
-  function updateStep(
-    shouldSpeak = true
-  ) {
-
-    const steps =
-      getSteps();
-
-    if (
-      state.step >=
-      steps.length
-    ) {
-
-      renderFinish();
-
-      return;
-    }
-
-    renderStep();
-
-    const step =
-      steps[state.step];
-
-    const target =
-      findTarget(
-        step[2]
-      );
-
-    if (target) {
-      showSpotlight(target);
+    if (state.active) {
+      renderStep(false);
+      speak(`${currentFarmer().greeting[state.language]} ${getSteps()[state.step][1]}`);
     } else {
-      clearSpotlight();
-    }
-
-    if (shouldSpeak) {
-
-      /*
-       * On the first step, introduce
-       * the farmer personality first.
-       */
-
-      if (state.step === 0) {
-
-        const intro =
-          getPersonalityIntro();
-
-        const combined =
-          `${intro} ${step[1]}`;
-
-        speak(combined);
-
-      } else {
-
-        speak(step[1]);
-      }
+      renderSetup();
     }
   }
 
-  /* =========================================================
-     START TOUR
-     ========================================================= */
+  function selectLanguage(language) {
+    if (!words[language]) return;
+
+    state.language = language;
+    localStorage.setItem(STORAGE.language, language);
+
+    if (state.active) {
+      renderStep(true);
+    } else {
+      renderSetup();
+    }
+  }
+
+  function selectVoice(voiceURI) {
+    state.voiceURI = voiceURI || "";
+
+    if (state.voiceURI) {
+      localStorage.setItem(STORAGE.voice, state.voiceURI);
+    } else {
+      localStorage.removeItem(STORAGE.voice);
+    }
+  }
 
   function startTour() {
-
-    state.page =
-      detectPage();
-
+    state.page = detectPage();
     state.step = 0;
-
     state.active = true;
 
-    stopSpeech();
-
-    createGuide();
-
-    ensurePanel();
-
-    state.panel.style.display =
-      "block";
-
-    state.guide.style.display =
-      "block";
-
-    if (state.launcher) {
-      state.launcher.style.display =
-        "none";
-    }
-
-    updateStep(true);
+    renderStep(true);
   }
-
-  /* =========================================================
-     OPEN SETUP
-     ========================================================= */
-
-  function openSetup() {
-
-    stopSpeech();
-
-    state.active = false;
-
-    clearSpotlight();
-
-    createGuide();
-
-    ensurePanel();
-
-    state.panel.style.display =
-      "block";
-
-    state.guide.style.display =
-      "block";
-
-    if (state.launcher) {
-      state.launcher.style.display =
-        "none";
-    }
-
-    renderSetup();
-  }
-
-  /* =========================================================
-     CLOSE TOUR
-     ========================================================= */
-
-  function closeTour() {
-
-    stopSpeech();
-
-    state.active = false;
-
-    clearSpotlight();
-
-    if (state.panel) {
-      state.panel.style.display =
-        "none";
-    }
-
-    if (state.guide) {
-      state.guide.style.display =
-        "none";
-    }
-
-    if (state.launcher) {
-      state.launcher.style.display =
-        "block";
-    }
-  }
-
-  /* =========================================================
-     NEXT
-     ========================================================= */
 
   function nextStep() {
+    if (!state.active) return;
 
-    if (!state.active) {
-      return;
-    }
-
-    const steps =
-      getSteps();
-
-    if (
-      state.step >=
-      steps.length - 1
-    ) {
-
-      localStorage.setItem(
-        STORAGE.completed,
-        "true"
-      );
-
-      state.step =
-        steps.length;
-
+    if (state.step >= getSteps().length - 1) {
       renderFinish();
-
       return;
     }
 
     state.step++;
-
-    updateStep(true);
+    renderStep(true);
   }
-
-  /* =========================================================
-     BACK
-     ========================================================= */
 
   function previousStep() {
-
-    if (
-      !state.active ||
-      state.step <= 0
-    ) {
-      return;
-    }
+    if (!state.active || state.step <= 0) return;
 
     state.step--;
-
-    updateStep(true);
+    renderStep(true);
   }
 
-  /* =========================================================
-     SELECT AVATAR
-     ========================================================= */
-
-  function selectAvatar(id) {
-
-    if (!farmers[id]) {
-      return;
-    }
-
+  function closeTour() {
     stopSpeech();
+    clearSpotlight();
 
-    state.avatar =
-      id;
+    state.active = false;
+    state.setupOpen = false;
 
-    localStorage.setItem(
-      STORAGE.avatar,
-      id
-    );
+    document.body.classList.remove("mbt-tour-panel-open");
+
+    if (state.panel) state.panel.hidden = true;
+    if (state.overlay) state.overlay.hidden = true;
+    if (state.launcher) state.launcher.hidden = false;
 
     renderGuide();
-
-    if (state.active) {
-
-      renderStep();
-
-      const steps =
-        getSteps();
-
-      const current =
-        steps[state.step];
-
-      if (current) {
-
-        /*
-         * New farmer introduces
-         * themselves when selected.
-         */
-
-        const intro =
-          getPersonalityIntro();
-
-        speak(
-          `${intro} ${current[1]}`
-        );
-      }
-
-    } else if (state.panel) {
-
-      renderSetup();
-    }
   }
 
-  /* =========================================================
-     SELECT LANGUAGE
-     ========================================================= */
-
-  function selectLanguage(
-    language
-  ) {
-
-    if (!words[language]) {
-      return;
-    }
-
-    stopSpeech();
-
-    state.language =
-      language;
-
-    localStorage.setItem(
-      STORAGE.language,
-      language
-    );
-
-    if (state.active) {
-
-      updateStep(true);
-
-    } else {
-
-      renderSetup();
-    }
+  function openSetup() {
+    state.page = detectPage();
+    renderSetup();
   }
 
-  /* =========================================================
-     SELECT VOICE
-     ========================================================= */
-
-  function selectVoice(uri) {
-
-    stopSpeech();
-
-    state.voiceURI =
-      uri;
-
-    localStorage.setItem(
-      STORAGE.voice,
-      uri
-    );
-
-    if (state.active) {
-
-      const current =
-        getSteps()[state.step];
-
-      if (current) {
-
-        speak(
-          current[1]
-        );
-      }
-    }
-  }
-
-  /* =========================================================
-     PANEL CLICK
-     ========================================================= */
-
-  function handlePanelClick(
-    event
-  ) {
-
-    const avatarButton =
-      event.target.closest(
-        "[data-avatar]"
-      );
+  function handlePanelClick(event) {
+    const avatarButton = event.target.closest("[data-avatar]");
 
     if (avatarButton) {
-
-      selectAvatar(
-        avatarButton.dataset.avatar
-      );
-
+      selectAvatar(avatarButton.dataset.avatar);
       return;
     }
 
-    const button =
-      event.target.closest(
-        "[data-action]"
-      );
+    const button = event.target.closest("[data-action]");
+    if (!button || button.disabled) return;
 
-    if (
-      !button ||
-      button.disabled
-    ) {
-      return;
-    }
-
-    switch (
-      button.dataset.action
-    ) {
-
+    switch (button.dataset.action) {
       case "start":
         startTour();
         break;
@@ -4253,214 +1563,117 @@
         previousStep();
         break;
 
+      case "skip":
       case "close":
         closeTour();
         break;
 
+      case "repeat":
+        if (state.active) {
+          const step = getSteps()[state.step];
+          speak(`${step[0]}. ${step[1]}`);
+        } else {
+          speak(currentFarmer().greeting[state.language]);
+        }
+        break;
+
+      case "preview":
+        speak(currentFarmer().greeting[state.language]);
+        break;
+
       case "replay":
-        openSetup();
+        startTour();
         break;
     }
   }
 
-  /* =========================================================
-     PANEL CHANGE
-     ========================================================= */
-
-  function handlePanelChange(
-    event
-  ) {
-
-    if (
-      event.target.id ===
-      "mbt-language"
-    ) {
-
-      selectLanguage(
-        event.target.value
-      );
+  function handlePanelChange(event) {
+    if (event.target.id === "mbt-language-select") {
+      selectLanguage(event.target.value);
     }
 
-    if (
-      event.target.id ===
-      "mbt-voice"
-    ) {
-
-      selectVoice(
-        event.target.value
-      );
+    if (event.target.id === "mbt-voice-select") {
+      selectVoice(event.target.value);
     }
   }
 
-  /* =========================================================
-     LAUNCHER
-     ========================================================= */
+  /* ----------------------------------------------------------
+     BLINKING AND RESPONSIVENESS
+     ---------------------------------------------------------- */
 
-  function createLauncher() {
+  function scheduleBlink() {
+    const delay = 2400 + Math.random() * 2800;
 
-    if (state.launcher) {
-      return;
-    }
+    window.setTimeout(() => {
+      document.querySelectorAll(".mbt-anime-avatar").forEach(avatar => {
+        avatar.classList.add("mbt-blink");
 
-    state.launcher =
-      makeElement(
-        "button",
-        "mbt-launcher"
-      );
+        window.setTimeout(() => {
+          avatar.classList.remove("mbt-blink");
+        }, 150);
+      });
 
-    state.launcher.type =
-      "button";
-
-    state.launcher.textContent =
-      "🌱 Take a tour";
-
-    state.launcher.setAttribute(
-      "aria-label",
-      "Take a MavunoBridge tour"
-    );
-
-    state.launcher.addEventListener(
-      "click",
-      openSetup
-    );
+      if (state.guide && state.guide.isConnected) {
+        scheduleBlink();
+      }
+    }, delay);
   }
-
-  /* =========================================================
-     RESIZE
-     ========================================================= */
 
   function onResize() {
+    if (!state.active) return;
 
-    if (!state.active) {
-      return;
-    }
-
-    const step =
-      getSteps()[state.step];
-
-    const target =
-      step
-        ? findTarget(step[2])
-        : null;
-
-    if (target) {
-      showSpotlight(target);
-    }
+    const step = getSteps()[state.step];
+    if (step) showSpotlight(step[2]);
   }
 
-  /* =========================================================
-     INITIALIZE
-     ========================================================= */
+  /* ----------------------------------------------------------
+     INIT + PUBLIC API
+     ---------------------------------------------------------- */
 
   function init() {
-
-    if (!document.body) {
-      return;
-    }
+    if (!document.body) return;
 
     addStyles();
+    createTourElements();
+    renderGuide();
+    scheduleBlink();
 
-    createLauncher();
-
-    if (
-      "speechSynthesis" in window
-    ) {
-
+    if ("speechSynthesis" in window) {
       loadVoices();
 
-      window.speechSynthesis
-        .onvoiceschanged =
-        loadVoices;
+      window.speechSynthesis.addEventListener?.(
+        "voiceschanged",
+        loadVoices
+      );
     }
 
-    window.addEventListener(
-      "resize",
-      onResize
-    );
+    window.addEventListener("resize", onResize);
 
-    /*
-     * The tour does NOT automatically
-     * open.
-     *
-     * User can click:
-     * "Take a tour"
-     *
-     * Or use:
-     *
-     * window.MavunoBridgeTour.open()
-     *
-     * Or:
-     *
-     * window.MavunoBridgeTour.start()
-     */
+    window.addEventListener("keydown", event => {
+      if (event.key === "Escape" && (state.active || state.setupOpen)) {
+        closeTour();
+      }
+    });
+
+    // Do not automatically open the tour.
+    // Visitors can launch it whenever they want.
   }
-
-  /* =========================================================
-     PUBLIC API
-     ========================================================= */
 
   window.MavunoBridgeTour = {
-
-    open:
-      openSetup,
-
-    start:
-      startTour,
-
-    close:
-      closeTour,
-
-    next:
-      nextStep,
-
-    back:
-      previousStep,
-
-    replay:
-      openSetup,
-
-    setAvatar:
-      selectAvatar,
-
-    setLanguage:
-      selectLanguage,
-
-    getPage:
-      detectPage,
-
-    getAvatar:
-      () => state.avatar,
-
-    getPersonality:
-      () =>
-        farmers[state.avatar]
-          ?.personality || "",
-
-    getFarmer:
-      () =>
-        farmers[state.avatar] || null
+    open: openSetup,
+    start: startTour,
+    close: closeTour,
+    next: nextStep,
+    back: previousStep,
+    replay: startTour,
+    setAvatar: selectAvatar,
+    setLanguage: selectLanguage,
+    getPage: detectPage
   };
 
-  /* =========================================================
-     DOM READY
-     ========================================================= */
-
-  if (
-    document.readyState ===
-    "loading"
-  ) {
-
-    document.addEventListener(
-      "DOMContentLoaded",
-      init,
-      {
-        once: true
-      }
-    );
-
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init, { once: true });
   } else {
-
     init();
   }
-
 })();
