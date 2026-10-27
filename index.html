@@ -1,8 +1,6 @@
+
 <!DOCTYPE html>
 <html lang="en">
-  
-<script src="website-tour.js?v=4" defer></script>
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -24,9 +22,13 @@
     rel="stylesheet"
   >
 
-  <link rel="stylesheet" href="style.css?v=16">
+  <!-- Updated stylesheet version -->
+  <link rel="stylesheet" href="style.css?v=17">
 
-  <!-- Keep these files in the same repository as index.html. -->
+  <!-- Updated anime farmer website tour -->
+  <script src="website-tour.js?v=9" defer></script>
+
+  <!-- Existing marketplace scripts -->
   <script src="ai-config.js?v=2" defer></script>
   <script src="app.js?v=18" defer></script>
   <script src="buyer-guide.js?v=3" defer></script>
@@ -73,6 +75,7 @@
         </select>
       </div>
 
+      <!-- Existing buyer/farmer guide -->
       <button
         type="button"
         id="openGuideButton"
@@ -162,8 +165,7 @@
         class="hero-visual"
         role="img"
         aria-label="Fresh agricultural produce ready for market"
-      >
-      </div>
+      ></div>
     </section>
 
     <!-- ==================== CATEGORIES ==================== -->
@@ -184,7 +186,6 @@
         </button>
       </div>
 
-      <!-- app.js builds All Products first, then the real categories. -->
       <div id="categoryGrid" class="category-grid">
         <div class="category-loading">
           <span class="loading-dot"></span>
@@ -363,7 +364,7 @@
       </div>
     </section>
 
-    <!-- ==================== MAIN DESTINATIONS ==================== -->
+    <!-- ==================== DESTINATIONS ==================== -->
     <section
       class="feature-area section-wrap"
       aria-labelledby="featureHeading"
@@ -779,24 +780,59 @@
     </div>
   </footer>
 
-  <!-- If the guide takes a farmer to this URL, open the listing form. -->
+  <!-- ==================== PAGE FEATURES ==================== -->
   <script>
     (() => {
-      const params = new URLSearchParams(window.location.search);
+      "use strict";
 
-      if (params.get("guide") !== "listing") return;
+      // Keep the displayed year current.
+      const year = document.getElementById("currentYear");
 
-      const openListingForm = () => {
-        document.getElementById("sellButton")?.click();
+      if (year) {
+        year.textContent = new Date().getFullYear();
+      }
+
+      // Open the anime farmer tour from these extra buttons.
+      function openFarmerTour() {
+        if (
+          window.MavunoBridgeTour &&
+          typeof window.MavunoBridgeTour.open === "function"
+        ) {
+          window.MavunoBridgeTour.open();
+        } else {
+          console.warn(
+            "The MavunoBridge tour has not loaded. Check website-tour.js."
+          );
+        }
+      }
+
+      [
+        "openGuideFromFeatures",
+        "openGuideFooterButton"
+      ].forEach(id => {
+        const button = document.getElementById(id);
+
+        if (button) {
+          button.addEventListener("click", openFarmerTour);
+        }
+      });
+
+      // Make the destination-card buttons work as direct page links.
+      const destinations = {
+        "smart-assist": "smart-assist.html",
+        sacco: "sacco.html",
+        requests: "buyer-requests.html"
       };
 
-      if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", () => {
-          window.setTimeout(openListingForm, 0);
-        }, { once: true });
-      } else {
-        window.setTimeout(openListingForm, 0);
-      }
+      document.querySelectorAll("[data-guide-go]").forEach(button => {
+        button.addEventListener("click", () => {
+          const destination = destinations[button.dataset.guideGo];
+
+          if (destination) {
+            window.location.href = destination;
+          }
+        });
+      });
     })();
   </script>
 </body>
