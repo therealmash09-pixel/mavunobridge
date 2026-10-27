@@ -1,19 +1,28 @@
+
 /* =========================================================
    MAVUNOBRIDGE — ANIME FARMER TOUR
-   Complete replacement: website-tour.js
+   COMPLETE website-tour.js REPLACEMENT
 
-   Includes:
-   - Four custom anime-inspired farmer avatars
-   - Young adult Akinyi with curly puff and yellow headband
-   - Distinct personalities and default voice profiles
-   - Chrome voice discovery and per-avatar voice overrides
-   - Cursor-following anime eyes
-   - Blinking eyes, moving mouths and random idle animations
-   - Homepage character reactions
-   - English, casual Sheng-English and Kiswahili
-   - Page-aware tours and element spotlight
-   - Back, Next, Skip, Finish, Replay and voice preview
-   - Mobile overlap protection
+   VISUAL UPGRADES:
+   - Four redesigned, dark-skinned anime farmer characters
+   - Akinyi: curly puff hairstyle and yellow headband
+   - Baba Otieno: mature anime farmer with grey hair and beard
+   - Kamau: energetic young farmer with a red cap
+   - Mama Wanjiru: mature woman with a colourful headwrap
+   - Large expressive anime eyes
+   - Natural, irregular blinking
+   - Mouth animation while browser speech is playing
+   - Cursor-following pupils
+   - Individual character idle animations
+
+   EXISTING FEATURES RETAINED:
+   - English, Sheng-English and Kiswahili
+   - Browser text-to-speech
+   - Voice selection and saved voice preferences
+   - Marketplace, Smart Assist, SACCO, farmer and buyer tours
+   - Back, Next, Skip, Finish and Replay
+   - Element spotlight
+   - Mobile-friendly tour panel
    - No external JavaScript libraries
    ========================================================= */
 
@@ -38,12 +47,10 @@
     }
   }
 
-  const savedOverrides = readJSON(STORE.overrides, {});
-
   const state = {
     avatar: localStorage.getItem(STORE.avatar) || "akinyi",
     language: localStorage.getItem(STORE.language) || "mix",
-    voiceOverrides: savedOverrides,
+    voiceOverrides: readJSON(STORE.overrides, {}),
     voices: [],
     page: "marketplace",
     step: 0,
@@ -66,12 +73,12 @@
       name: "Baba Otieno",
       role: "Experienced grower",
       personality: "Wise & patient",
-      pitch: 0.79,
+      pitch: 0.82,
       rate: 0.88,
-      skin: "#875034",
-      skinLight: "#A56F4D",
+      skin: "#63351F",
+      skinLight: "#925B3C",
       shirt: "#527C41",
-      hair: "#D3D0C7",
+      hair: "#C5BFB4",
       voiceNames: ["daniel", "george", "ryan", "mark", "guy"],
       greeting: {
         en: "Karibu! I'm Baba Otieno. Let me share some farming wisdom with you.",
@@ -85,11 +92,11 @@
       role: "Maize farmer",
       personality: "Energetic & practical",
       pitch: 1.04,
-      rate: 1.07,
-      skin: "#985D3B",
-      skinLight: "#B9794E",
-      shirt: "#E5A832",
-      hair: "#21140E",
+      rate: 1.04,
+      skin: "#754027",
+      skinLight: "#A56A45",
+      shirt: "#DDA52F",
+      hair: "#21130E",
       voiceNames: ["david", "guy", "mark", "ryan", "alex"],
       greeting: {
         en: "Sasa! I'm Kamau. Let's get moving and explore MavunoBridge!",
@@ -102,12 +109,12 @@
       name: "Mama Wanjiru",
       role: "Dairy & vegetable farmer",
       personality: "Warm & organized",
-      pitch: 1.02,
-      rate: 0.95,
-      skin: "#74402B",
-      skinLight: "#965D41",
-      shirt: "#207E75",
-      hair: "#24150F",
+      pitch: 1.00,
+      rate: 0.94,
+      skin: "#512817",
+      skinLight: "#804A30",
+      shirt: "#247F76",
+      hair: "#21120D",
       voiceNames: ["samantha", "karen", "victoria", "zira", "jenny"],
       greeting: {
         en: "Hello and welcome! I'm Mama Wanjiru. I'll guide you step by step.",
@@ -120,12 +127,12 @@
       name: "Akinyi",
       role: "Young adult tomato grower",
       personality: "Curious & creative",
-      pitch: 1.16,
-      rate: 1.02,
-      skin: "#A96F4B",
-      skinLight: "#CA9065",
+      pitch: 1.12,
+      rate: 1.01,
+      skin: "#75452D",
+      skinLight: "#A86C48",
       shirt: "#426F9D",
-      hair: "#24140D",
+      hair: "#1A100D",
       voiceNames: ["ava", "aria", "jenny", "samantha", "victoria"],
       greeting: {
         en: "Hey! I'm Akinyi. Let's discover smarter ways to grow and sell!",
@@ -155,6 +162,7 @@
       launcher: "Meet your farmer guide",
       preview: "Hear greeting"
     },
+
     mix: {
       title: "Meet your farmer guide",
       subtitle: "Chagua guide wako, then tuanze.",
@@ -174,6 +182,7 @@
       launcher: "Meet your farmer guide",
       preview: "Sikiliza greeting"
     },
+
     sw: {
       title: "Kutana na mwongozo wako",
       subtitle: "Chagua mkulima atakayekuonyesha tovuti.",
@@ -205,6 +214,7 @@
         ["Compare your options", "Compare price, quantity and location. Prices can change with seasons and availability.", "#listingGrid, .listing-grid, #productsGrid"],
         ["You're ready!", "Open a listing to learn more, or continue browsing the marketplace.", null]
       ],
+
       mix: [
         ["Karibu MavunoBridge!", "Hapa ndio marketplace. Farmers wanaweza list produce zao na buyers wanaweza kucompare offers.", null],
         ["Search products", "Tumia search kutafuta maize, tomatoes, beans, fruits na agricultural products zingine.", 'input[type="search"], #searchInput, #searchBar, [data-search]'],
@@ -213,6 +223,7 @@
         ["Compare offers", "Linganisha price, quantity na location. Prices zinaweza change kulingana na season.", "#listingGrid, .listing-grid, #productsGrid"],
         ["Uko ready!", "Sasa unaweza browse marketplace na kuchagua offer inayokufaa.", null]
       ],
+
       sw: [
         ["Karibu MavunoBridge!", "Hili ni soko la kilimo. Wakulima wanaweza kuweka bidhaa na wanunuzi wanaweza kulinganisha ofa.", null],
         ["Tafuta bidhaa", "Tumia sehemu ya kutafuta kupata mahindi, nyanya, maharagwe, matunda na bidhaa nyingine.", 'input[type="search"], #searchInput, #searchBar, [data-search]'],
@@ -231,6 +242,7 @@
         ["Check conditions", "When weather information is connected, use it with local farming advice.", "#weatherWidget, .weather-widget, [data-weather]"],
         ["Keep learning", "For important crop or pest decisions, verify guidance with a qualified local agricultural expert.", null]
       ],
+
       mix: [
         ["Karibu Smart Assist", "Hapa unaweza kupata farming guidance na ideas za kusaidia shamba yako.", null],
         ["Uliza swali", "Tumia assistant input kuandika swali kuhusu farming.", "textarea, #questionInput, #chatInput, input[type='text']"],
@@ -238,6 +250,7 @@
         ["Angalia conditions", "Kama weather feature iko connected, itumie kusaidia kupanga farm activities.", "#weatherWidget, .weather-widget, [data-weather]"],
         ["Endelea kujifunza", "Kwa decisions muhimu kuhusu crops au pests, confirm na agricultural expert wa eneo lako.", null]
       ],
+
       sw: [
         ["Karibu Smart Assist", "Hapa unaweza kupata mwongozo wa shughuli za kilimo.", null],
         ["Uliza swali", "Tumia sehemu ya kuandika swali lako kuhusu kilimo.", "textarea, #questionInput, #chatInput, input[type='text']"],
@@ -254,12 +267,14 @@
         ["Check requirements", "Confirm membership rules, fees, savings requirements and contact details directly with the organisation.", null],
         ["Choose carefully", "Compare options and ask questions before making financial commitments.", null]
       ],
+
       mix: [
         ["Karibu SACCO Hub", "Hapa unaweza explore SACCOs na opportunities za farmers.", null],
         ["Browse opportunities", "Angalia SACCO cards na details za kila option.", "#saccoGrid, .sacco-grid, #opportunities, .opportunities"],
         ["Check requirements", "Confirm membership rules, fees na savings requirements kabla ujiunge.", null],
         ["Choose carefully", "Compare options na uliza maswali kabla ya commitment.", null]
       ],
+
       sw: [
         ["Karibu SACCO Hub", "Hapa unaweza kuchunguza SACCO na fursa za wakulima.", null],
         ["Angalia fursa", "Fungua kadi zilizopo na usome maelezo yake.", "#saccoGrid, .sacco-grid, #opportunities, .opportunities"],
@@ -276,6 +291,7 @@
         ["Add genuine photos", "Use clear photos of the actual product you are offering.", 'input[type="file"]'],
         ["Review before publishing", "Check your details before saving or publishing your listing.", "#saveListing, #submitListing, button[type='submit']"]
       ],
+
       mix: [
         ["Karibu farmer!", "Tuone vile unaweza kuonyesha farm products zako kwa buyers.", null],
         ["Anza listing", "Tafuta sell au add listing button.", "#sellButton, #heroSellButton, #addListing, [data-add-listing]"],
@@ -283,6 +299,7 @@
         ["Add genuine photos", "Tumia clear photos za product unauza.", 'input[type="file"]'],
         ["Review kwanza", "Check details kabla ya kusave au kupublish listing.", "#saveListing, #submitListing, button[type='submit']"]
       ],
+
       sw: [
         ["Karibu mkulima!", "Tujifunze jinsi ya kuonyesha bidhaa zako kwa wanunuzi.", null],
         ["Anza kuweka bidhaa", "Tafuta kitufe cha kuuza au kuongeza bidhaa.", "#sellButton, #heroSellButton, #addListing, [data-add-listing]"],
@@ -300,6 +317,7 @@
         ["Contact the seller", "Use the contact details on a listing to ask about availability.", "#listingGrid, .listing-grid, #productsGrid"],
         ["Shop thoughtfully", "Confirm key details with the seller before arranging payment or collection.", null]
       ],
+
       mix: [
         ["Karibu buyer!", "Tuone vile unaweza kupata products na kucompare offers.", null],
         ["Search na filters", "Tumia search na filters kupata options zinazokufaa.", 'input[type="search"], #searchInput, #searchBar, select'],
@@ -307,6 +325,7 @@
         ["Contact seller", "Tumia contact details kuuliza kama product bado iko available.", "#listingGrid, .listing-grid, #productsGrid"],
         ["Nunua carefully", "Confirm details na seller kabla ya payment au collection.", null]
       ],
+
       sw: [
         ["Karibu mnunuzi!", "Tujifunze kutafuta bidhaa na kulinganisha ofa.", null],
         ["Tafuta na chuja", "Tumia sehemu ya kutafuta na vichujio kupata bidhaa zinazokufaa.", 'input[type="search"], #searchInput, #searchBar, select'],
@@ -352,236 +371,361 @@
   }
 
   /* =========================================================
-     ANIME AVATARS (REMODELLED)
-     Soft chibi-style faces, friendly eyes, small smiles.
-     Self-contained SVG: no external image URLs required.
+     ANIME CHARACTER ART
+     Each avatar is drawn using SVG shapes.
      ========================================================= */
 
   function avatarSVG(id) {
     const f = farmers[id] || farmers.akinyi;
+
     const baba = id === "baba";
     const kamau = id === "kamau";
     const wanjiru = id === "wanjiru";
     const akinyi = id === "akinyi";
     const feminine = wanjiru || akinyi;
-    const line = "#3A2218";
 
-    /* ---------- Eyes ---------- */
-    const eyeRx = baba ? 6.6 : akinyi ? 8 : 7.4;
-    const eyeRy = baba ? 7.4 : akinyi ? 9.4 : 8.4;
-    const eyeY = 75;
+    const ink = "#321B16";
+    const hair = baba ? "#C5BFB4" : "#21130E";
+    const eyeY = 76;
+    const eyeRx = feminine ? 8 : 7;
+    const eyeRy = feminine ? 10 : 8.5;
 
     function eye(side, cx) {
-      const irisRx = eyeRx - 1.6;
-      const irisRy = eyeRy - 1.4;
-      const outer = side === "left" ? -1 : 1;
-
-      const lash = feminine
-        ? `<path d="M${cx + outer * (eyeRx + 0.5)} ${eyeY - 2} l${outer * 3} -3"
-                 fill="none" stroke="${line}" stroke-width="2" stroke-linecap="round"/>`
-        : "";
+      const clipId = `mbt-eye-clip-${id}-${side}`;
 
       return `
         <g class="mbt-eye-group mbt-${side}-eye">
           <defs>
-            <clipPath id="mbt-clip-${side}-${id}">
-              <ellipse cx="${cx}" cy="${eyeY}" rx="${eyeRx}" ry="${eyeRy}"/>
+            <clipPath id="${clipId}">
+              <ellipse cx="${cx}" cy="${eyeY}"
+                rx="${eyeRx}" ry="${eyeRy}"/>
             </clipPath>
           </defs>
 
-          <ellipse cx="${cx}" cy="${eyeY}" rx="${eyeRx}" ry="${eyeRy}"
-                   fill="#FFFFFF" stroke="${line}" stroke-width="1"/>
+          <ellipse cx="${cx}" cy="${eyeY}"
+            rx="${eyeRx + .8}" ry="${eyeRy + .8}"
+            fill="${ink}"/>
 
-          <g clip-path="url(#mbt-clip-${side}-${id})">
+          <ellipse cx="${cx}" cy="${eyeY}"
+            rx="${eyeRx}" ry="${eyeRy}"
+            fill="#FFF9F0"/>
+
+          <g clip-path="url(#${clipId})">
             <g class="mbt-pupil">
-              <ellipse cx="${cx}" cy="${eyeY}" rx="${irisRx}" ry="${irisRy}" fill="#6B3C27"/>
-              <ellipse cx="${cx}" cy="${eyeY + irisRy * 0.35}" rx="${irisRx * 0.72}" ry="${irisRy * 0.42}"
-                       fill="#9A6038" opacity=".65"/>
-              <ellipse cx="${cx}" cy="${eyeY}" rx="${irisRx * 0.52}" ry="${irisRy * 0.58}" fill="#1D110C"/>
-              <circle cx="${cx + 2}" cy="${eyeY - 3}" r="2.3" fill="#FFFFFF"/>
-              <circle cx="${cx - 2}" cy="${eyeY + 3}" r="1.1" fill="#FFFFFF" opacity=".9"/>
+              <ellipse cx="${cx}" cy="${eyeY + 1}"
+                rx="${eyeRx - 1}" ry="${eyeRy - 1}"
+                fill="#805032"/>
+
+              <ellipse cx="${cx}" cy="${eyeY + 3}"
+                rx="${eyeRx - 2.4}" ry="${eyeRy - 2}"
+                fill="#28150E"/>
+
+              <ellipse cx="${cx - 2}" cy="${eyeY - 3}"
+                rx="2.8" ry="3.5" fill="#FFFFFF"/>
+
+              <circle cx="${cx + 2.7}" cy="${eyeY + 2}"
+                r="1.2" fill="#FFFFFF"/>
             </g>
           </g>
 
-          <path d="M${cx - eyeRx - 0.5} ${eyeY - 1} Q${cx} ${eyeY - eyeRy - 3} ${cx + eyeRx + 0.5} ${eyeY - 1}"
-                fill="none" stroke="${line}" stroke-width="2.6" stroke-linecap="round"/>
-          ${lash}
+          <path d="M${cx - eyeRx - 1} ${eyeY - 1}
+            Q${cx - 1} ${eyeY - eyeRy - 3}
+            ${cx + eyeRx + 1} ${eyeY - 1}"
+            fill="none" stroke="${ink}" stroke-width="2.7"
+            stroke-linecap="round"/>
+
+          ${feminine ? `
+            <path d="M${cx - 6} ${eyeY - eyeRy + 1} l-2 -3
+              M${cx} ${eyeY - eyeRy} l0 -3
+              M${cx + 6} ${eyeY - eyeRy + 1} l2 -2"
+              fill="none" stroke="${ink}" stroke-width="1.2"
+              stroke-linecap="round"/>
+          ` : ""}
         </g>`;
     }
 
-    const eyes = eye("left", 51) + eye("right", 79);
-
-    /* ---------- Brows ---------- */
-    const browColor = baba ? "#BDB7AB" : f.hair;
-    const browWidth = feminine ? 2.6 : 3.4;
-    const brows = `
-      <path d="M42 62 Q51 57.5 59 61" fill="none" stroke="${browColor}"
-            stroke-width="${browWidth}" stroke-linecap="round"/>
-      <path d="M71 61 Q79 57.5 88 62" fill="none" stroke="${browColor}"
-            stroke-width="${browWidth}" stroke-linecap="round"/>`;
-
-    /* ---------- Hair behind the head ---------- */
     const hairBack = baba
-      ? `<path d="M32 70 Q27 38 48 30 Q65 25 82 30 Q103 38 98 70 L94 62 L36 62Z" fill="#D3D0C7"/>`
+      ? `
+        <path d="M30 76 Q24 36 51 28 Q77 21 94 42
+          Q103 54 99 79 L92 96 L37 96Z"
+          fill="${hair}"/>
+      `
       : kamau
-      ? `<path d="M32 66 Q28 34 65 29 Q102 34 98 66 L94 58 L36 58Z" fill="${f.hair}"/>`
+      ? `
+        <path d="M30 76 Q24 36 49 28 Q76 18 94 40
+          Q103 54 99 78 L93 95 L37 95Z"
+          fill="${hair}"/>
+      `
       : wanjiru
-      ? `<path d="M30 72 Q26 36 65 31 Q104 36 100 72 L99 94 Q82 88 65 88 Q48 88 31 94Z" fill="${f.hair}"/>`
-      : `<g fill="${f.hair}">
-           <circle cx="65" cy="23" r="17"/>
-           <circle cx="46" cy="29" r="13"/>
-           <circle cx="84" cy="29" r="13"/>
-           <circle cx="33" cy="42" r="11"/>
-           <circle cx="97" cy="42" r="11"/>
-           <circle cx="65" cy="36" r="16"/>
-           <circle cx="31" cy="80" r="5.5"/>
-           <circle cx="99" cy="80" r="5.5"/>
-           <circle cx="29" cy="68" r="5"/>
-           <circle cx="101" cy="68" r="5"/>
-         </g>
-         <g fill="#3A2418" opacity=".55">
-           <circle cx="60" cy="19" r="3"/>
-           <circle cx="74" cy="23" r="2.5"/>
-           <circle cx="44" cy="27" r="2.5"/>
-           <circle cx="86" cy="31" r="2.5"/>
-         </g>`;
+      ? `
+        <path d="M29 80 Q23 40 45 30 Q70 17 91 36
+          Q104 48 101 84 L100 112
+          Q83 102 65 105 Q46 102 30 112Z"
+          fill="${hair}"/>
+      `
+      : `
+        <g fill="${hair}">
+          <circle cx="65" cy="24" r="17"/>
+          <circle cx="48" cy="27" r="14"/>
+          <circle cx="82" cy="27" r="14"/>
+          <circle cx="36" cy="39" r="12"/>
+          <circle cx="94" cy="39" r="12"/>
+          <circle cx="30" cy="53" r="10"/>
+          <circle cx="100" cy="53" r="10"/>
+          <circle cx="30" cy="70" r="8"/>
+          <circle cx="100" cy="70" r="8"/>
+          <circle cx="46" cy="17" r="11"/>
+          <circle cx="84" cy="17" r="11"/>
+          <circle cx="63" cy="13" r="12"/>
+        </g>
+        <g fill="#493024" opacity=".65">
+          <circle cx="48" cy="18" r="3"/>
+          <circle cx="66" cy="13" r="3"/>
+          <circle cx="83" cy="23" r="3"/>
+          <circle cx="34" cy="39" r="2.5"/>
+          <circle cx="94" cy="44" r="2.5"/>
+        </g>
+      `;
 
-    /* ---------- Ears ---------- */
     const ears = `
-      <ellipse cx="33" cy="73" rx="4" ry="6" fill="${f.skin}"/>
-      <ellipse cx="97" cy="73" rx="4" ry="6" fill="${f.skin}"/>
-      ${wanjiru
-        ? `<circle cx="32" cy="82" r="3.4" fill="#F6D16B" stroke="#AF7628" stroke-width="1.2"/>
-           <circle cx="98" cy="82" r="3.4" fill="#F6D16B" stroke="#AF7628" stroke-width="1.2"/>`
-        : ""}`;
+      <ellipse cx="34" cy="76" rx="5" ry="8" fill="${f.skin}"/>
+      <ellipse cx="96" cy="76" rx="5" ry="8" fill="${f.skin}"/>
+      <path d="M32 73 Q35 76 33 80 M98 73 Q95 76 97 80"
+        fill="none" stroke="#633A2B" stroke-width="1.2"/>
+      ${wanjiru ? `
+        <circle cx="33" cy="84" r="3.5"
+          fill="#F5CC62" stroke="#9B6C2B" stroke-width="1"/>
+        <circle cx="97" cy="84" r="3.5"
+          fill="#F5CC62" stroke="#9B6C2B" stroke-width="1"/>
+      ` : ""}
+    `;
 
-    /* ---------- Face ---------- */
     const face = `
-      <path d="M34 66 Q34 36 65 36 Q96 36 96 66 Q96 86 84 98 Q76 105 65 105 Q54 105 46 98 Q34 86 34 66Z"
-            fill="url(#mbt-skin-${id})" stroke="${f.skin}" stroke-width="1.2"/>
-      <path d="M40 54 Q45 43 58 41" fill="none" stroke="#FFFFFF" stroke-width="2.5"
-            stroke-linecap="round" opacity=".14"/>`;
+      <path d="M35 64
+        Q35 35 65 35
+        Q95 35 95 64
+        L93 79 Q89 98 75 105
+        Q65 111 55 105 Q41 98 37 79Z"
+        fill="url(#mbt-skin-${id})"
+        stroke="${f.skin}" stroke-width="1.3"/>
 
-    const blush = `
-      <ellipse cx="42" cy="89" rx="6" ry="3.2" fill="#F58E8E" opacity="${baba ? ".12" : ".3"}"/>
-      <ellipse cx="88" cy="89" rx="6" ry="3.2" fill="#F58E8E" opacity="${baba ? ".12" : ".3"}"/>`;
+      <path d="M43 55 Q49 43 60 42"
+        fill="none" stroke="#FFFFFF" stroke-width="2.5"
+        opacity=".15" stroke-linecap="round"/>
+    `;
 
-    /* ---------- Hair in front of the face ---------- */
+    const brows = `
+      <path d="M42 62 Q50 57 59 61
+        M71 61 Q80 57 88 62"
+        fill="none" stroke="${baba ? "#A69D91" : hair}"
+        stroke-width="${feminine ? 2.7 : 3.2}"
+        stroke-linecap="round"/>
+    `;
+
     const hairFront = baba
-      ? `<path d="M34 64 Q32 52 40 45 L45 53 Q39 58 38 70Z" fill="#D3D0C7"/>
-         <path d="M96 64 Q98 52 90 45 L85 53 Q91 58 92 70Z" fill="#D3D0C7"/>`
+      ? `
+        <path d="M34 65 Q31 48 42 43
+          L47 52 Q39 60 39 72Z" fill="${hair}"/>
+        <path d="M96 65 Q99 48 88 43
+          L83 52 Q91 60 91 72Z" fill="${hair}"/>
+      `
       : kamau
-      ? `<path d="M34 62 Q30 36 65 31 Q100 36 96 62 Q92 50 82 49 Q74 55 65 49 Q56 55 48 49 Q38 50 34 62Z"
-               fill="${f.hair}"/>`
+      ? `
+        <path d="M34 64 Q30 37 65 31
+          Q100 37 96 64 Q87 49 79 49
+          Q71 55 65 49 Q56 55 48 49
+          Q39 51 34 64Z" fill="${hair}"/>
+      `
       : akinyi
-      ? `<path d="M34 62 Q32 38 65 34 Q98 38 96 62 Q90 46 65 44 Q40 46 34 62Z" fill="${f.hair}"/>`
-      : "";
+      ? `
+        <path d="M34 64 Q32 39 65 34
+          Q98 39 96 64 Q89 47 65 44
+          Q41 47 34 64Z" fill="${hair}"/>
+      `
+      : `
+        <path d="M32 63 Q30 40 49 31
+          Q68 24 86 34 Q100 44 97 64
+          Q85 47 65 45 Q45 47 32 63Z"
+          fill="${hair}"/>
+      `;
 
-    /* ---------- Nose + mouth ---------- */
-    const nose = `
-      <path d="M63 86 Q65 88.5 67 86" fill="none" stroke="${f.skin}"
-            stroke-width="1.8" stroke-linecap="round" opacity=".85"/>
-      <path d="M63 86 Q65 88.5 67 86" fill="none" stroke="#000"
-            stroke-width="1" stroke-linecap="round" opacity=".15"/>`;
-
-    const beard = baba
-      ? `<path d="M36 80 Q38 98 50 104 Q65 114 80 104 Q92 98 94 80 Q88 90 80 91 Q65 86 50 91 Q42 90 36 80Z"
-               fill="#D3D0C7"/>
-         <path d="M48 100 Q65 108 82 100" fill="none" stroke="#B7B1A7" stroke-width="1.5"
-               stroke-linecap="round"/>`
-      : "";
+    const headwear = baba
+      ? `
+        <path d="M40 47 Q41 19 65 18
+          Q89 19 90 47Z"
+          fill="#EBCB7E" stroke="#A57A3B" stroke-width="1.6"/>
+        <path d="M41 41 Q65 48 89 41"
+          fill="none" stroke="#8B5E2B" stroke-width="4"/>
+        <ellipse cx="65" cy="47" rx="46" ry="8.5"
+          fill="#D6A654" stroke="#9D7237" stroke-width="1.8"/>
+      `
+      : kamau
+      ? `
+        <path d="M36 50 Q36 22 65 21
+          Q94 22 94 50 Q65 44 36 50Z"
+          fill="#D9433B" stroke="#87251E" stroke-width="1.6"/>
+        <path d="M65 22 L65 46"
+          stroke="#B92D28" stroke-width="1.5"/>
+        <circle cx="65" cy="22" r="2.6" fill="#B92D28"/>
+        <path d="M33 50 Q65 66 97 50
+          Q94 45 65 46 Q36 45 33 50Z"
+          fill="#B92D28" stroke="#87251E" stroke-width="1.4"/>
+      `
+      : wanjiru
+      ? `
+        <path d="M31 58 Q26 30 52 20
+          Q66 14 82 18 Q104 28 99 58
+          Q82 46 65 46 Q48 46 31 58Z"
+          fill="#EB8938" stroke="#A85124" stroke-width="1.6"/>
+        <path d="M36 44 Q60 32 96 40
+          M34 52 Q62 40 99 50"
+          fill="none" stroke="#FFC16B" stroke-width="2.6"
+          stroke-linecap="round"/>
+        <ellipse cx="88" cy="19" rx="11" ry="7"
+          transform="rotate(-25 88 19)"
+          fill="#EB8938" stroke="#A85124" stroke-width="1.6"/>
+      `
+      : `
+        <path d="M33 52 Q65 35 97 52
+          L95 59 Q65 44 35 59Z"
+          fill="#F3C831" stroke="#BB9119" stroke-width="1.6"/>
+        <path d="M42 50 Q65 40 88 50"
+          fill="none" stroke="#FFE991" stroke-width="2"
+          stroke-linecap="round"/>
+      `;
 
     const mouth = `
-      <ellipse class="mbt-mouth-open" cx="65" cy="95.5" rx="5.5" ry="1.6" fill="#4A1D1A"/>
-      <path class="mbt-teeth" d="M60.5 93.8 Q65 95.5 69.5 93.8" fill="none"
-            stroke="#FFF4EA" stroke-width="1.8" stroke-linecap="round"/>
-      <path class="mbt-mouth-line" d="M57 93 Q65 99.5 73 93" fill="none"
-            stroke="#6B2F25" stroke-width="2.2" stroke-linecap="round"/>`;
+      <g class="mbt-mouth">
+        <path class="mbt-mouth-shadow"
+          d="M56 94 Q65 100 74 94
+            Q65 104 56 94Z"
+          fill="#401713"/>
 
-    const mustache = baba
-      ? `<path d="M52 90 Q58 84.5 65 88.5 Q72 84.5 78 90 Q72 93 65 91 Q58 93 52 90Z" fill="#E4E0D7"
-               stroke="#B7B1A7" stroke-width=".8"/>`
+        <ellipse class="mbt-mouth-open"
+          cx="65" cy="96" rx="5.5" ry="1.2"
+          fill="#35100F"/>
+
+        <path class="mbt-teeth"
+          d="M60 94 Q65 96 70 94
+            L69 96 L61 96Z"
+          fill="#FFF7EB"/>
+
+        <path class="mbt-mouth-line"
+          d="M56 94 Q65 100 74 94"
+          fill="none" stroke="#54261E"
+          stroke-width="2" stroke-linecap="round"/>
+      </g>
+    `;
+
+    const beard = baba
+      ? `
+        <path d="M37 81 Q39 98 51 105
+          Q65 115 79 105 Q91 98 93 81
+          Q86 91 78 91 Q65 87 52 91
+          Q44 91 37 81Z"
+          fill="#BFB8AD"/>
+        <path d="M48 101 Q65 108 82 101"
+          fill="none" stroke="#9E968B"
+          stroke-width="1.4" stroke-linecap="round"/>
+        <path d="M52 89 Q58 85 65 89
+          Q72 85 78 89"
+          fill="none" stroke="#BFB8AD"
+          stroke-width="5" stroke-linecap="round"/>
+      `
       : "";
 
-    /* ---------- Headwear ---------- */
-    const headwear = baba
-      ? `<path d="M40 47 Q41 19 65 18 Q89 19 90 47Z" fill="#EBCB7E" stroke="#A57A3B" stroke-width="1.6"/>
-         <path d="M41 41 Q65 48 89 41" fill="none" stroke="#8B5E2B" stroke-width="4"/>
-         <path d="M48 30 Q65 24 82 30" fill="none" stroke="#FFE5A0" stroke-width="2" stroke-linecap="round"/>
-         <ellipse cx="65" cy="47" rx="46" ry="8.5" fill="#D6A654" stroke="#9D7237" stroke-width="1.8"/>
-         <path d="M26 47 Q65 53 104 47" fill="none" stroke="#B88B40" stroke-width="1.5" opacity=".7"/>`
-      : kamau
-      ? `<path d="M36 50 Q36 22 65 21 Q94 22 94 50 Q65 44 36 50Z" fill="#D9433B" stroke="#87251E" stroke-width="1.6"/>
-         <path d="M65 22 L65 46" stroke="#B92D28" stroke-width="1.5"/>
-         <circle cx="65" cy="22" r="2.6" fill="#B92D28"/>
-         <path d="M48 30 Q56 25 64 26" fill="none" stroke="#F4796B" stroke-width="2" stroke-linecap="round"/>
-         <path d="M33 50 Q65 66 97 50 Q94 45 65 46 Q36 45 33 50Z" fill="#B92D28" stroke="#87251E" stroke-width="1.4"/>`
-      : wanjiru
-      ? `<path d="M31 58 Q26 30 52 20 Q66 14 82 18 Q104 28 99 58 Q82 46 65 46 Q48 46 31 58Z"
-               fill="#EB8938" stroke="#A85124" stroke-width="1.6"/>
-         <path d="M36 44 Q60 32 96 40 M34 52 Q62 40 99 50" fill="none" stroke="#FFC16B"
-               stroke-width="2.6" stroke-linecap="round"/>
-         <ellipse cx="88" cy="19" rx="11" ry="7" transform="rotate(-25 88 19)"
-                  fill="#EB8938" stroke="#A85124" stroke-width="1.6"/>
-         <path d="M80 21 Q88 15 96 17" fill="none" stroke="#FFC16B" stroke-width="2" stroke-linecap="round"/>`
-      : `<path d="M33 52 Q65 35 97 52 L95 59 Q65 44 35 59Z" fill="#F3C831" stroke="#BB9119" stroke-width="1.6"/>
-         <path d="M42 50 Q65 40 88 50" fill="none" stroke="#FFE991" stroke-width="2" stroke-linecap="round"/>`;
-
-    /* ---------- Neck, shoulders and outfit ---------- */
-    const shirt = `
-      <path d="M20 176 Q20 128 52 118 Q65 126 78 118 Q110 128 110 176Z"
-            fill="url(#mbt-clothes-${id})" stroke="#254832" stroke-width="1.4"/>
-      <path d="M30 140 Q26 154 26 168 M100 140 Q104 154 104 168" fill="none"
-            stroke="#FFFFFF" stroke-width="2" opacity=".15" stroke-linecap="round"/>`;
-
     const neck = `
-      <path d="M56 98 L56 114 Q65 130 74 114 L74 98Z" fill="${f.skin}"/>
-      <ellipse cx="65" cy="106" rx="19" ry="4.5" fill="#000" opacity=".12"/>
-      <path d="M56 114 Q65 130 74 114" fill="none" stroke="#FFFFFF" stroke-width="2"
-            opacity=".75" stroke-linecap="round"/>`;
+      <path d="M56 98 L56 116
+        Q65 130 74 116 L74 98Z"
+        fill="${f.skin}"/>
+    `;
+
+    const shirt = `
+      <path d="M20 176 Q20 129 52 118
+        Q65 126 78 118 Q110 129 110 176Z"
+        fill="url(#mbt-clothes-${id})"
+        stroke="#254832" stroke-width="1.4"/>
+
+      <path d="M30 140 Q26 154 26 168
+        M100 140 Q104 154 104 168"
+        fill="none" stroke="#FFFFFF"
+        stroke-width="2" opacity=".15"
+        stroke-linecap="round"/>
+    `;
 
     const outfit = baba
-      ? `<path d="M80 146 h14 v12 h-14z" fill="none" stroke="#FFFFFF" stroke-width="1.6" opacity=".45"/>
-         <circle cx="65" cy="140" r="1.7" fill="#FFFFFF" opacity=".7"/>
-         <circle cx="65" cy="152" r="1.7" fill="#FFFFFF" opacity=".7"/>`
+      ? `
+        <path d="M80 146 h14 v12 h-14z"
+          fill="none" stroke="#FFFFFF"
+          stroke-width="1.6" opacity=".45"/>
+        <circle cx="65" cy="140" r="1.7" fill="#FFFFFF"/>
+        <circle cx="65" cy="152" r="1.7" fill="#FFFFFF"/>
+      `
       : kamau
-      ? `<path d="M40 126 L36 176 M90 126 L94 176" stroke="#855522" stroke-width="7" stroke-linecap="round"/>
-         <circle cx="38.5" cy="152" r="2.6" fill="#E2B54A"/>
-         <circle cx="91.5" cy="152" r="2.6" fill="#E2B54A"/>`
+      ? `
+        <path d="M40 126 L36 176 M90 126 L94 176"
+          stroke="#855522" stroke-width="7"
+          stroke-linecap="round"/>
+        <circle cx="38.5" cy="152" r="2.6" fill="#E2B54A"/>
+        <circle cx="91.5" cy="152" r="2.6" fill="#E2B54A"/>
+      `
       : wanjiru
-      ? `<path d="M54 118 Q65 134 76 118" fill="none" stroke="#F6D16B" stroke-width="3.2"
-               stroke-linecap="round" stroke-dasharray="0.1 5.6"/>`
+      ? `
+        <path d="M54 118 Q65 134 76 118"
+          fill="none" stroke="#F6D16B"
+          stroke-width="3.2" stroke-linecap="round"/>
+      `
       : "";
 
     const produce = akinyi
-      ? `<g>
-           <circle cx="42" cy="157" r="7" fill="#E83D31"/>
-           <circle cx="58" cy="153" r="8" fill="#D92F2C"/>
-           <circle cx="75" cy="155" r="8" fill="#EF4B37"/>
-           <circle cx="90" cy="158" r="6.5" fill="#D92F2C"/>
-           <path d="M55 147 l3 -4 l4 4 M72 149 l3 -4 l4 4" fill="none" stroke="#348545" stroke-width="2"
-                 stroke-linecap="round"/>
-           <path d="M26 161 Q65 152 104 161 L100 176 L30 176Z" fill="#B77A45" stroke="#82502D" stroke-width="1.8"/>
-           <path d="M34 168 H96" stroke="#82502D" stroke-width="1.2" opacity=".6"/>
-         </g>`
+      ? `
+        <g>
+          <circle cx="42" cy="157" r="7" fill="#E83D31"/>
+          <circle cx="58" cy="153" r="8" fill="#D92F2C"/>
+          <circle cx="75" cy="155" r="8" fill="#EF4B37"/>
+          <circle cx="90" cy="158" r="6.5" fill="#D92F2C"/>
+          <path d="M55 147 l3 -4 l4 4
+            M72 149 l3 -4 l4 4"
+            fill="none" stroke="#348545"
+            stroke-width="2" stroke-linecap="round"/>
+          <path d="M26 161 Q65 152 104 161
+            L100 176 L30 176Z"
+            fill="#B77A45" stroke="#82502D" stroke-width="1.8"/>
+          <path d="M34 168 H96"
+            stroke="#82502D" stroke-width="1.2" opacity=".6"/>
+        </g>
+      `
       : "";
 
     return `
-      <svg class="mbt-anime-avatar" viewBox="0 0 130 176"
-           role="img" aria-label="${escapeHTML(f.name)} anime farmer"
-           xmlns="http://www.w3.org/2000/svg">
+      <svg class="mbt-anime-avatar"
+        viewBox="0 0 130 176"
+        role="img"
+        aria-label="${escapeHTML(f.name)} anime farmer"
+        xmlns="http://www.w3.org/2000/svg">
+
         <defs>
-          <linearGradient id="mbt-skin-${id}" x1="0" y1="0" x2="1" y2="1">
+          <linearGradient id="mbt-skin-${id}"
+            x1="0" y1="0" x2="1" y2="1">
             <stop offset="0%" stop-color="${f.skinLight}"/>
             <stop offset="100%" stop-color="${f.skin}"/>
           </linearGradient>
-          <linearGradient id="mbt-clothes-${id}" x1="0" y1="0" x2="1" y2="1">
+
+          <linearGradient id="mbt-clothes-${id}"
+            x1="0" y1="0" x2="1" y2="1">
             <stop offset="0%" stop-color="${f.shirt}"/>
             <stop offset="100%" stop-color="#244833"/>
           </linearGradient>
+
+          <linearGradient id="mbt-hair-shine-${id}"
+            x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#5A3A29" stop-opacity=".6"/>
+            <stop offset="100%" stop-color="${hair}" stop-opacity="0"/>
+          </linearGradient>
         </defs>
 
-        <ellipse cx="65" cy="172" rx="42" ry="4" fill="#24452C" opacity=".12"/>
+        <ellipse cx="65" cy="172" rx="42" ry="4"
+          fill="#24452C" opacity=".12"/>
 
         <g class="mbt-character">
           ${shirt}
@@ -592,14 +736,24 @@
             ${hairBack}
             ${ears}
             ${face}
-            ${blush}
+
+            <ellipse cx="43" cy="88" rx="6" ry="3.5"
+              fill="#D86C69" opacity=".3"/>
+            <ellipse cx="87" cy="88" rx="6" ry="3.5"
+              fill="#D86C69" opacity=".3"/>
+
             ${hairFront}
             ${brows}
-            ${eyes}
-            ${nose}
+
+            ${eye("left", 51)}
+            ${eye("right", 79)}
+
+            <path d="M63 85 Q65 88 67 85"
+              fill="none" stroke="#633A2B"
+              stroke-width="1.5" stroke-linecap="round"/>
+
             ${beard}
             ${mouth}
-            ${mustache}
             ${headwear}
           </g>
 
@@ -609,7 +763,7 @@
   }
 
   /* =========================================================
-     TOUR STYLES
+     STYLES
      ========================================================= */
 
   function addStyles() {
@@ -665,48 +819,68 @@
 
       .mbt-character {
         transform-origin: 65px 163px;
-        animation: mbt-idle-bob 2.8s ease-in-out infinite;
+        animation: mbt-idle-bob 3.4s ease-in-out infinite;
       }
 
       .mbt-head {
+        transform-box: view-box;
         transform-origin: 65px 90px;
+        animation: mbt-head-idle 5s ease-in-out infinite;
       }
 
       .mbt-eye-group {
         transform-box: fill-box;
         transform-origin: center;
-        transition: transform .1s ease;
+        transition: transform .09s ease;
       }
 
       .mbt-pupil {
-        transition: transform .07s linear;
+        transition: transform .08s linear;
       }
 
-      .mbt-mouth-open, .mbt-teeth {
+      /* Natural, quick eyelid closure. */
+
+      .mbt-anime-avatar.mbt-blinking .mbt-eye-group {
+        transform: scaleY(.045) !important;
+        transition: transform .075s ease-in;
+      }
+
+      .mbt-mouth-open,
+      .mbt-teeth {
         opacity: 0;
         transform-box: fill-box;
         transform-origin: center;
+      }
+
+      .mbt-mouth-shadow {
+        opacity: .3;
       }
 
       .mbt-mouth-line {
         opacity: 1;
       }
 
+      /* Mouth animation only runs during browser speech. */
+
       .mbt-speaking .mbt-mouth-open {
         opacity: 1;
-        animation: mbt-mouth-talk .17s ease-in-out infinite alternate;
+        animation: mbt-mouth-talk .15s ease-in-out infinite alternate;
       }
 
       .mbt-speaking.mbt-mouth-wide .mbt-mouth-open {
-        transform: scaleY(2.5);
+        transform: scaleY(2.8) scaleX(1.1);
       }
 
       .mbt-speaking .mbt-mouth-line {
-        opacity: .12;
+        opacity: .15;
       }
 
       .mbt-speaking .mbt-teeth {
         opacity: .95;
+      }
+
+      .mbt-speaking .mbt-mouth-shadow {
+        opacity: .7;
       }
 
       .mbt-guide-name {
@@ -726,12 +900,18 @@
 
       @keyframes mbt-mouth-talk {
         from { transform: scaleY(.45); }
-        to { transform: scaleY(1.8); }
+        to { transform: scaleY(1.9); }
       }
 
       @keyframes mbt-idle-bob {
         0%, 100% { transform: translateY(0); }
         50% { transform: translateY(-2px); }
+      }
+
+      @keyframes mbt-head-idle {
+        0%, 100% { transform: rotate(0); }
+        45% { transform: rotate(-1deg); }
+        75% { transform: rotate(.7deg); }
       }
 
       .mbt-react-bounce .mbt-character {
@@ -1000,8 +1180,14 @@
         right: 14px;
         bottom: 14px;
         z-index: 99990;
-        max-width: calc(100vw - 110px);
-        padding: 11px 15px;
+        display: flex;
+        align-items: center;
+        gap: 0;
+        height: 44px;
+        max-width: 44px;
+        padding: 0 13px;
+        overflow: hidden;
+        white-space: nowrap;
         border: 0;
         border-radius: 28px;
         background: #2f713c;
@@ -1011,9 +1197,49 @@
         font-weight: 850;
         box-shadow: 0 7px 22px #0003;
         cursor: pointer;
+        opacity: .92;
+        transition: max-width .25s ease, gap .25s ease, opacity .2s ease;
       }
 
-      /* The avatar never competes with the open tour panel. */
+      #mbt-launcher:hover,
+      #mbt-launcher:focus-visible {
+        max-width: 260px;
+        gap: 8px;
+        opacity: 1;
+      }
+
+      #mbt-launcher:focus-visible {
+        outline: 3px solid #e4b93a;
+        outline-offset: 2px;
+      }
+
+      .mbt-launcher-icon {
+        flex: 0 0 auto;
+        font-size: 17px;
+        line-height: 1;
+      }
+
+      .mbt-launcher-label {
+        opacity: 0;
+        transition: opacity .2s ease;
+      }
+
+      #mbt-launcher:hover .mbt-launcher-label,
+      #mbt-launcher:focus-visible .mbt-launcher-label {
+        opacity: 1;
+      }
+
+      @media (hover: none) {
+        #mbt-launcher:hover {
+          max-width: 44px;
+          gap: 0;
+        }
+
+        #mbt-launcher:hover .mbt-launcher-label {
+          opacity: 0;
+        }
+      }
+
       body.mbt-tour-panel-open #mbt-guide {
         opacity: 0 !important;
         visibility: hidden !important;
@@ -1051,24 +1277,43 @@
         }
 
         .mbt-panel-title { font-size: 17px; }
-        .mbt-panel-avatar { flex-basis: 76px; width: 76px; height: 92px; }
+        .mbt-panel-avatar {
+          flex-basis: 76px;
+          width: 76px;
+          height: 92px;
+        }
+
         .mbt-avatar-choice .mbt-avatar-frame { height: 59px; }
         .mbt-step-title { font-size: 18px; }
-        #mbt-launcher { right: 7px; bottom: 7px; }
+
+        #mbt-launcher {
+          right: 7px;
+          bottom: 7px;
+        }
       }
 
       @media (max-width: 360px) {
         #mbt-panel { padding: 10px; }
         .mbt-avatar-choices { gap: 4px; }
         .mbt-avatar-choice { padding: 3px; }
-        .mbt-avatar-choice[aria-pressed="true"] { padding: 2px; }
+
+        .mbt-avatar-choice[aria-pressed="true"] {
+          padding: 2px;
+        }
+
         .mbt-avatar-choice span { font-size: 8px; }
         .mbt-panel-heading { gap: 8px; }
       }
 
       @media (prefers-reduced-motion: reduce) {
-        .mbt-character { animation: none !important; }
-        #mbt-guide, #mbt-panel, #mbt-spotlight { transition: none; }
+        .mbt-character, .mbt-head {
+          animation: none !important;
+        }
+
+        #mbt-guide, #mbt-panel, #mbt-spotlight,
+        #mbt-launcher, .mbt-eye-group {
+          transition: none;
+        }
       }
     `;
 
@@ -1085,6 +1330,7 @@
     });
 
     if (html) node.innerHTML = html;
+
     return node;
   }
 
@@ -1095,16 +1341,17 @@
   function moveEyes(clientX, clientY) {
     document.querySelectorAll(".mbt-anime-avatar").forEach(svg => {
       const rect = svg.getBoundingClientRect();
+
       if (!rect.width || !rect.height) return;
 
-      const dx = Math.max(-3.2, Math.min(
-        3.2,
-        ((clientX - (rect.left + rect.width / 2)) / rect.width) * 7
+      const dx = Math.max(-2.6, Math.min(
+        2.6,
+        ((clientX - (rect.left + rect.width / 2)) / rect.width) * 6
       ));
 
-      const dy = Math.max(-3.2, Math.min(
-        3.2,
-        ((clientY - (rect.top + rect.height / 2)) / rect.height) * 7
+      const dy = Math.max(-2.6, Math.min(
+        2.6,
+        ((clientY - (rect.top + rect.height / 2)) / rect.height) * 6
       ));
 
       svg.querySelectorAll(".mbt-pupil").forEach(pupil => {
@@ -1147,10 +1394,14 @@
 
     if (on) {
       state.mouthTimer = setInterval(() => {
-        document.querySelectorAll(".mbt-anime-avatar.mbt-speaking").forEach(svg => {
-          svg.classList.toggle("mbt-mouth-wide", Math.random() > .42);
-        });
-      }, 110);
+        document.querySelectorAll(".mbt-anime-avatar.mbt-speaking")
+          .forEach(svg => {
+            svg.classList.toggle(
+              "mbt-mouth-wide",
+              Math.random() > .42
+            );
+          });
+      }, 130);
     }
   }
 
@@ -1165,9 +1416,7 @@
   }
 
   /* =========================================================
-     FOUR DEFAULT VOICE PROFILES
-     Chrome supplies the actual speech voices. If fewer than
-     four suitable voices exist, pitch and rate still differ.
+     VOICE DISCOVERY AND DEFAULT PROFILES
      ========================================================= */
 
   function loadVoices() {
@@ -1176,6 +1425,7 @@
     state.voices = window.speechSynthesis.getVoices();
 
     const select = state.panel && $("#mbt-voice-select", state.panel);
+
     if (select) populateVoiceSelect(select);
   }
 
@@ -1216,8 +1466,6 @@
       if (match) return match;
     }
 
-    // Give each farmer a different fallback when Chrome has
-    // several voices available in the selected language.
     const ids = Object.keys(farmers);
     const avatarIndex = Math.max(0, ids.indexOf(state.avatar));
 
@@ -1233,6 +1481,7 @@
 
     if (uri) {
       const saved = state.voices.find(v => v.voiceURI === uri);
+
       if (saved) return saved;
     }
 
@@ -1292,7 +1541,53 @@
   }
 
   /* =========================================================
-     RANDOM HOMEPAGE ANIMATIONS
+     NATURAL RANDOM BLINKING
+     Every avatar blinks independently at irregular intervals.
+     ========================================================= */
+
+  function blinkAvatar(svg) {
+    if (!svg || !svg.isConnected) return;
+
+    if (svg.classList.contains("mbt-blinking")) return;
+
+    svg.classList.add("mbt-blinking");
+
+    setTimeout(() => {
+      if (svg.isConnected) {
+        svg.classList.remove("mbt-blinking");
+      }
+    }, 115);
+  }
+
+  function scheduleBlink() {
+    clearTimeout(state.blinkTimer);
+
+    state.blinkTimer = setTimeout(() => {
+      const avatars = [
+        ...document.querySelectorAll(".mbt-anime-avatar")
+      ];
+
+      if (avatars.length) {
+        const chosen = avatars[
+          Math.floor(Math.random() * avatars.length)
+        ];
+
+        blinkAvatar(chosen);
+
+        // Sometimes an anime character performs a second blink.
+        if (Math.random() < .2) {
+          setTimeout(() => {
+            blinkAvatar(chosen);
+          }, 210 + Math.random() * 100);
+        }
+      }
+
+      scheduleBlink();
+    }, 1800 + Math.random() * 3400);
+  }
+
+  /* =========================================================
+     HOMEPAGE IDLE REACTIONS
      ========================================================= */
 
   const idleReactions = [
@@ -1309,6 +1604,7 @@
     if (!state.guide) return;
 
     const svg = $(".mbt-anime-avatar", state.guide);
+
     if (!svg) return;
 
     idleReactions.forEach(c => svg.classList.remove(c));
@@ -1319,7 +1615,9 @@
 
     svg.classList.add(choice);
 
-    setTimeout(() => svg.classList.remove(choice), 900);
+    setTimeout(() => {
+      svg.classList.remove(choice);
+    }, 900);
   }
 
   function scheduleReaction() {
@@ -1329,26 +1627,6 @@
       randomHomepageReaction();
       scheduleReaction();
     }, 2200 + Math.random() * 3600);
-  }
-
-  function scheduleBlink() {
-    clearTimeout(state.blinkTimer);
-
-    state.blinkTimer = setTimeout(() => {
-      document.querySelectorAll(".mbt-anime-avatar").forEach(svg => {
-        svg.querySelectorAll(".mbt-eye-group").forEach(eye => {
-          eye.style.transform = "scaleY(.08)";
-        });
-
-        setTimeout(() => {
-          svg.querySelectorAll(".mbt-eye-group").forEach(eye => {
-            eye.style.transform = "";
-          });
-        }, 130);
-      });
-
-      scheduleBlink();
-    }, 2200 + Math.random() * 2800);
   }
 
   /* =========================================================
@@ -1391,10 +1669,12 @@
       state.launcher = makeElement("button", {
         id: "mbt-launcher",
         type: "button",
-        text: t("launcher")
-      });
+        title: t("launcher"),
+        "aria-label": t("launcher")
+      }, `<span class="mbt-launcher-icon" aria-hidden="true">🧭</span><span class="mbt-launcher-label">${escapeHTML(t("launcher"))}</span>`);
 
       state.launcher.addEventListener("click", openSetup);
+
       document.body.appendChild(state.launcher);
     }
 
@@ -1406,8 +1686,10 @@
       });
 
       state.panel.hidden = true;
+
       state.panel.addEventListener("click", handlePanelClick);
       state.panel.addEventListener("change", handlePanelChange);
+
       document.body.appendChild(state.panel);
     }
   }
@@ -1435,6 +1717,7 @@
     ensureUI();
 
     document.body.classList.add("mbt-tour-panel-open");
+
     state.overlay.hidden = true;
     state.launcher.hidden = true;
     state.panel.hidden = false;
@@ -1475,6 +1758,7 @@
     `;
 
     $("#mbt-language-select", state.panel).value = state.language;
+
     populateVoiceSelect($("#mbt-voice-select", state.panel));
 
     renderGuide();
@@ -1517,7 +1801,9 @@
       </div>
 
       <div class="mbt-step-count">${escapeHTML(t("step"))} ${state.step + 1} / ${list.length}</div>
+
       <h2 class="mbt-step-title">${escapeHTML(title)}</h2>
+
       <div class="mbt-step-text">${escapeHTML(description)}</div>
 
       <div class="mbt-actions">
@@ -1548,6 +1834,7 @@
     state.setupOpen = false;
 
     localStorage.setItem(STORE.completed, "true");
+
     state.overlay.hidden = true;
 
     state.panel.innerHTML = `
@@ -1610,6 +1897,7 @@
     if (!state.active || !selector) return;
 
     const target = findTarget(selector);
+
     if (!target) return;
 
     target.scrollIntoView({
@@ -1624,6 +1912,7 @@
       if (!state.active || !state.spotlight) return;
 
       const rect = target.getBoundingClientRect();
+
       if (!rect.width || !rect.height) return;
 
       state.spotlight.style.left = `${Math.max(0, rect.left - 4)}px`;
@@ -1644,6 +1933,7 @@
     if (!farmers[id]) return;
 
     state.avatar = id;
+
     localStorage.setItem(STORE.avatar, id);
 
     if (state.active) {
@@ -1658,10 +1948,14 @@
     if (!words[language]) return;
 
     state.language = language;
+
     localStorage.setItem(STORE.language, language);
 
-    if (state.active) renderStep(true);
-    else renderSetup();
+    if (state.active) {
+      renderStep(true);
+    } else {
+      renderSetup();
+    }
   }
 
   function selectVoice(uri) {
@@ -1671,7 +1965,10 @@
       delete state.voiceOverrides[state.avatar];
     }
 
-    localStorage.setItem(STORE.overrides, JSON.stringify(state.voiceOverrides));
+    localStorage.setItem(
+      STORE.overrides,
+      JSON.stringify(state.voiceOverrides)
+    );
 
     speak(currentFarmer().greeting[state.language]);
   }
@@ -1680,6 +1977,7 @@
     state.page = detectPage();
     state.step = 0;
     state.active = true;
+
     renderStep(true);
   }
 
@@ -1692,6 +1990,7 @@
     }
 
     state.step++;
+
     renderStep(true);
   }
 
@@ -1699,6 +1998,7 @@
     if (!state.active || state.step <= 0) return;
 
     state.step--;
+
     renderStep(true);
   }
 
@@ -1721,6 +2021,7 @@
 
   function openSetup() {
     state.page = detectPage();
+
     renderSetup();
   }
 
@@ -1733,33 +2034,41 @@
     }
 
     const button = event.target.closest("[data-action]");
+
     if (!button || button.disabled) return;
 
     switch (button.dataset.action) {
       case "start":
         startTour();
         break;
+
       case "next":
         nextStep();
         break;
+
       case "back":
         previousStep();
         break;
+
       case "skip":
       case "close":
         closeTour();
         break;
+
       case "preview":
         speak(currentFarmer().greeting[state.language]);
         break;
+
       case "repeat":
         if (state.active) {
           const current = getSteps()[state.step];
+
           speak(`${current[0]}. ${current[1]}`);
         } else {
           speak(currentFarmer().greeting[state.language]);
         }
         break;
+
       case "replay":
         startTour();
         break;
@@ -1780,17 +2089,19 @@
     if (!state.active) return;
 
     const current = getSteps()[state.step];
+
     if (current) showSpotlight(current[2]);
   }
 
   /* =========================================================
-     INIT
+     INITIALIZATION
      ========================================================= */
 
   function init() {
     if (!document.body) return;
 
     addStyles();
+
     state.page = detectPage();
 
     ensureUI();
