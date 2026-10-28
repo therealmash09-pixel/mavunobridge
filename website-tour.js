@@ -1,23 +1,31 @@
 /* ============================================================
-   MAVUNOBRIDGE — RESPONSIVE GLASS TOUR ASSISTANT
+   MAVUNOBRIDGE — RESPONSIVE GLASS TOUR ASSISTANT (v9)
    Complete replacement: website-tour.js
 
    FEATURES
    - Compact translucent helper panel; no full-screen overlay
    - Compass button fixed at the bottom-left
-   - Panel repositions away from the highlighted content
-   - Responsive layout for narrow and regular phones
+   - Tour matched to the real page: hero, categories, search,
+     filters, fair-price guide, listings, sell button, cart,
+     Smart Assist, SACCO Hub, Messages, language switcher
+   - Page-aware: Smart Assist, SACCO and Messages pages get
+     their own short tours
+   - Follows the website's language switcher (Sheng + English /
+     English / Kiswahili) when set to Automatic
+   - Hidden targets (e.g. mobile menu links) fall back to a
+     visible element automatically
+   - Panel always keeps the highlighted content in view
+   - Numbered pin + pulsing highlight on the current target
+   - "Try it" demos: pick a category, type a search
+   - "Take me there" buttons to open the other pages
+   - Clickable progress dots, keyboard arrows, auto-play mode
+   - Minimise button and tidy settings drawer (gear icon)
+   - One-time friendly nudge bubble (never opens by itself)
    - Four original illustrated dark-skinned guide characters
    - Character-specific static backgrounds
    - Only eyes blink and mouth moves during speech
-   - Automatic, English, Kiswahili and Sheng language modes
    - Selectable browser voice + Test voice button
-   - Character-based voice-gender preference (best effort)
-   - Skippable step-by-step tour with Back/Next/Finish
-   - Smart Assist/SACCO/category/search/listing target support
-   - Optional avatar mounts for dedicated avatar placeholders
    - Public API for connecting Smart Assist speech
-   - No automatic opening and no page-wide overlay
 
    NOTE: Voice options and Kiswahili pronunciation depend on
    voices installed in the browser/operating system.
@@ -26,8 +34,8 @@
 (() => {
   "use strict";
 
-  if (window.__MAVUNOBRIDGE_RESPONSIVE_GLASS_GUIDE_V8__) return;
-  window.__MAVUNOBRIDGE_RESPONSIVE_GLASS_GUIDE_V8__ = true;
+  if (window.__MAVUNOBRIDGE_RESPONSIVE_GLASS_GUIDE_V9__) return;
+  window.__MAVUNOBRIDGE_RESPONSIVE_GLASS_GUIDE_V9__ = true;
 
   /* ----------------------------------------------------------
      1. STORAGE AND STATE
@@ -38,7 +46,8 @@
     voice: "mavunobridge_guide_voice_v8",
     language: "mavunobridge_guide_language_v8",
     readAloud: "mavunobridge_guide_read_aloud_v8",
-    completed: "mavunobridge_guide_completed_v8"
+    completed: "mavunobridge_guide_completed_v8",
+    nudge: "mavunobridge_guide_nudge_v9"
   };
 
   const CHARACTERS = {
@@ -115,6 +124,17 @@
   let observer = null;
   let observerQueued = false;
   let externalSpeechHooksInstalled = false;
+
+  let STEPS = [];
+  let autoPlay = false;
+  let autoTimer = null;
+  let minimised = false;
+  let panelMode = "bottom";
+  let pinQueued = false;
+  let typingTimer = null;
+  let activeActionStep = null;
+  let actionRunning = false;
+  let nudgeElement = null;
 
   function storageGet(key, fallback = "") {
     try {
@@ -368,7 +388,8 @@
   style.textContent = `
     #mb-guide-compass,
     #mb-guide-widget,
-    #mb-guide-widget * {
+    #mb-guide-widget *,
+    #mb-guide-nudge {
       box-sizing: border-box;
     }
 
@@ -398,6 +419,55 @@
     #mb-guide-compass:hover { background: #193B24; }
     #mb-guide-compass:focus-visible { outline: 3px solid #D0A54E; outline-offset: 3px; }
     #mb-guide-compass svg { width: 23px; height: 23px; flex: 0 0 23px; }
+    #mb-guide-compass.mb-guide-attention { animation: mbCompassPulse 1.6s ease-out infinite; }
+
+    @keyframes mbCompassPulse {
+      0%   { box-shadow: 0 5px 18px rgba(24,50,29,.23), 0 0 0 0 rgba(215,170,77,.7); }
+      70%  { box-shadow: 0 5px 18px rgba(24,50,29,.23), 0 0 0 14px rgba(215,170,77,0); }
+      100% { box-shadow: 0 5px 18px rgba(24,50,29,.23), 0 0 0 0 rgba(215,170,77,0); }
+    }
+
+    #mb-guide-nudge {
+      position: fixed;
+      left: 14px;
+      bottom: 68px;
+      z-index: 99978;
+      max-width: min(260px, calc(100vw - 28px));
+      padding: 10px 12px;
+      border: 1px solid rgba(255,255,255,.8);
+      border-radius: 12px;
+      background: rgba(248,251,245,.92);
+      color: #24382A;
+      font: 700 12px/1.45 Arial, Helvetica, sans-serif;
+      box-shadow: 0 8px 24px rgba(20,35,23,.18);
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    #mb-guide-pin {
+      position: fixed;
+      z-index: 99978;
+      display: none;
+      place-items: center;
+      width: 26px;
+      height: 26px;
+      border: 2px solid #FFFFFF;
+      border-radius: 50%;
+      background: #D7AA4D;
+      color: #1E3A25;
+      font: 800 12px Arial, Helvetica, sans-serif;
+      box-shadow: 0 3px 10px rgba(20,35,23,.3);
+      pointer-events: none;
+    }
+
+    .mb-guide-highlighted { animation: mbTargetPulse 1.9s ease-out infinite; }
+
+    @keyframes mbTargetPulse {
+      0%   { box-shadow: 0 0 0 0 rgba(215,170,77,.55); }
+      65%  { box-shadow: 0 0 0 12px rgba(215,170,77,0); }
+      100% { box-shadow: 0 0 0 0 rgba(215,170,77,0); }
+    }
 
     #mb-guide-widget {
       position: fixed;
@@ -444,11 +514,14 @@
     }
 
     .mb-guide-brand { display:flex; align-items:center; gap:8px; min-width:0; color:#244B30; font-size:13px; font-weight:800; }
+    .mb-guide-brand span:last-child { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
     .mb-guide-mark { display:grid; place-items:center; width:29px; height:29px; flex:0 0 29px; border-radius:9px; background:rgba(230,239,221,.86); }
     .mb-guide-header-actions { display:flex; flex:0 0 auto; gap:5px; }
     .mb-guide-icon-button { display:grid; place-items:center; width:31px; height:31px; border:0; border-radius:8px; background:rgba(237,242,232,.86); color:#304733; font-size:18px; cursor:pointer; touch-action:manipulation; }
+    .mb-guide-icon-button:focus-visible { outline:2px solid #73985E; outline-offset:2px; }
 
     .mb-guide-scroll { min-height:0; flex:1 1 auto; overflow-y:auto; overscroll-behavior:contain; background:transparent; }
+    #mb-guide-widget.mb-guide-min .mb-guide-scroll { display:none; }
 
     .mb-guide-character-row {
       display:grid;
@@ -466,7 +539,7 @@
     .mb-guide-label { display:block; margin-bottom:4px; color:#3F5341; font-size:10px; line-height:1.3; font-weight:800; }
 
     .mb-guide-select { display:block; width:100%; min-width:0; min-height:33px; border:1px solid rgba(193,207,184,.95); border-radius:8px; padding:5px 7px; background:rgba(255,255,255,.87); color:#293D2C; font:12px Arial, Helvetica, sans-serif; }
-    .mb-guide-select:focus-visible, .mb-guide-button:focus-visible, .mb-guide-test-button:focus-visible { outline:2px solid #73985E; outline-offset:2px; }
+    .mb-guide-select:focus-visible, .mb-guide-button:focus-visible, .mb-guide-test-button:focus-visible, .mb-guide-action:focus-visible { outline:2px solid #73985E; outline-offset:2px; }
 
     .mb-guide-copy { padding:0 12px 10px; background:transparent; }
     .mb-guide-eyebrow { margin:3px 0 5px; color:#54753E; font-size:9px; font-weight:800; letter-spacing:1.1px; text-transform:uppercase; }
@@ -474,18 +547,31 @@
     .mb-guide-description { margin:0; color:#344936; font-size:12px; line-height:1.55; overflow-wrap:anywhere; }
     .mb-guide-tip { margin-top:9px; padding:8px 10px; border-left:3px solid #79945B; border-radius:0 8px 8px 0; background:rgba(231,241,220,.76); color:#3E5640; font-size:10px; line-height:1.5; }
 
+    .mb-guide-action { display:inline-flex; align-items:center; gap:6px; margin-top:9px; min-height:33px; border:1px solid #D0A54E; border-radius:8px; padding:7px 11px; background:rgba(252,243,214,.95); color:#5A4210; font:800 11px Arial, Helvetica, sans-serif; cursor:pointer; touch-action:manipulation; }
+    .mb-guide-action:hover { background:#F8E7B0; }
+    .mb-guide-action[hidden] { display:none !important; }
+
+    .mb-guide-settings-wrap { display:none; border-top:1px solid rgba(225,233,220,.65); }
+    #mb-guide-widget.mb-guide-settings-open .mb-guide-settings-wrap { display:block; }
+
     .mb-guide-settings { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:8px; padding:9px 12px 8px; border-top:1px solid rgba(225,233,220,.65); }
     .mb-guide-setting { min-width:0; }
     .mb-guide-voice-row { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:7px; padding:0 12px 8px; }
+    .mb-guide-toggles { display:flex; flex-wrap:wrap; gap:10px; }
     .mb-guide-read-toggle { display:flex; align-items:center; gap:5px; color:#405643; font-size:10px; font-weight:700; }
     .mb-guide-read-toggle input { accent-color:#315C38; }
     .mb-guide-test-button { min-height:30px; border:1px solid rgba(193,207,184,.95); border-radius:8px; padding:5px 9px; background:rgba(255,255,255,.88); color:#2B4B31; font-size:10px; font-weight:800; cursor:pointer; }
     .mb-guide-voice-status { padding:0 12px 8px; color:#586A58; font-size:9px; line-height:1.4; }
 
-    .mb-guide-progress { padding:0 12px 9px; }
+    .mb-guide-progress { padding:8px 12px 9px; border-top:1px solid rgba(225,233,220,.65); }
     .mb-guide-progress-label { display:flex; justify-content:space-between; gap:8px; margin-bottom:5px; color:#536353; font-size:9px; font-weight:800; }
     .mb-guide-progress-track { height:4px; overflow:hidden; border-radius:99px; background:rgba(217,226,209,.9); }
     .mb-guide-progress-value { width:0; height:100%; border-radius:99px; background:#648749; transition:width .15s ease; }
+    .mb-guide-dots { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+    .mb-guide-dot { width:10px; height:10px; padding:0; border:0; border-radius:50%; background:rgba(160,180,150,.85); cursor:pointer; touch-action:manipulation; }
+    .mb-guide-dot.mb-guide-dot-done { background:#8FAE79; }
+    .mb-guide-dot.mb-guide-dot-active { background:#244B30; transform:scale(1.35); }
+    .mb-guide-dot:focus-visible { outline:2px solid #73985E; outline-offset:2px; }
 
     .mb-guide-footer { display:flex; align-items:center; justify-content:space-between; gap:6px; padding:8px 10px; border-top:1px solid rgba(225,233,220,.7); }
     .mb-guide-footer-right { display:flex; align-items:center; gap:5px; }
@@ -498,23 +584,24 @@
     .mb-guide-mounted-avatar { display:block; width:min(155px,100%); max-width:100%; aspect-ratio:240/270; overflow:hidden; }
     .mb-guide-mounted-avatar svg { display:block; width:100%; height:100%; }
 
-    /* Regular phones: a narrow bottom/upper sheet with internal scrolling. */
+    /* Regular phones: a narrow bottom sheet with internal scrolling. */
     @media (max-width:600px) {
       #mb-guide-compass { left:10px; bottom:10px; }
-      #mb-guide-widget { left:8px; right:8px; width:auto; max-height:calc(100dvh - 82px); border-radius:14px; }
+      #mb-guide-nudge { left:10px; }
+      #mb-guide-widget { left:8px; right:8px; width:auto; max-height:min(62dvh, calc(100dvh - 82px)); border-radius:14px; }
       .mb-guide-character-row { grid-template-columns:clamp(76px,25vw,98px) minmax(0,1fr); gap:9px; padding:10px 10px 7px; }
       .mb-guide-avatar { width:100%; max-height:116px; }
       .mb-guide-copy { padding:0 10px 9px; }
       .mb-guide-settings { padding:8px 10px 7px; gap:7px; }
       .mb-guide-voice-row { padding:0 10px 7px; }
       .mb-guide-voice-status { padding:0 10px 7px; }
-      .mb-guide-progress { padding:0 10px 8px; }
+      .mb-guide-progress { padding:7px 10px 8px; }
       .mb-guide-footer { padding:7px 8px; }
     }
 
     /* Narrow phones: single-column settings and smaller controls. */
     @media (max-width:360px) {
-      #mb-guide-widget { left:6px; right:6px; width:auto; max-height:calc(100dvh - 74px); }
+      #mb-guide-widget { left:6px; right:6px; width:auto; max-height:min(62dvh, calc(100dvh - 74px)); }
       .mb-guide-character-row { grid-template-columns:74px minmax(0,1fr); gap:8px; padding:8px 8px 6px; }
       .mb-guide-avatar { width:74px; max-height:89px; }
       .mb-guide-character-name { font-size:14px; }
@@ -528,7 +615,7 @@
       .mb-guide-settings { grid-template-columns:minmax(0,1fr); gap:6px; padding:7px 8px; }
       .mb-guide-voice-row { padding:0 8px 7px; }
       .mb-guide-voice-status { padding:0 8px 7px; }
-      .mb-guide-progress { padding:0 8px 7px; }
+      .mb-guide-progress { padding:6px 8px 7px; }
       .mb-guide-footer { padding:6px 7px; }
       .mb-guide-button { min-height:31px; padding:6px 7px; font-size:10px; }
       .mb-guide-skip { font-size:9px; }
@@ -550,12 +637,13 @@
 
     @media (prefers-reduced-motion:reduce) {
       #mb-guide-widget, #mb-guide-compass, .mb-guide-progress-value { transition:none !important; }
+      #mb-guide-compass.mb-guide-attention, .mb-guide-highlighted { animation:none !important; }
     }
   `;
   document.head.appendChild(style);
 
   /* ----------------------------------------------------------
-     6. BUILD COMPASS AND PANEL
+     6. BUILD COMPASS, PANEL AND TARGET PIN
      ---------------------------------------------------------- */
 
   const compass = document.createElement("button");
@@ -578,9 +666,11 @@
   widget.setAttribute("aria-label", "MavunoBridge tour assistant");
   widget.innerHTML = `
     <header class="mb-guide-header">
-      <div class="mb-guide-brand"><span class="mb-guide-mark" aria-hidden="true">🌱</span><span>MavunoBridge Guide</span></div>
+      <div class="mb-guide-brand"><span class="mb-guide-mark" aria-hidden="true">🌱</span><span id="mb-guide-brand-text">MavunoBridge Guide</span></div>
       <div class="mb-guide-header-actions">
         <button type="button" class="mb-guide-icon-button" id="mb-guide-stop" title="Stop speaking" aria-label="Stop speaking">■</button>
+        <button type="button" class="mb-guide-icon-button" id="mb-guide-settings-toggle" title="Guide settings" aria-label="Guide settings" aria-expanded="false">⚙</button>
+        <button type="button" class="mb-guide-icon-button" id="mb-guide-minimise" title="Minimise guide" aria-label="Minimise guide">–</button>
         <button type="button" class="mb-guide-icon-button" id="mb-guide-close" title="Close guide" aria-label="Close guide">×</button>
       </div>
     </header>
@@ -602,30 +692,37 @@
         <h2 class="mb-guide-title" id="mb-guide-title">Karibu to MavunoBridge!</h2>
         <p class="mb-guide-description" id="mb-guide-description">Explore the website with your own guide.</p>
         <div class="mb-guide-tip" id="mb-guide-tip">Choose Start tour to begin.</div>
+        <button type="button" class="mb-guide-action" id="mb-guide-action" hidden></button>
       </div>
-      <div class="mb-guide-settings">
-        <div class="mb-guide-setting">
-          <label class="mb-guide-label" for="mb-guide-language">Speaking language</label>
-          <select class="mb-guide-select" id="mb-guide-language">
-            <option value="auto">Automatic — character default</option>
-            <option value="en">English</option>
-            <option value="sw">Kiswahili</option>
-            <option value="sheng">Sheng — English + Kiswahili</option>
-          </select>
+      <div class="mb-guide-settings-wrap">
+        <div class="mb-guide-settings">
+          <div class="mb-guide-setting">
+            <label class="mb-guide-label" for="mb-guide-language">Speaking language</label>
+            <select class="mb-guide-select" id="mb-guide-language">
+              <option value="auto">Automatic — follow website</option>
+              <option value="en">English</option>
+              <option value="sw">Kiswahili</option>
+              <option value="sheng">Sheng — English + Kiswahili</option>
+            </select>
+          </div>
+          <div class="mb-guide-setting">
+            <label class="mb-guide-label" for="mb-guide-voice">Voice</label>
+            <select class="mb-guide-select" id="mb-guide-voice"><option value="">Automatic — match character</option></select>
+          </div>
         </div>
-        <div class="mb-guide-setting">
-          <label class="mb-guide-label" for="mb-guide-voice">Voice</label>
-          <select class="mb-guide-select" id="mb-guide-voice"><option value="">Automatic — match character</option></select>
+        <div class="mb-guide-voice-row">
+          <div class="mb-guide-toggles">
+            <label class="mb-guide-read-toggle"><input type="checkbox" id="mb-guide-read-aloud" checked><span>Read steps aloud</span></label>
+            <label class="mb-guide-read-toggle"><input type="checkbox" id="mb-guide-autoplay"><span id="mb-guide-autoplay-label">Auto-play</span></label>
+          </div>
+          <button class="mb-guide-test-button" id="mb-guide-test-voice" type="button">Test voice</button>
         </div>
+        <div class="mb-guide-voice-status" id="mb-guide-voice-status" aria-live="polite">Automatic voice will try to match your selected character.</div>
       </div>
-      <div class="mb-guide-voice-row">
-        <label class="mb-guide-read-toggle"><input type="checkbox" id="mb-guide-read-aloud" checked><span>Read steps aloud</span></label>
-        <button class="mb-guide-test-button" id="mb-guide-test-voice" type="button">Test voice</button>
-      </div>
-      <div class="mb-guide-voice-status" id="mb-guide-voice-status" aria-live="polite">Automatic voice will try to match your selected character.</div>
       <div class="mb-guide-progress">
         <div class="mb-guide-progress-label"><span id="mb-guide-step-count">Ready to begin</span><span id="mb-guide-progress-percent">0%</span></div>
         <div class="mb-guide-progress-track" id="mb-guide-progress-track" role="progressbar" aria-label="Tour progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="mb-guide-progress-value" id="mb-guide-progress-value"></div></div>
+        <div class="mb-guide-dots" id="mb-guide-dots"></div>
       </div>
     </div>
     <footer class="mb-guide-footer">
@@ -637,174 +734,115 @@
     </footer>
   `;
 
+  const pin = document.createElement("div");
+  pin.id = "mb-guide-pin";
+  pin.setAttribute("aria-hidden", "true");
+
   document.body.appendChild(compass);
   document.body.appendChild(widget);
+  document.body.appendChild(pin);
 
   const ui = {
     avatar: widget.querySelector("#mb-guide-avatar"),
+    brandText: widget.querySelector("#mb-guide-brand-text"),
     characterName: widget.querySelector("#mb-guide-character-name"),
     characterRole: widget.querySelector("#mb-guide-character-role"),
     characterSelect: widget.querySelector("#mb-guide-character-select"),
     language: widget.querySelector("#mb-guide-language"),
     voice: widget.querySelector("#mb-guide-voice"),
     readAloud: widget.querySelector("#mb-guide-read-aloud"),
+    autoplay: widget.querySelector("#mb-guide-autoplay"),
+    autoplayLabel: widget.querySelector("#mb-guide-autoplay-label"),
     testVoice: widget.querySelector("#mb-guide-test-voice"),
     voiceStatus: widget.querySelector("#mb-guide-voice-status"),
     stop: widget.querySelector("#mb-guide-stop"),
+    settingsToggle: widget.querySelector("#mb-guide-settings-toggle"),
+    minimise: widget.querySelector("#mb-guide-minimise"),
     close: widget.querySelector("#mb-guide-close"),
     eyebrow: widget.querySelector("#mb-guide-eyebrow"),
     title: widget.querySelector("#mb-guide-title"),
     description: widget.querySelector("#mb-guide-description"),
     tip: widget.querySelector("#mb-guide-tip"),
+    action: widget.querySelector("#mb-guide-action"),
     count: widget.querySelector("#mb-guide-step-count"),
     percent: widget.querySelector("#mb-guide-progress-percent"),
     progressTrack: widget.querySelector("#mb-guide-progress-track"),
     progressValue: widget.querySelector("#mb-guide-progress-value"),
+    dots: widget.querySelector("#mb-guide-dots"),
     skip: widget.querySelector("#mb-guide-skip"),
     back: widget.querySelector("#mb-guide-back"),
     next: widget.querySelector("#mb-guide-next")
   };
 
   /* ----------------------------------------------------------
-     7. TOUR STEPS — ENGLISH, KISWAHILI AND SHENG
+     7. LANGUAGE HELPERS AND INTERFACE TEXT
      ---------------------------------------------------------- */
 
-  const STEPS = [
-    {
-      targets: ["#marketplace", "#marketplaceSection", "[data-marketplace]", "main"],
-      en: {
-        title: "Karibu to MavunoBridge!",
-        body: "This is your connection between farmers and buyers. Explore products, compare offers and discover agricultural services.",
-        tip: "Choose Next to explore the website step by step."
-      },
-      sw: {
-        title: "Karibu MavunoBridge!",
-        body: "Hii ni sehemu ambapo wakulima na wanunuzi wanaunganishwa. Angalia bidhaa, linganisha bei na upate huduma za kilimo.",
-        tip: "Bonyeza Next kuendelea. Unaweza kuacha tour wakati wowote."
-      },
-      sheng: {
-        title: "Karibu MavunoBridge!",
-        body: "Hapa farmers na buyers wana-connect. Check products, compare bei na upate farming services.",
-        tip: "Bonyeza Next tukupitishe website step by step."
-      }
-    },
-    {
-      targets: ["#searchInput", "#marketSearch", "#search", "input[type='search']", "[data-marketplace-search]", ".search-bar input"],
-      en: {
-        title: "Search for products",
-        body: "Use the search bar to find produce, farm supplies, tools and other agricultural products.",
-        tip: "Try searching for tomatoes, maize, beans or avocados."
-      },
-      sw: {
-        title: "Tafuta bidhaa",
-        body: "Tumia sehemu ya kutafuta kupata mazao, vifaa vya shamba, tools na bidhaa nyingine za kilimo.",
-        tip: "Unaweza kutafuta nyanya, mahindi, maharagwe au parachichi."
-      },
-      sheng: {
-        title: "Search bidhaa unahitaji",
-        body: "Tumia search bar kupata produce, farm supplies, tools na agricultural products zingine.",
-        tip: "Try ku-search tomatoes, maize, beans ama avocados."
-      }
-    },
-    {
-      targets: ["#categories", "#categoryGrid", ".category-grid", "[data-category-grid]", "#categoriesSection", ".categories"],
-      en: {
-        title: "Explore categories",
-        body: "Browse fruits, vegetables, grains, cereals, legumes, livestock, farm equipment and agricultural services.",
-        tip: "Choose a category to narrow down your search."
-      },
-      sw: {
-        title: "Angalia makundi ya bidhaa",
-        body: "Angalia matunda, mboga, nafaka, mifugo, vifaa vya shamba na huduma za kilimo.",
-        tip: "Chagua kundi linalokufaa kupata bidhaa kwa urahisi."
-      },
-      sheng: {
-        title: "Explore categories",
-        body: "Check fruits, vegetables, grains, cereals, livestock, farm tools na services za kilimo.",
-        tip: "Chagua category yako upate products faster."
-      }
-    },
-    {
-      targets: ["#listingGrid", "#productGrid", ".listing-grid", ".product-grid", "[data-listing-grid]", "#marketplaceListings"],
-      en: {
-        title: "Compare product listings",
-        body: "Check product details, quantities, prices and locations before choosing a seller.",
-        tip: "Read the listing details before you make a decision."
-      },
-      sw: {
-        title: "Linganisha bidhaa",
-        body: "Angalia maelezo ya bidhaa, kiasi, bei na eneo la muuzaji kabla ya kuchagua.",
-        tip: "Soma maelezo yote ya bidhaa kwanza."
-      },
-      sheng: {
-        title: "Compare listings",
-        body: "Angalia product details, quantities, prices na location kabla uchague seller.",
-        tip: "Read listing details kwanza ndio ufanye decision."
-      }
-    },
-    {
-      targets: ["#sellButton", "#heroSellButton", "[data-open-sell]", "[data-action='sell']", ".sell-button"],
-      en: {
-        title: "List your products",
-        body: "Farmers can list their produce for potential buyers. Add accurate descriptions, quantities and prices.",
-        tip: "Clear information helps buyers understand your offer."
-      },
-      sw: {
-        title: "Weka bidhaa zako sokoni",
-        body: "Wakulima wanaweza kuweka mazao yao ili wanunuzi wayaone. Weka maelezo, kiasi na bei sahihi.",
-        tip: "Maelezo mazuri yanasaidia wanunuzi kuelewa bidhaa zako."
-      },
-      sheng: {
-        title: "List bidhaa zako",
-        body: "Farmers wanaweza kuweka produce yao online. Weka description, quantity na bei yenye iko accurate.",
-        tip: "Maelezo clear yanasaidia buyers kuelewa offer yako."
-      }
-    },
-    {
-      targets: ["#smartAssist", "#smartAssistButton", "#smart-assist", "#smart-assist-nav", "[data-nav='smart-assist']", "a[href*='smart-assist']", "a[href*='smart_assist']"],
-      en: {
-        title: "Meet Smart Assist",
-        body: "Smart Assist is designed to offer farming guidance, crop ideas and useful agricultural information.",
-        tip: "Open Smart Assist to explore the features available."
-      },
-      sw: {
-        title: "Kutana na Smart Assist",
-        body: "Smart Assist imeundwa kusaidia wakulima kupata ushauri wa kilimo, mawazo ya mazao na taarifa muhimu.",
-        tip: "Fungua Smart Assist uangalie huduma zinazopatikana."
-      },
-      sheng: {
-        title: "Meet Smart Assist",
-        body: "Smart Assist inaweza kusaidia farmers na farming tips, crop ideas na information ya kilimo.",
-        tip: "Open Smart Assist page ucheck features zilizopo."
-      }
-    },
-    {
-      targets: ["#sacco", "#saccoHub", "#saccoButton", "#sacco-hub", "[data-nav='sacco']", "a[href*='sacco']"],
-      en: {
-        title: "Explore the SACCO Hub",
-        body: "Visit the SACCO Hub to explore available SACCO information and opportunities.",
-        tip: "Check each organisation's requirements before joining."
-      },
-      sw: {
-        title: "Angalia SACCO Hub",
-        body: "Tembelea SACCO Hub kuangalia taarifa za SACCO na fursa zinazopatikana.",
-        tip: "Soma masharti ya kila organisation kabla ya kujiunga."
-      },
-      sheng: {
-        title: "Explore SACCO Hub",
-        body: "Tembelea SACCO Hub uone information na opportunities za SACCO zinazopatikana.",
-        tip: "Check requirements vizuri kabla ya kujiunga."
-      }
-    }
-  ];
-
-  /* ----------------------------------------------------------
-     8. LANGUAGE AND VOICE PICKING
-     ---------------------------------------------------------- */
+  // The website's own switcher: values are mix / en / sw.
+  function siteLanguage() {
+    const select = document.getElementById("languageSelect");
+    if (!select) return null;
+    const map = { mix: "sheng", en: "en", sw: "sw" };
+    return map[select.value] || null;
+  }
 
   function effectiveLanguage(characterKey = selectedCharacter) {
     if (selectedLanguageMode !== "auto") return selectedLanguageMode;
+    const site = siteLanguage();
+    if (site) return site;
     return (CHARACTERS[characterKey] || CHARACTERS.akinyi).defaultLanguage || "en";
+  }
+
+  const UI = {
+    en: {
+      start: "Start tour", next: "Next", back: "Back", finish: "Finish",
+      skip: "Skip tour", close: "Close", replay: "Replay",
+      step: (n, total) => "Step " + n + " of " + total,
+      done: "Tour completed", ready: "Ready to begin",
+      eyebrow: "YOUR WEBSITE TOUR", guide: "MavunoBridge Guide",
+      readyTitle: "You're ready to explore!",
+      readyBody: "Use the compass button whenever you need help again.",
+      readyTip: "Thanks for exploring MavunoBridge.",
+      auto: "Auto-play", reset: "Reset demo",
+      nudge: "👋 New here? Take a quick tour of MavunoBridge."
+    },
+    sw: {
+      start: "Anza tour", next: "Endelea", back: "Rudi", finish: "Maliza",
+      skip: "Ruka tour", close: "Funga", replay: "Rudia",
+      step: (n, total) => "Hatua " + n + " kati ya " + total,
+      done: "Tour imekamilika", ready: "Tayari kuanza",
+      eyebrow: "TOUR YA WEBSITE", guide: "Mwongozo wa MavunoBridge",
+      readyTitle: "Uko tayari kuendelea!",
+      readyBody: "Tumia compass hapa chini kufungua guide tena wakati wowote.",
+      readyTip: "Asante kwa kutumia MavunoBridge.",
+      auto: "Cheza yenyewe", reset: "Rudisha",
+      nudge: "👋 Mgeni hapa? Fanya tour fupi ya MavunoBridge."
+    },
+    sheng: {
+      start: "Anza tour", next: "Next", back: "Back", finish: "Finish",
+      skip: "Skip tour", close: "Close", replay: "Replay",
+      step: (n, total) => "Step " + n + " ya " + total,
+      done: "Tour imeisha", ready: "Tuko ready",
+      eyebrow: "TOUR YA WEBSITE YAKO", guide: "MavunoBridge Guide",
+      readyTitle: "Uko ready kuexplore!",
+      readyBody: "Gonga compass hapo chini kuopen guide tena wakati wowote.",
+      readyTip: "Asante kwa ku-explore MavunoBridge.",
+      auto: "Auto-play", reset: "Reset",
+      nudge: "👋 Mgeni? Fanya tour fupi ya MavunoBridge."
+    }
+  };
+
+  function t(key, ...args) {
+    const table = UI[effectiveLanguage()] || UI.en;
+    const value = table[key] !== undefined ? table[key] : UI.en[key];
+    return typeof value === "function" ? value(...args) : value;
+  }
+
+  function applyUiLanguage() {
+    ui.back.textContent = t("back");
+    ui.skip.textContent = currentStep >= STEPS.length ? t("replay") : t("skip");
+    ui.autoplayLabel.textContent = t("auto");
+    if (!minimised) ui.brandText.textContent = t("guide");
   }
 
   function stepWording(step) {
@@ -815,6 +853,245 @@
     if (language === "sw") return "sw-KE";
     return "en-KE"; // Sheng is mixed speech; browser voice language is English-Kenya when available.
   }
+
+  /* ----------------------------------------------------------
+     8. TOUR STEPS — MATCHED TO THE REAL PAGES
+     ---------------------------------------------------------- */
+
+  function S(targets, en, sw, sheng, action) {
+    return {
+      targets,
+      en: { title: en[0], body: en[1], tip: en[2] },
+      sw: { title: sw[0], body: sw[1], tip: sw[2] },
+      sheng: { title: sheng[0], body: sheng[1], tip: sheng[2] },
+      action: action || null
+    };
+  }
+
+  function goTo(href, en, sw, sheng) {
+    return { label: { en, sw, sheng }, href };
+  }
+
+  /* "Try it" demos on the marketplace page. */
+  function clearTyping() {
+    if (typingTimer) clearInterval(typingTimer);
+    typingTimer = null;
+  }
+
+  function setSearchValue(value) {
+    const input = document.querySelector("#searchInput");
+    if (!input) return;
+    input.value = value;
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+  }
+
+  const SEARCH_DEMO = {
+    label: {
+      en: "Try it: search “maize”",
+      sw: "Jaribu: tafuta “maize”",
+      sheng: "Try it: search “maize”"
+    },
+    run() {
+      const word = "maize";
+      let index = 0;
+      clearTyping();
+      setSearchValue("");
+      typingTimer = setInterval(() => {
+        index += 1;
+        setSearchValue(word.slice(0, index));
+        if (index >= word.length) clearTyping();
+      }, 190);
+    },
+    undo() {
+      clearTyping();
+      setSearchValue("");
+    }
+  };
+
+  const CATEGORY_DEMO = {
+    label: {
+      en: "Try it: pick a category",
+      sw: "Jaribu: chagua kundi",
+      sheng: "Try it: chagua category"
+    },
+    run() {
+      const card = document.querySelector(
+        "#categoryGrid button, #categoryGrid [data-category], #categoryGrid .category-card, #categoryGrid a, #categoryGrid > div"
+      );
+      if (card) card.click();
+      setTimeout(repositionAfterResize, 450);
+    },
+    undo() {
+      const all = document.querySelector("#showAllButton");
+      if (all) all.click();
+    }
+  };
+
+  function detectPage() {
+    const path = (location.pathname || "").toLowerCase();
+    if (path.includes("smart-assist")) return "smart";
+    if (path.includes("sacco")) return "sacco";
+    if (path.includes("messages")) return "messages";
+    if (path === "" || path.endsWith("/") || path.endsWith("index.html") || path.endsWith("/mavunobridge")) return "index";
+    return "other";
+  }
+
+  function buildSteps() {
+    const page = detectPage();
+
+    if (page === "smart") {
+      return [
+        S(["main h1", "main", ".hero"],
+          ["Welcome to Smart Assist", "Get crop tips and farm-planning help made for Kenyan farmers.", "Use Next to see how it works."],
+          ["Karibu Smart Assist", "Pata vidokezo vya mazao na msaada wa kupanga shamba kwa wakulima wa Kenya.", "Bonyeza Endelea kuona jinsi inavyofanya kazi."],
+          ["Karibu Smart Assist", "Pata crop tips na planning help ya farmers wa Kenya.", "Bonyeza Next uone inavyofanya kazi."]),
+        S(["select", "[class*='filter']", "form"],
+          ["Pick your filters", "Choose your crop and farm details to narrow down the tips you see.", "The more detail you choose, the more specific the tips."],
+          ["Chagua vichujio", "Chagua zao na maelezo ya shamba lako ili kupunguza vidokezo unavyoona.", "Maelezo zaidi, vidokezo mahususi zaidi."],
+          ["Chagua filters", "Chagua crop na details za shamba lako ili u-narrow tips unazoona.", "Details nyingi, tips ziko specific zaidi."]),
+        S(["[id*='chat']", "[class*='chat']", "[id*='assistant']", "[class*='assistant']", "textarea", "input[type='text']"],
+          ["Ask the assistant", "Type a farming question and the assistant replies in plain language.", "Try asking about pests, planting time or fertiliser."],
+          ["Uliza msaidizi", "Andika swali la kilimo na msaidizi atajibu kwa lugha rahisi.", "Jaribu kuuliza kuhusu wadudu, wakati wa kupanda au mbolea."],
+          ["Uliza assistant", "Type swali ya farming na assistant atajibu kwa lugha rahisi.", "Try kuuliza kuhusu pests, planting time ama fertiliser."]),
+        S([".brand", "a[href='index.html']"],
+          ["Back to the marketplace", "When you are done, return to the marketplace to buy or list produce.", "You can open this guide again any time."],
+          ["Rudi sokoni", "Ukimaliza, rudi sokoni kununua au kuweka mazao yako.", "Unaweza kufungua guide hii tena wakati wowote."],
+          ["Rudi marketplace", "Ukimaliza, rudi marketplace kununua ama ku-list produce yako.", "Unaweza ku-open guide hii tena wakati wowote."],
+          goTo("index.html", "Go to marketplace", "Nenda sokoni", "Enda marketplace"))
+      ];
+    }
+
+    if (page === "sacco") {
+      return [
+        S(["main h1", "main"],
+          ["Welcome to the SACCO Hub", "Explore sample savings groups and farming opportunities.", "These are demo groups, not real offers."],
+          ["Karibu SACCO Hub", "Angalia vikundi vya akiba vya mfano na fursa za kilimo.", "Hivi ni vikundi vya demo, si ofa halisi."],
+          ["Karibu SACCO Hub", "Check sample savings groups na farming opportunities.", "Hizi ni demo groups, si real offers."]),
+        S(["[class*='sacco']", "[class*='card']", "main section"],
+          ["Compare the groups", "Look at what each group offers and what it requires from members.", "Always read the requirements before joining."],
+          ["Linganisha vikundi", "Angalia kila kikundi kinatoa nini na kinahitaji nini kwa wanachama.", "Soma masharti kila mara kabla ya kujiunga."],
+          ["Compare groups", "Angalia kila group inatoa nini na inahitaji nini kwa members.", "Soma requirements kila mara kabla ujiunge."]),
+        S([".brand", "a[href='index.html']"],
+          ["Back to the marketplace", "Return to the marketplace whenever you are ready.", "Use the compass to reopen this guide."],
+          ["Rudi sokoni", "Rudi sokoni wakati wowote ukiwa tayari.", "Tumia compass kufungua guide tena."],
+          ["Rudi marketplace", "Rudi marketplace wakati wowote ukiwa ready.", "Tumia compass ku-open guide tena."],
+          goTo("index.html", "Go to marketplace", "Nenda sokoni", "Enda marketplace"))
+      ];
+    }
+
+    if (page === "messages") {
+      return [
+        S(["main h1", "main"],
+          ["Welcome to Messages", "This is where buyers and sellers talk after showing interest in a listing.", "Be clear and polite when you negotiate."],
+          ["Karibu Messages", "Hapa wanunuzi na wauzaji wanaongea baada ya kuonyesha nia kwenye bidhaa.", "Kuwa wazi na mwenye heshima unapojadiliana."],
+          ["Karibu Messages", "Hapa buyers na sellers wana-chat baada ya kuonyesha interest kwa listing.", "Kuwa clear na polite unapo-negotiate."]),
+        S(["[class*='conversation']", "[class*='thread']", "[class*='list']", "aside"],
+          ["Your conversations", "Each conversation is linked to a product you or someone else showed interest in.", "Pick one to read the history."],
+          ["Mazungumzo yako", "Kila mazungumzo yameunganishwa na bidhaa ambayo mtu alionyesha nia.", "Chagua moja kusoma historia."],
+          ["Conversations zako", "Kila conversation imeunganishwa na product ambayo mtu alionyesha interest.", "Chagua moja usome history."]),
+        S(["textarea", "input[type='text']", "form"],
+          ["Write a message", "Type your message here and send it to agree on quantity, price and pickup.", "Confirm details before you meet or pay."],
+          ["Andika ujumbe", "Andika ujumbe hapa na utume ili mukubaliane kiasi, bei na jinsi ya kuchukua.", "Thibitisha maelezo kabla ya kukutana au kulipa."],
+          ["Andika message", "Type message hapa na utume ili mu-agree quantity, bei na pickup.", "Confirm details kabla ya ku-meet ama kulipa."]),
+        S([".brand", "a[href='index.html']"],
+          ["Back to the marketplace", "Go back to browse more produce.", "Use the compass to reopen this guide."],
+          ["Rudi sokoni", "Rudi kutafuta mazao zaidi.", "Tumia compass kufungua guide tena."],
+          ["Rudi marketplace", "Rudi u-browse produce zaidi.", "Tumia compass ku-open guide tena."],
+          goTo("index.html", "Go to marketplace", "Nenda sokoni", "Enda marketplace"))
+      ];
+    }
+
+    if (page === "other") {
+      return [
+        S(["main h1", "main", "form"],
+          ["Welcome to MavunoBridge", "This page is part of the MavunoBridge demo.", "Use the compass any time you need help."],
+          ["Karibu MavunoBridge", "Ukurasa huu ni sehemu ya demo ya MavunoBridge.", "Tumia compass wakati wowote unahitaji msaada."],
+          ["Karibu MavunoBridge", "Page hii ni sehemu ya MavunoBridge demo.", "Tumia compass wakati wowote unahitaji help."]),
+        S([".brand", "a[href='index.html']"],
+          ["Back to the marketplace", "Return to the marketplace to explore listings.", "The full tour is on the home page."],
+          ["Rudi sokoni", "Rudi sokoni kuangalia bidhaa.", "Tour kamili iko kwenye ukurasa wa mwanzo."],
+          ["Rudi marketplace", "Rudi marketplace u-explore listings.", "Full tour iko kwa home page."],
+          goTo("index.html", "Go to marketplace", "Nenda sokoni", "Enda marketplace"))
+      ];
+    }
+
+    // Home page: this order follows the page from top to bottom.
+    return [
+      S([".hero-content", ".hero", "main"],
+        ["Karibu to MavunoBridge!", "This is where Kenyan farmers and buyers meet. Sell your produce, compare prices and find farming support, all in one place.", "Use Next to follow the tour, or tap the dots to jump around."],
+        ["Karibu MavunoBridge!", "Hapa wakulima na wanunuzi wa Kenya wanakutana. Uza mazao yako, linganisha bei na upate msaada wa kilimo mahali pamoja.", "Bonyeza Endelea au gusa dots kuruka hatua."],
+        ["Karibu MavunoBridge!", "Hapa farmers na buyers wa Kenya wana-meet. Uza produce yako, compare bei na upate farming support, yote in one place.", "Bonyeza Next ama gonga dots kuruka steps."]),
+
+      S(["#categoryGrid", "#categories", ".category-section"],
+        ["Explore categories", "Pick a category card to see only those products, from fruits and vegetables to livestock, tools and services.", "Tap View all products to clear the category."],
+        ["Angalia makundi", "Chagua kadi ya kundi uone bidhaa za kundi hilo tu, kuanzia matunda na mboga hadi mifugo, vifaa na huduma.", "Gusa View all products kuondoa kundi."],
+        ["Explore categories", "Chagua category card uone products za hiyo category tu, kutoka fruits na mboga hadi livestock, tools na services.", "Gonga View all products kuclear category."],
+        CATEGORY_DEMO),
+
+      S([".search-box", "#searchInput"],
+        ["Search the marketplace", "Type what you need, like maize, beans or avocados. Results update as you type.", "Short words work best."],
+        ["Tafuta sokoni", "Andika unachohitaji, kama mahindi, maharagwe au parachichi. Matokeo yanabadilika unapoandika.", "Maneno mafupi hufanya kazi vizuri."],
+        ["Search sokoni", "Type unachotafuta, kama maize, beans ama avocados. Results ina-update unapo-type.", "Short words ndio best."],
+        SEARCH_DEMO),
+
+      S([".filters", "#categoryFilter"],
+        ["Filter and sort", "Narrow listings by category, county, retail or bulk, and price guide, then sort them. Clear filters resets everything.", "Buying in bulk? Choose Bulk or Retail + bulk."],
+        ["Chuja na panga", "Punguza orodha kwa kundi, kaunti, rejareja au jumla, na mwongozo wa bei, kisha uipange. Clear filters inarudisha kila kitu.", "Unanunua kwa jumla? Chagua Bulk au Retail + bulk."],
+        ["Filter na sort", "Punguza listings kwa category, county, retail ama bulk, na price guide, kisha u-sort. Clear filters ina-reset yote.", "Unanunua bulk? Chagua Bulk ama Retail + bulk."]),
+
+      S([".fair-guide"],
+        ["Check the fair-price guide", "Compare prices before you buy. These demo ranges for tomatoes, avocados and maize help you see if a listing looks low, fair or high.", "They are demo ranges, not live market prices."],
+        ["Angalia mwongozo wa bei", "Linganisha bei kabla ya kununua. Viwango hivi vya mfano vya nyanya, parachichi na mahindi vinakusaidia kuona kama bei ni ya chini, sawa au juu.", "Ni viwango vya mfano, si bei halisi za soko."],
+        ["Check fair-price guide", "Compare bei kabla ununue. Hizi demo ranges za tomatoes, avocados na maize zinakusaidia kuona kama listing iko low, fair ama high.", "Ni demo ranges, si live market prices."]),
+
+      S(["#listingGrid", "#marketplace"],
+        ["Compare listings", "Check the product, quantity, price, county and seller before you choose. Add what you like to your cart to show the seller you're interested.", "Read the details first, then decide."],
+        ["Linganisha bidhaa", "Angalia bidhaa, kiasi, bei, kaunti na muuzaji kabla ya kuchagua. Weka unachopenda kwenye cart kumwonyesha muuzaji una nia.", "Soma maelezo kwanza, kisha uamue."],
+        ["Compare listings", "Check product, quantity, bei, county na seller kabla uchague. Weka unachopenda kwa cart ili seller aone una interest.", "Soma details kwanza, ndio u-decide."]),
+
+      S(["#sellButton", "#heroSellButton", "[data-open-sell]"],
+        ["List your produce", "Farmers can create a listing with a photo, quantity, price and county so buyers can find them. Clear details build trust.", "Add a photo and an honest description."],
+        ["Weka mazao yako", "Wakulima wanaweza kuunda tangazo lenye picha, kiasi, bei na kaunti ili wanunuzi wawapate. Maelezo wazi hujenga imani.", "Weka picha na maelezo ya kweli."],
+        ["List produce yako", "Farmers wanaweza ku-create listing na photo, quantity, bei na county ili buyers wawapate. Details clear zina-build trust.", "Weka photo na description ya ukweli."]),
+
+      S(["#cartButton"],
+        ["Your cart", "Items you pick wait here, and the number shows how many you have chosen. This demo collects no real payment.", "Open the cart to review or clear your picks."],
+        ["Cart yako", "Bidhaa unazochagua zinasubiri hapa, na namba inaonyesha ulizochagua. Demo hii haikusanyi malipo halisi.", "Fungua cart kukagua au kufuta ulichochagua."],
+        ["Cart yako", "Items unazopick zinasubiri hapa, na number inaonyesha ngapi umechagua. Demo hii haichukui malipo halisi.", "Open cart ucheck ama u-clear."]),
+
+      S([".main-nav a[href*='smart-assist']", ".feature-strip a[href*='smart-assist']", "#menuButton"],
+        ["Meet Smart Assist", "Get crop tips and planning ideas for your farm, and ask the assistant your farming questions.", "Open it from the menu or the Smart Assist card."],
+        ["Kutana na Smart Assist", "Pata vidokezo vya mazao na mawazo ya kupanga shamba lako, na uulize msaidizi maswali ya kilimo.", "Ifungue kwenye menyu au kadi ya Smart Assist."],
+        ["Meet Smart Assist", "Pata crop tips na planning ideas za shamba lako, na uulize assistant maswali ya farming.", "Open kwa menu ama Smart Assist card."],
+        goTo("smart-assist.html", "Open Smart Assist", "Fungua Smart Assist", "Open Smart Assist")),
+
+      S([".main-nav a[href*='sacco']", ".feature-strip a[href*='sacco']", "#menuButton"],
+        ["Explore the SACCO Hub", "See sample savings groups and farming opportunities. Always check each group's requirements before joining.", "These are sample SACCOs for the demo."],
+        ["Tembelea SACCO Hub", "Angalia vikundi vya akiba vya mfano na fursa za kilimo. Soma masharti ya kila kikundi kabla ya kujiunga.", "Hivi ni SACCO za mfano za demo."],
+        ["Explore SACCO Hub", "Check sample savings groups na farming opportunities. Soma requirements za kila group kabla ujiunge.", "Hizi ni sample SACCOs za demo."],
+        goTo("sacco.html", "Open SACCO Hub", "Fungua SACCO Hub", "Open SACCO Hub")),
+
+      S([".main-nav a[href*='messages']", "#menuButton"],
+        ["Chat with sellers", "Messages is where buyers and sellers talk after showing interest in a listing.", "Check it after you add something to your cart."],
+        ["Ongea na wauzaji", "Messages ni mahali wanunuzi na wauzaji wanaongea baada ya kuonyesha nia kwenye bidhaa.", "Iangalie baada ya kuweka kitu kwenye cart."],
+        ["Chat na sellers", "Messages ni place buyers na sellers wana-chat baada ya kuonyesha interest kwa listing.", "Check hapa baada ya ku-add kitu kwa cart."],
+        goTo("messages.html", "Open Messages", "Fungua Messages", "Open Messages")),
+
+      S(["#languageSelect", ".header-actions", "#menuButton"],
+        ["Choose your language", "Switch between Sheng + English, English and Kiswahili. Your guide follows the language you pick.", "You can give the guide a different language in its settings (⚙)."],
+        ["Chagua lugha", "Badilisha kati ya Sheng + English, English na Kiswahili. Mwongozo hufuata lugha unayochagua.", "Unaweza kuweka lugha tofauti kwa guide kwenye mipangilio (⚙)."],
+        ["Chagua language", "Badilisha kati ya Sheng + English, English na Kiswahili. Guide inafuata language unayochagua.", "Unaweza kuweka language tofauti kwa guide kwenye settings (⚙)."]),
+
+      S([".feature-strip article:nth-child(3)", ".feature-strip"],
+        ["Group buying", "Explore ways buyers can coordinate larger produce orders. Find it with Smart Assist and SACCO Hub just above the footer.", "Browse products to get started."],
+        ["Kununua kwa kikundi", "Angalia njia ambazo wanunuzi wanaweza kupanga oda kubwa za mazao. Ipo pamoja na Smart Assist na SACCO Hub juu ya footer.", "Anza kwa kuangalia bidhaa."],
+        ["Group buying", "Check njia ambazo buyers wanaweza ku-coordinate orders kubwa za produce. Iko na Smart Assist na SACCO Hub juu ya footer.", "Anza kwa ku-browse products."])
+    ];
+  }
+
+  /* ----------------------------------------------------------
+     9. VOICE PICKING
+     ---------------------------------------------------------- */
 
   const FEMALE_HINTS = ["female", "woman", "zira", "samantha", "karen", "moira", "tessa", "victoria", "aria", "jenny", "salli", "joanna", "ava", "serena", "susan", "hazel", "heera", "neerja", "natasha", "sara", "emma", "amy", "olivia", "nicole"];
   const MALE_HINTS = ["male", "man", "david", "mark", "george", "james", "guy", "ryan", "daniel", "fred", "thomas", "matthew", "aaron", "liam", "rishi", "prabhat", "charles", "oliver", "andrew", "brian", "eric", "alex"];
@@ -900,7 +1177,7 @@
   }
 
   /* ----------------------------------------------------------
-     9. BLINKING AND MOUTH MOVEMENT
+     10. BLINKING AND MOUTH MOVEMENT
      ---------------------------------------------------------- */
 
   function allAvatarSVGs() {
@@ -966,7 +1243,7 @@
   }
 
   /* ----------------------------------------------------------
-     10. SPEECH CONTROL AND OPTIONAL SMART ASSIST CONNECTION
+     11. SPEECH CONTROL AND OPTIONAL SMART ASSIST CONNECTION
      ---------------------------------------------------------- */
 
   function stopSpeech() {
@@ -1009,6 +1286,7 @@
         activeGuideUtterance = null;
         stopMouthMovement();
         updateVoiceStatus();
+        if (typeof options.onDone === "function") options.onDone();
       }
     };
 
@@ -1069,7 +1347,7 @@
   }
 
   /* ----------------------------------------------------------
-     11. AVATAR MOUNTING
+     12. AVATAR MOUNTING
      ---------------------------------------------------------- */
 
   function renderSelectedCharacter() {
@@ -1139,15 +1417,27 @@
   }
 
   /* ----------------------------------------------------------
-     12. TARGET FINDING, HIGHLIGHTING AND SMART POSITIONING
+     13. TARGET FINDING, HIGHLIGHTING AND SMART POSITIONING
      ---------------------------------------------------------- */
 
+  function isVisible(element) {
+    const rect = element.getBoundingClientRect();
+    if (rect.width < 2 || rect.height < 2) return false;
+    const computed = getComputedStyle(element);
+    return computed.display !== "none" && computed.visibility !== "hidden";
+  }
+
+  // Returns the first VISIBLE match, so hidden mobile-menu links fall back
+  // to the next selector instead of highlighting nothing.
   function findTarget(step) {
     if (!step || !Array.isArray(step.targets)) return null;
     for (const selector of step.targets) {
       try {
-        const element = document.querySelector(selector);
-        if (element && element !== widget && !widget.contains(element) && element !== compass) return element;
+        const matches = document.querySelectorAll(selector);
+        for (const element of matches) {
+          if (element === widget || widget.contains(element) || element === compass || element === pin) continue;
+          if (isVisible(element)) return element;
+        }
       } catch { /* Ignore invalid selectors. */ }
     }
     return null;
@@ -1160,6 +1450,7 @@
     highlightTarget.style.removeProperty("outline-offset");
     highlightTarget.style.removeProperty("border-radius");
     highlightTarget = null;
+    updatePin();
   }
 
   function resetGuidePosition() {
@@ -1170,64 +1461,86 @@
     widget.style.removeProperty("width");
   }
 
-  function positionGuideAwayFromTarget(target) {
+  // Chooses where the panel sits. Returns "bottom" (target sits above the
+  // panel) or "side" (panel sits on the opposite side of the target).
+  function placePanel(target) {
     if (!target || !guideOpen) {
       resetGuidePosition();
-      return;
+      return "bottom";
     }
 
     const rect = target.getBoundingClientRect();
     const screenWidth = window.innerWidth;
-    const screenHeight = window.innerHeight;
-    const mobile = screenWidth <= 600;
-    const targetCenterX = rect.left + rect.width / 2;
-    const targetCenterY = rect.top + rect.height / 2;
 
-    if (mobile) {
-      // Phones do not have enough width for side-by-side placement.
+    if (screenWidth <= 600) {
+      // Phones: a full-width sheet at the bottom; the page scrolls above it.
       widget.style.left = screenWidth <= 360 ? "6px" : "8px";
       widget.style.right = screenWidth <= 360 ? "6px" : "8px";
       widget.style.width = "auto";
-      if (targetCenterY > screenHeight * 0.50) {
-        widget.style.top = "8px";
-        widget.style.bottom = "auto";
-      } else {
-        widget.style.top = "auto";
-        widget.style.bottom = screenWidth <= 360 ? "66px" : "70px";
-      }
-      return;
+      widget.style.top = "auto";
+      widget.style.bottom = screenWidth <= 360 ? "66px" : "70px";
+      return "bottom";
     }
 
     widget.style.width = "min(370px, calc(100vw - 28px))";
+    widget.style.top = "auto";
+    widget.style.bottom = "70px";
 
-    // Opposite side of the target, unless the target spans nearly all the width.
+    // Wide targets (filters, listings, hero) leave no room at the side.
     if (rect.width > screenWidth * 0.68) {
       widget.style.left = "14px";
       widget.style.right = "auto";
-      if (targetCenterY > screenHeight / 2) {
-        widget.style.top = "12px";
-        widget.style.bottom = "auto";
-      } else {
-        widget.style.top = "auto";
-        widget.style.bottom = "70px";
-      }
-      return;
+      return "bottom";
     }
 
-    if (targetCenterX < screenWidth / 2) {
+    if (rect.left + rect.width / 2 < screenWidth / 2) {
       widget.style.left = "auto";
       widget.style.right = "14px";
     } else {
       widget.style.left = "14px";
       widget.style.right = "auto";
     }
+    return "side";
+  }
 
-    if (targetCenterY > screenHeight / 2) {
-      widget.style.top = "12px";
-      widget.style.bottom = "auto";
-    } else {
-      widget.style.top = "auto";
-      widget.style.bottom = "70px";
+  // Scrolls the page so the highlighted target is not hidden by the panel
+  // or by a sticky header.
+  function keepTargetInView(target, mode) {
+    if (!target || !target.isConnected) return;
+    const smooth = !(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+    const rect = target.getBoundingClientRect();
+
+    let zoneTop = 8;
+    const topbar = document.querySelector(".topbar, header.topbar");
+    if (topbar) {
+      const position = getComputedStyle(topbar).position;
+      if (position === "sticky" || position === "fixed") {
+        zoneTop = Math.max(8, topbar.getBoundingClientRect().bottom + 8);
+      }
+    }
+
+    let zoneBottom = window.innerHeight - 8;
+    if (mode !== "side") {
+      const panelRect = widget.getBoundingClientRect();
+      if (panelRect.height > 0) zoneBottom = Math.min(zoneBottom, panelRect.top - 8);
+    }
+
+    const zoneHeight = Math.max(80, zoneBottom - zoneTop);
+    let delta = 0;
+
+    if (rect.height >= zoneHeight) {
+      delta = rect.top - zoneTop;
+    } else if (mode === "side") {
+      delta = rect.top + rect.height / 2 - (zoneTop + zoneHeight / 2);
+    } else if (rect.top < zoneTop || rect.bottom > zoneBottom) {
+      delta = rect.top - zoneTop - (zoneHeight - rect.height) / 2;
+    }
+
+    if (Math.abs(delta) < 3) return;
+    try {
+      window.scrollBy({ top: delta, left: 0, behavior: smooth ? "smooth" : "auto" });
+    } catch {
+      window.scrollBy(0, delta);
     }
   }
 
@@ -1236,6 +1549,7 @@
     const target = findTarget(step);
     if (!target) {
       resetGuidePosition();
+      updatePin();
       return;
     }
 
@@ -1245,53 +1559,237 @@
     target.style.setProperty("outline-offset", "3px", "important");
     target.style.setProperty("border-radius", "6px", "important");
 
-    try {
-      target.scrollIntoView({ behavior: "auto", block: "nearest", inline: "nearest" });
-    } catch { /* Written guidance remains available. */ }
+    panelMode = placePanel(target);
 
-    // Let the browser finish scrolling and laying out before measuring positions.
+    // Let layout settle before measuring and scrolling.
     requestAnimationFrame(() => {
-      if (guideOpen && highlightTarget === target) positionGuideAwayFromTarget(target);
+      if (guideOpen && highlightTarget === target) {
+        keepTargetInView(target, panelMode);
+        updatePin();
+      }
     });
   }
 
+  /* Numbered pin that follows the highlighted target. */
+  function updatePin() {
+    pinQueued = false;
+    if (!guideOpen || !highlightTarget || !highlightTarget.isConnected || currentStep >= STEPS.length) {
+      pin.style.display = "none";
+      return;
+    }
+    const rect = highlightTarget.getBoundingClientRect();
+    if (rect.bottom < 0 || rect.top > window.innerHeight || rect.right < 0 || rect.left > window.innerWidth) {
+      pin.style.display = "none";
+      return;
+    }
+    pin.textContent = String(currentStep + 1);
+    pin.style.display = "grid";
+    pin.style.left = Math.max(4, Math.min(window.innerWidth - 30, rect.left - 10)) + "px";
+    pin.style.top = Math.max(4, rect.top - 13) + "px";
+  }
+
+  function queuePinUpdate() {
+    if (pinQueued) return;
+    pinQueued = true;
+    requestAnimationFrame(updatePin);
+  }
+
   /* ----------------------------------------------------------
-     13. TOUR TEXT AND CONTROLS
+     14. STEP ACTIONS ("TRY IT" DEMOS AND PAGE LINKS)
      ---------------------------------------------------------- */
+
+  function actionLabel(action) {
+    if (!action || !action.label) return "";
+    return action.label[effectiveLanguage()] || action.label.en;
+  }
+
+  function undoAction() {
+    clearTyping();
+    if (actionRunning && activeActionStep && activeActionStep.action && typeof activeActionStep.action.undo === "function") {
+      try { activeActionStep.action.undo(); } catch { /* ignore */ }
+    }
+    actionRunning = false;
+  }
+
+  function setupAction(step) {
+    undoAction();
+    activeActionStep = step;
+    if (!step || !step.action) {
+      ui.action.hidden = true;
+      return;
+    }
+    ui.action.hidden = false;
+    ui.action.textContent = actionLabel(step.action);
+  }
+
+  ui.action.addEventListener("click", () => {
+    const step = STEPS[currentStep];
+    if (!step || !step.action) return;
+    const action = step.action;
+
+    if (action.href) {
+      window.location.href = action.href;
+      return;
+    }
+
+    if (!actionRunning) {
+      try { action.run(); } catch { /* ignore */ }
+      actionRunning = true;
+      ui.action.textContent = t("reset");
+    } else {
+      undoAction();
+      ui.action.textContent = actionLabel(action);
+    }
+  });
+
+  /* ----------------------------------------------------------
+     15. TOUR TEXT AND CONTROLS
+     ---------------------------------------------------------- */
+
+  function clearAutoTimer() {
+    if (autoTimer) clearTimeout(autoTimer);
+    autoTimer = null;
+  }
+
+  function advanceAutomatically() {
+    if (autoPlay && guideOpen && tourStarted && currentStep < STEPS.length - 1) {
+      renderStep(currentStep + 1, true);
+    }
+  }
+
+  function buildDots() {
+    ui.dots.innerHTML = "";
+    STEPS.forEach((step, index) => {
+      const dot = document.createElement("button");
+      dot.type = "button";
+      dot.className = "mb-guide-dot";
+      dot.setAttribute("aria-label", "Go to step " + (index + 1));
+      dot.addEventListener("click", () => {
+        tourStarted = true;
+        renderStep(index, true);
+      });
+      ui.dots.appendChild(dot);
+    });
+  }
+
+  function updateDots() {
+    Array.from(ui.dots.children).forEach((dot, index) => {
+      dot.classList.toggle("mb-guide-dot-active", index === currentStep && currentStep < STEPS.length);
+      dot.classList.toggle("mb-guide-dot-done", index < currentStep);
+    });
+  }
+
+  function celebrate() {
+    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (typeof Element.prototype.animate !== "function") return;
+    const emojis = ["🌽", "🍅", "🥑", "🥕", "🌱", "🍋"];
+    const origin = compass.getBoundingClientRect();
+    for (let i = 0; i < 14; i += 1) {
+      const piece = document.createElement("span");
+      piece.textContent = emojis[i % emojis.length];
+      piece.setAttribute("aria-hidden", "true");
+      piece.style.cssText = "position:fixed;z-index:99981;pointer-events:none;font-size:22px;left:" +
+        (origin.left + origin.width / 2) + "px;top:" + (origin.top + origin.height / 2) + "px;";
+      document.body.appendChild(piece);
+      const dx = (Math.random() - 0.1) * 240;
+      const dy = 120 + Math.random() * 220;
+      const turn = (Math.random() - 0.5) * 120;
+      const animation = piece.animate([
+        { transform: "translate(0,0) scale(.6)", opacity: 1 },
+        { transform: "translate(" + dx + "px," + (-dy) + "px) rotate(" + turn + "deg) scale(1.1)", opacity: 0 }
+      ], { duration: 1300 + Math.random() * 700, easing: "cubic-bezier(.2,.8,.3,1)" });
+      animation.onfinish = () => piece.remove();
+    }
+  }
 
   function renderStep(index, shouldSpeak = false) {
     if (index < 0 || index >= STEPS.length) return;
+    clearAutoTimer();
     currentStep = index;
     const step = STEPS[currentStep];
     const wording = stepWording(step);
     stopSpeech();
 
-    ui.eyebrow.textContent = effectiveLanguage() === "sw" ? "TOUR YA WEBSITE" : "YOUR WEBSITE TOUR";
+    ui.eyebrow.textContent = t("eyebrow");
     ui.title.textContent = wording.title;
     ui.description.textContent = wording.body;
     ui.tip.textContent = wording.tip;
+    if (minimised) ui.brandText.textContent = wording.title;
 
     const stepNumber = currentStep + 1;
     const percentage = Math.round((stepNumber / STEPS.length) * 100);
-    ui.count.textContent = "Step " + stepNumber + " of " + STEPS.length;
+    ui.count.textContent = t("step", stepNumber, STEPS.length);
     ui.percent.textContent = percentage + "%";
     ui.progressValue.style.width = percentage + "%";
     ui.progressTrack.setAttribute("aria-valuenow", String(percentage));
     ui.back.disabled = currentStep === 0;
-    ui.next.textContent = tourStarted ? (currentStep === STEPS.length - 1 ? "Finish" : "Next") : "Start tour";
+    ui.next.textContent = tourStarted ? (currentStep === STEPS.length - 1 ? t("finish") : t("next")) : t("start");
+    applyUiLanguage();
+    updateDots();
 
+    setupAction(step);
     highlightStep(step);
     updateVoiceStatus();
 
-    if (shouldSpeak && readAloud) {
-      speak(wording.title + ". " + wording.body, {
+    const willSpeak = shouldSpeak && readAloud && ("speechSynthesis" in window);
+    const spokenText = wording.title + ". " + wording.body;
+
+    if (willSpeak) {
+      speak(spokenText, {
         character: selectedCharacter,
-        language: effectiveLanguage()
+        language: effectiveLanguage(),
+        onDone: () => {
+          if (!autoPlay) return;
+          clearAutoTimer();
+          autoTimer = setTimeout(advanceAutomatically, 1100);
+        }
       });
+    }
+
+    // Auto-play fallback: covers read-aloud being off or speech failing.
+    if (autoPlay && tourStarted && currentStep < STEPS.length - 1) {
+      const reading = Math.max(6000, spokenText.length * 70);
+      autoTimer = setTimeout(advanceAutomatically, willSpeak ? reading + 9000 : reading);
     }
   }
 
+  function showFinishScreen() {
+    clearAutoTimer();
+    stopSpeech();
+    undoAction();
+    activeActionStep = null;
+    ui.action.hidden = true;
+    clearTargetHighlight();
+    resetGuidePosition();
+    currentStep = STEPS.length;
+
+    ui.eyebrow.textContent = t("eyebrow");
+    ui.title.textContent = t("readyTitle");
+    ui.description.textContent = t("readyBody");
+    ui.tip.textContent = t("readyTip");
+    ui.count.textContent = t("done");
+    ui.percent.textContent = "100%";
+    ui.progressValue.style.width = "100%";
+    ui.progressTrack.setAttribute("aria-valuenow", "100");
+    ui.back.disabled = false;
+    ui.next.textContent = t("close");
+    if (minimised) ui.brandText.textContent = t("readyTitle");
+    applyUiLanguage();
+    updateDots();
+    storageSet(STORAGE.completed, "yes");
+    celebrate();
+  }
+
+  function removeNudge() {
+    if (nudgeElement) {
+      nudgeElement.remove();
+      nudgeElement = null;
+    }
+    compass.classList.remove("mb-guide-attention");
+  }
+
   function openGuide() {
+    removeNudge();
     guideOpen = true;
     widget.classList.add("mb-guide-open");
     compass.setAttribute("aria-expanded", "true");
@@ -1305,11 +1803,14 @@
 
   function closeGuide() {
     guideOpen = false;
+    clearAutoTimer();
     widget.classList.remove("mb-guide-open");
     compass.setAttribute("aria-expanded", "false");
     stopSpeech();
+    undoAction();
     clearTargetHighlight();
     resetGuidePosition();
+    updatePin();
     storageSet(STORAGE.completed, "yes");
   }
 
@@ -1325,25 +1826,7 @@
       return;
     }
 
-    stopSpeech();
-    clearTargetHighlight();
-    resetGuidePosition();
-    currentStep = STEPS.length;
-
-    ui.title.textContent = selectedLanguageMode === "sw" ? "Uko tayari kuendelea!" : "You're ready to explore!";
-    ui.description.textContent = selectedLanguageMode === "sw"
-      ? "Tumia compass hapa chini kufungua guide tena wakati wowote."
-      : "Use the compass button whenever you need help again.";
-    ui.tip.textContent = selectedLanguageMode === "sw"
-      ? "Asante kwa kutumia MavunoBridge."
-      : "Thanks for exploring MavunoBridge.";
-    ui.count.textContent = "Tour completed";
-    ui.percent.textContent = "100%";
-    ui.progressValue.style.width = "100%";
-    ui.progressTrack.setAttribute("aria-valuenow", "100");
-    ui.back.disabled = false;
-    ui.next.textContent = "Close";
-    storageSet(STORAGE.completed, "yes");
+    showFinishScreen();
   }
 
   function previousStep() {
@@ -1356,8 +1839,13 @@
     if (currentStep > 0) renderStep(currentStep - 1, true);
   }
 
+  function restartTour() {
+    tourStarted = true;
+    renderStep(0, true);
+  }
+
   /* ----------------------------------------------------------
-     14. CONTROL EVENTS
+     16. CONTROL EVENTS
      ---------------------------------------------------------- */
 
   ui.characterSelect.addEventListener("change", () => {
@@ -1379,6 +1867,24 @@
     stopSpeech();
     if (guideOpen && currentStep < STEPS.length) {
       renderStep(currentStep, tourStarted && readAloud);
+    } else if (guideOpen) {
+      showFinishScreen();
+    }
+    applyUiLanguage();
+    updateVoiceStatus();
+  });
+
+  // Follow the website's own language switcher when set to Automatic.
+  document.addEventListener("change", (event) => {
+    const target = event.target;
+    if (!target || target.id !== "languageSelect") return;
+    if (selectedLanguageMode !== "auto") return;
+    stopSpeech();
+    applyUiLanguage();
+    if (guideOpen && currentStep < STEPS.length) {
+      renderStep(currentStep, false);
+    } else if (guideOpen) {
+      showFinishScreen();
     }
     updateVoiceStatus();
   });
@@ -1401,6 +1907,17 @@
     }
   });
 
+  ui.autoplay.addEventListener("change", () => {
+    autoPlay = ui.autoplay.checked;
+    clearAutoTimer();
+    if (autoPlay && guideOpen && !tourStarted) {
+      tourStarted = true;
+      renderStep(currentStep, true);
+    } else if (autoPlay && guideOpen && tourStarted && currentStep < STEPS.length) {
+      renderStep(currentStep, true);
+    }
+  });
+
   ui.testVoice.addEventListener("click", () => {
     const language = effectiveLanguage();
     const samples = {
@@ -1411,15 +1928,62 @@
     speak(samples[language], { force: true, character: selectedCharacter, language });
   });
 
+  ui.settingsToggle.addEventListener("click", () => {
+    const open = widget.classList.toggle("mb-guide-settings-open");
+    ui.settingsToggle.setAttribute("aria-expanded", String(open));
+    if (open && minimised) setMinimised(false);
+    requestAnimationFrame(repositionAfterResize);
+  });
+
+  function setMinimised(value) {
+    minimised = value;
+    widget.classList.toggle("mb-guide-min", minimised);
+    ui.minimise.textContent = minimised ? "+" : "–";
+    ui.minimise.setAttribute("aria-label", minimised ? "Expand guide" : "Minimise guide");
+    ui.minimise.title = minimised ? "Expand guide" : "Minimise guide";
+    if (minimised) {
+      const step = STEPS[currentStep];
+      ui.brandText.textContent = step ? stepWording(step).title : t("readyTitle");
+    } else {
+      ui.brandText.textContent = t("guide");
+    }
+    requestAnimationFrame(repositionAfterResize);
+  }
+
+  ui.minimise.addEventListener("click", () => setMinimised(!minimised));
+
   compass.addEventListener("click", () => guideOpen ? closeGuide() : openGuide());
   ui.close.addEventListener("click", closeGuide);
-  ui.stop.addEventListener("click", stopSpeech);
-  ui.skip.addEventListener("click", closeGuide);
+  ui.stop.addEventListener("click", () => { stopSpeech(); clearAutoTimer(); });
+  ui.skip.addEventListener("click", () => {
+    if (currentStep >= STEPS.length) {
+      restartTour();
+    } else {
+      closeGuide();
+    }
+  });
   ui.back.addEventListener("click", previousStep);
   ui.next.addEventListener("click", () => currentStep >= STEPS.length ? closeGuide() : nextStep());
 
   document.addEventListener("keydown", (event) => {
-    if (guideOpen && event.key === "Escape") closeGuide();
+    if (!guideOpen) return;
+
+    if (event.key === "Escape") {
+      closeGuide();
+      return;
+    }
+
+    const element = event.target;
+    const tag = element && element.tagName ? element.tagName.toLowerCase() : "";
+    if (tag === "input" || tag === "textarea" || tag === "select" || (element && element.isContentEditable)) return;
+
+    if (event.key === "ArrowRight") {
+      event.preventDefault();
+      ui.next.click();
+    } else if (event.key === "ArrowLeft" && !ui.back.disabled) {
+      event.preventDefault();
+      ui.back.click();
+    }
   });
 
   const EXISTING_TRIGGER_SELECTOR = [
@@ -1438,23 +2002,50 @@
   });
 
   /* ----------------------------------------------------------
-     15. KEEP POSITION RESPONSIVE ON RESIZE/ROTATION
+     17. KEEP POSITION RESPONSIVE ON RESIZE, ROTATION AND SCROLL
      ---------------------------------------------------------- */
 
   function repositionAfterResize() {
     if (!guideOpen) return;
-    if (highlightTarget && highlightTarget.isConnected) {
-      positionGuideAwayFromTarget(highlightTarget);
+    if (highlightTarget && highlightTarget.isConnected && isVisible(highlightTarget)) {
+      panelMode = placePanel(highlightTarget);
+      keepTargetInView(highlightTarget, panelMode);
+    } else if (currentStep < STEPS.length) {
+      // The target may have appeared or disappeared (e.g. menu opened).
+      highlightStep(STEPS[currentStep]);
     } else {
       resetGuidePosition();
     }
+    updatePin();
   }
 
   window.addEventListener("resize", repositionAfterResize, { passive: true });
   window.addEventListener("orientationchange", () => setTimeout(repositionAfterResize, 120), { passive: true });
+  window.addEventListener("scroll", queuePinUpdate, { passive: true });
 
   /* ----------------------------------------------------------
-     16. PUBLIC API FOR SMART ASSIST
+     18. FRIENDLY NUDGE (NEVER OPENS THE GUIDE BY ITSELF)
+     ---------------------------------------------------------- */
+
+  function showNudge() {
+    if (guideOpen) return;
+    if (storageGet(STORAGE.completed, "") === "yes") return;
+    if (storageGet(STORAGE.nudge, "") === "yes") return;
+    storageSet(STORAGE.nudge, "yes");
+
+    nudgeElement = document.createElement("div");
+    nudgeElement.id = "mb-guide-nudge";
+    nudgeElement.setAttribute("role", "status");
+    nudgeElement.textContent = t("nudge");
+    nudgeElement.addEventListener("click", openGuide);
+    document.body.appendChild(nudgeElement);
+    compass.classList.add("mb-guide-attention");
+
+    setTimeout(removeNudge, 9000);
+  }
+
+  /* ----------------------------------------------------------
+     19. PUBLIC API FOR SMART ASSIST
      ---------------------------------------------------------- */
 
   window.MavunoBridgeAvatars = {
@@ -1464,6 +2055,18 @@
     stopTalking() { stopMouthMovement(); },
     openGuide() { openGuide(); },
     closeGuide() { closeGuide(); },
+    startTour() {
+      if (!guideOpen) openGuide();
+      restartTour();
+    },
+    goToStep(index) {
+      const number = Number(index);
+      if (!Number.isInteger(number) || number < 0 || number >= STEPS.length) return false;
+      if (!guideOpen) openGuide();
+      tourStarted = true;
+      renderStep(number, true);
+      return true;
+    },
     setCharacter(characterKey) {
       if (!CHARACTERS[characterKey]) return false;
       selectedCharacter = characterKey;
@@ -1478,6 +2081,7 @@
       ui.language.value = language;
       storageSet(STORAGE.language, language);
       if (guideOpen && currentStep < STEPS.length) renderStep(currentStep, false);
+      applyUiLanguage();
       updateVoiceStatus();
       return true;
     },
@@ -1494,14 +2098,18 @@
   };
 
   /* ----------------------------------------------------------
-     17. INITIALISE
+     20. INITIALISE
      ---------------------------------------------------------- */
 
   function initialiseGuide() {
     loadPreferences();
+    STEPS = buildSteps();
+    buildDots();
+
     ui.characterSelect.value = selectedCharacter;
     ui.language.value = selectedLanguageMode;
     ui.readAloud.checked = readAloud;
+    ui.autoplay.checked = autoPlay;
 
     renderSelectedCharacter();
     populateVoices();
@@ -1521,7 +2129,10 @@
     compass.setAttribute("aria-expanded", "false");
     guideOpen = false;
     resetGuidePosition();
+    applyUiLanguage();
     updateVoiceStatus();
+
+    setTimeout(showNudge, 2800);
   }
 
   if (document.readyState === "loading") {
