@@ -1,4 +1,3 @@
-
 "use strict";
 
 /* ==========================================
@@ -6,7 +5,8 @@
    English | Sheng + Kiswahili | Kiswahili
    ========================================== */
 
-const MAVUNO_LANGUAGE_KEY = "mavunobridge_language_v1";
+const MAVUNO_LANGUAGE_KEY = "mavunobridge_language_v2";
+const MAVUNO_LEGACY_LANGUAGE_KEY = "mavunobridge_language_v1";
 
 const MAVUNO_TRANSLATIONS = {
   en: {
@@ -366,16 +366,31 @@ const MAVUNO_PAGE_PHRASES = [
   ["Demo seller", "Demo seller", "Muuzaji wa mfano"],
   ["Automatic demo reply", "Jibu la demo", "Jibu la mfano"],
   ["Demo conversations with buyers and farmers.", "Chats za demo na buyers na farmers.", "Mazungumzo ya mfano na wanunuzi na wakulima."],
-  ["DEMO MODE · NOT A LIVE WEATHER FORECAST", "DEMO MODE · SI LIVE WEATHER", "MFANO TU · SI UTabiri HALISI WA HALI YA HEWA"]
+  ["DEMO MODE · NOT A LIVE WEATHER FORECAST", "DEMO MODE · SI LIVE WEATHER", "MFANO TU · SI UTABIRI HALISI WA HALI YA HEWA"]
 ];
 
-function getLanguage() {
+/*
+  Read the saved language. Some pages save it as plain text (en) and
+  others as JSON text ("en"), so accept both and the old _v1 key.
+*/
+function readSavedLanguage() {
   try {
-    const saved = localStorage.getItem(MAVUNO_LANGUAGE_KEY);
-    return ["en", "mix", "sw"].includes(saved) ? saved : "mix";
+    for (const key of [MAVUNO_LANGUAGE_KEY, MAVUNO_LEGACY_LANGUAGE_KEY]) {
+      const raw = localStorage.getItem(key);
+      if (!raw) continue;
+
+      const cleaned = raw.replace(/^"+|"+$/g, "");
+      if (["en", "mix", "sw"].includes(cleaned)) return cleaned;
+    }
   } catch (_) {
-    return "mix";
+    // Fall through to the default language.
   }
+
+  return "mix";
+}
+
+function getLanguage() {
+  return readSavedLanguage();
 }
 
 let currentLanguage = getLanguage();
