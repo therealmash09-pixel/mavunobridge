@@ -31,6 +31,7 @@
   let photoConsent = null;
   let photoAnalysisStatus = "";
   let generating = false;
+  let currentMatches = []; // FIX: this was used but never declared, which crashed Generate report
 
   /* ==========================================================
      1. LANGUAGE SETTINGS
@@ -43,6 +44,7 @@
       hero2: "Harvest with confidence.",
       heroDescription: "Choose a crop, county and farm condition. Get practical tips, possible symptom matches and a farm report you can save.",
       demoNotice: "Demo guidance only. This is not a live weather forecast or a confirmed disease diagnosis.",
+      plannerEyebrow: "PERSONALISED FARM PLANNER",
       planner: "Tell us about your farm",
       plannerIntro: "Add the details you know. You can leave optional fields blank.",
       county: "County",
@@ -165,6 +167,7 @@
       hero2: "Harvest ukiwa confident.",
       heroDescription: "Chagua crop, county na hali ya shamba. Pata practical tips, possible symptom matches na report ya kuhifadhi.",
       demoNotice: "Demo guidance tu. Hii si live weather forecast wala confirmed disease diagnosis.",
+      plannerEyebrow: "PERSONALISED FARM PLANNER",
       planner: "Tuambie kuhusu shamba lako",
       plannerIntro: "Jaza details unazojua. Optional fields unaweza kuacha wazi.",
       county: "County",
@@ -287,6 +290,7 @@
       hero2: "Vuna kwa uhakika.",
       heroDescription: "Chagua zao, kaunti na hali ya shamba. Pata maelekezo ya kilimo, dalili zinazoweza kufanana na ripoti unayoweza kuhifadhi.",
       demoNotice: "Maelekezo ya mfano pekee. Huu si utabiri wa hali ya hewa wa moja kwa moja wala utambuzi wa ugonjwa.",
+      plannerEyebrow: "MPANGO BINAFSI WA SHAMBA",
       planner: "Tuambie kuhusu shamba lako",
       plannerIntro: "Jaza maelezo unayojua. Unaweza kuacha sehemu zisizo za lazima wazi.",
       county: "Kaunti",
@@ -1467,7 +1471,7 @@
         throw new Error("Image service did not return matches.");
       }
 
-      photoAnalysisStatus = tr("imageConnected");
+      photoAnalysisStatus = tr("photoConnected"); // FIX: the old key "imageConnected" does not exist
       showStatus("saPhotoAnalysisStatus", photoAnalysisStatus);
 
       if (currentReport) {
@@ -1675,7 +1679,13 @@
       remove.textContent = tr("deleteReport");
       remove.addEventListener("click", () => {
         const next = readSavedReports().filter(item => item.id !== report.id);
-        localStorage.setItem(STORAGE.reports, JSON.stringify(next));
+
+        try {
+          localStorage.setItem(STORAGE.reports, JSON.stringify(next));
+        } catch (error) {
+          console.warn("Could not update saved reports:", error);
+        }
+
         renderSavedReports();
       });
 
@@ -1721,7 +1731,8 @@
         return `${answers.followUp} ${crop.name}: ${matchText}. ${answers.matchCaution} ${answers.pestAdvice}`;
       }
 
-      return `${answers.noDiagnosis} ${answers.pestAdvice}`;
+      // FIX: "noDiagnosis" does not exist, which printed the word "undefined"
+      return `${answers.noMatches} ${answers.noMatchesHint} ${answers.pestAdvice}`;
     }
 
     if (/water|dry|irrigat|rain/.test(q)) {
@@ -1834,7 +1845,7 @@
 
     updateText("#heroDescription", tr("heroDescription"));
     updateText("#heroNotice", tr("demoNotice"));
-    updateText("#plannerEyebrow", tr("plannerEyebrow") || "PERSONALISED FARM PLANNER");
+    updateText("#plannerEyebrow", tr("plannerEyebrow")); // FIX: now a real translation key
     updateText("#plannerTitle", tr("planner"));
     updateText("#plannerDescription", tr("plannerIntro"));
     updateText("#countyLabel", `${tr("county")} *`);
@@ -2028,9 +2039,10 @@
     let savedLanguage = "mix";
 
     try {
+      // FIX: read the newer key first so the language matches the other pages
       savedLanguage =
-        localStorage.getItem(STORAGE.language1) ||
         localStorage.getItem(STORAGE.language2) ||
+        localStorage.getItem(STORAGE.language1) ||
         "mix";
     } catch {}
 
