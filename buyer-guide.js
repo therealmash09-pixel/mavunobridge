@@ -509,12 +509,12 @@
     closeGuide
   );
 
-  /* Open guide from buttons in index.html. */
-  [
-    "#openGuideButton",
-    "#openGuideFromFeatures",
-    "#openGuideFooterButton"
-  ].forEach(selector => {
+  /*
+   * Only the "Help Guide" button in the header opens this chat guide.
+   * The "Open website guide" buttons in index.html open the animated
+   * tour (website-tour.js) instead.
+   */
+  ["#openGuideButton"].forEach(selector => {
     document.querySelector(selector)?.addEventListener("click", () => {
       openGuide();
     });
@@ -656,8 +656,7 @@
     if (
       /\b(create|make|publish|open)\s+(a\s+)?listing\b/.test(q) ||
       /\bsell (my |your )?(produce|products|crops)\b/.test(q) ||
-      /\bi want to sell\b/.test(q) ||
-      /\blist my produce\b/.test(q)
+      /\bi want to sell\b/.test(q)
     ) {
       return "listing";
     }
