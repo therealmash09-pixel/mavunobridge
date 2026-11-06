@@ -4,7 +4,8 @@
  * Before using:
  * 1. Deploy this file as a Cloudflare Worker.
  * 2. Add OPENAI_API_KEY as a Worker secret.
- * 3. Configure the allowed website origin.
+ * 3. Add ALLOWED_ORIGIN as a Worker variable, for example
+ *    https://therealmash09-pixel.github.io
  * 4. Put the deployed Worker URL in ai-config.js.
  *
  * Never expose the API key in browser code.
@@ -13,25 +14,33 @@
 export default {
   async fetch(request, env) {
     const allowedOrigin = env.ALLOWED_ORIGIN || "";
-
     const requestOrigin = request.headers.get("Origin") || "";
 
     const headers = {
-      "Access-Control-Allow-Origin":
-        allowedOrigin && requestOrigin === allowedOrigin
-          ? allowedOrigin
-          : "null",
       "Access-Control-Allow-Methods": "POST, OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type",
       "Content-Type": "application/json; charset=utf-8",
       "Vary": "Origin"
     };
 
+    if (allowedOrigin && requestOrigin === allowedOrigin) {
+      headers["Access-Control-Allow-Origin"] = allowedOrigin;
+    }
+
     if (request.method === "OPTIONS") {
       return new Response(null, { status: 204, headers });
     }
 
-    if (allowedOrigin && requestOrigin !== allowedOrigin) {
+    // Refuse to run unless the allowed website is configured,
+    // so strangers cannot use up the API key.
+    if (!allowedOrigin) {
+      return new Response(
+        JSON.stringify({ error: "AI is not configured. Use the offline Smart Assist demo." }),
+        { status: 503, headers }
+      );
+    }
+
+    if (requestOrigin !== allowedOrigin) {
       return new Response(
         JSON.stringify({ error: "Origin not allowed." }),
         { status: 403, headers }
@@ -47,16 +56,16 @@ export default {
 
     if (!env.OPENAI_API_KEY) {
       return new Response(
-        JSON.stringify({
-          error: "AI is not configured. Use the offline Smart Assist demo."
-        }),
+        JSON.stringify({ error: "AI is not configured. Use the offline Smart Assist demo." }),
         { status: 503, headers }
       );
     }
 
     try {
       const body = await request.json();
-      const question = String(body.question || "").trim().slice(0, 4000);
+      // Smart Assist puts the farmer's question at the END of a long
+      // prompt, so keep enough room that it is never cut off.
+      const question = String(body.question || "").trim().slice(0, 8000);
 
       if (!question) {
         return new Response(
