@@ -3,6 +3,9 @@
 
 const LOGIN_USER_KEY = "mavunobridge_demo_user_v1";
 
+const VERIFY_REDIRECT =
+  "https://therealmash09-pixel.github.io/mavunobridge/login.html";
+
 const loginEl = (selector) => document.querySelector(selector);
 
 const form = loginEl("#supabaseAuthForm");
@@ -20,6 +23,7 @@ const modePrompt = loginEl("#modePrompt");
 const notice = loginEl("#loginNotice");
 
 let isSignUp = true;
+let authClient = null;
 
 function showNotice(message) {
   notice.textContent = message;
@@ -39,7 +43,9 @@ function setLoading(loading) {
 function setMode(signUp) {
   isSignUp = signUp;
 
-  heading.textContent = signUp ? "Create your account" : "Welcome back";
+  heading.textContent = signUp
+    ? "Create your account"
+    : "Welcome back";
 
   subtitle.textContent = signUp
     ? "Join MavunoBridge and connect with Kenya's agricultural marketplace."
@@ -58,13 +64,17 @@ function setMode(signUp) {
     ? "new-password"
     : "current-password";
 
-  submitButton.textContent = signUp ? "Create account" : "Sign in";
+  submitButton.textContent = signUp
+    ? "Create account"
+    : "Sign in";
 
   modePrompt.textContent = signUp
     ? "Already have an account?"
     : "New to MavunoBridge?";
 
-  modeToggle.textContent = signUp ? "Sign in" : "Create account";
+  modeToggle.textContent = signUp
+    ? "Sign in"
+    : "Create account";
 
   showNotice(
     signUp
@@ -92,7 +102,10 @@ function saveAuthenticatedUser(authUser) {
     signedInAt: Date.now()
   };
 
-  localStorage.setItem(LOGIN_USER_KEY, JSON.stringify(user));
+  localStorage.setItem(
+    LOGIN_USER_KEY,
+    JSON.stringify(user)
+  );
 
   return user;
 }
@@ -109,10 +122,13 @@ function getFriendlyError(error) {
   }
 
   if (message.includes("email not confirmed")) {
-    return "Please verify your email address before signing in.";
+    return "Your email is not confirmed yet.";
   }
 
-  if (message.includes("already registered")) {
+  if (
+    message.includes("already registered") ||
+    message.includes("already been registered")
+  ) {
     return "This email already has an account. Please sign in instead.";
   }
 
@@ -127,6 +143,69 @@ function getFriendlyError(error) {
   return error?.message || "Something went wrong. Please try again.";
 }
 
+function createSupabaseClient() {
+  if (
+    !window.supabase ||
+    !window.MAVUNO_SUPABASE_URL ||
+    !window.MAVUNO_SUPABASE_ANON_KEY
+  ) {
+    throw new Error("Supabase has not loaded correctly. Please refresh the page.");
+  }
+
+  return window.supabase.createClient(
+    window.MAVUNO_SUPABASE_URL,
+    window.MAVUNO_SUPABASE_ANON_KEY,
+    {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+      }
+    }
+  );
+}
+
+async function initializeAuthentication() {
+  try {
+    authClient = createSupabaseClient();
+
+    const { data, error } = await authClient.auth.getSession();
+
+    if (error) throw error;
+
+    if (data.session?.user) {
+      saveAuthenticatedUser(data.session.user);
+
+      showNotice(
+        "Your account is verified and you're signed in! Redirecting..."
+      );
+
+      setTimeout(redirectToMarketplace, 1200);
+      return;
+    }
+
+    const hash = window.location.hash.toLowerCase();
+
+    if (hash.includes("otp_expired")) {
+      showNotice(
+        "That verification link has expired. Sign in with your details to request a fresh confirmation email."
+      );
+
+      setMode(false);
+    } else if (hash.includes("error=access_denied")) {
+      showNotice(
+        "We couldn't verify that link. Please request a fresh confirmation email."
+      );
+
+      setMode(false);
+    }
+
+  } catch (error) {
+    console.error("MavunoBridge initialization error:", error);
+    showNotice(getFriendlyError(error));
+  }
+}
+
 async function handleAuthentication(event) {
   event.preventDefault();
 
@@ -135,20 +214,14 @@ async function handleAuthentication(event) {
   const email = emailInput.value.trim().toLowerCase();
   const password = passwordInput.value;
 
-  if (!window.supabase || !window.MAVUNO_SUPABASE_URL ||
-      !window.MAVUNO_SUPABASE_ANON_KEY) {
-    showNotice("Supabase has not loaded correctly. Please refresh the page.");
+  if (!authClient) {
+    showNotice("Supabase is still loading. Please refresh and try again.");
     return;
   }
 
   setLoading(true);
 
   try {
-    const client = window.supabase.createClient(
-      window.MAVUNO_SUPABASE_URL,
-      window.MAVUNO_SUPABASE_ANON_KEY
-    );
-
     if (isSignUp) {
       const name = nameInput.value.trim();
       const role = roleInput.value;
@@ -158,10 +231,11 @@ async function handleAuthentication(event) {
         return;
       }
 
-      const { data, error } = await client.auth.signUp({
+      const { data, error } = await authClient.auth.signUp({
         email,
         password,
         options: {
+          emailRedirectTo: VERIFY_REDIRECT,
           data: {
             full_name: name,
             role: role
@@ -174,25 +248,52 @@ async function handleAuthentication(event) {
       if (data.session && data.user) {
         saveAuthenticatedUser(data.user);
 
-        showNotice("Account created successfully! Redirecting...");
-
-        setTimeout(redirectToMarketplace, 900);
-      } else {
         showNotice(
-          "Registration successful! Please check your email and click the verification link before signing in."
+          "Account created successfully! Redirecting..."
         );
 
+        setTimeout(redirectToMarketplace, 1000);
+
+      } else {
         setMode(false);
         emailInput.value = email;
+
+        showNotice(
+          "Registration successful! Check your inbox for a fresh verification email. Click its link before signing in."
+        );
       }
 
     } else {
-      const { data, error } = await client.auth.signInWithPassword({
-        email,
-        password
-      });
+      const { data, error } =
+        await authClient.auth.signInWithPassword({
+          email,
+          password
+        });
 
-      if (error) throw error;
+      if (error) {
+        const message = String(error.message || "").toLowerCase();
+
+        if (message.includes("email not confirmed")) {
+          const { error: resendError } =
+            await authClient.auth.resend({
+              type: "signup",
+              email,
+              options: {
+                emailRedirectTo: VERIFY_REDIRECT
+              }
+            });
+
+          if (resendError) throw resendError;
+
+          showNotice(
+            "Your email is not verified yet. We've requested a fresh confirmation email. Check your inbox and Spam folder."
+          );
+
+          return;
+        }
+
+        throw error;
+      }
 
       if (!data.user) {
         throw new Error("Could not retrieve your account details.");
@@ -200,9 +301,11 @@ async function handleAuthentication(event) {
 
       saveAuthenticatedUser(data.user);
 
-      showNotice("Welcome back! Redirecting to MavunoBridge...");
+      showNotice(
+        "Welcome back! Redirecting to MavunoBridge..."
+      );
 
-      setTimeout(redirectToMarketplace, 900);
+      setTimeout(redirectToMarketplace, 1000);
     }
 
   } catch (error) {
@@ -218,13 +321,15 @@ form.addEventListener("submit", handleAuthentication);
 
 setMode(true);
 
-// Restore the email field from a previous browser session, if available.
 try {
-  const saved = JSON.parse(localStorage.getItem(LOGIN_USER_KEY) || "null");
+  const saved = JSON.parse(
+    localStorage.getItem(LOGIN_USER_KEY) || "null"
+  );
 
   if (saved) {
     emailInput.value = saved.email || "";
     nameInput.value = saved.name || "";
+
     roleInput.value = ["buyer", "farmer", "both"].includes(saved.role)
       ? saved.role
       : "buyer";
@@ -232,3 +337,5 @@ try {
 } catch (error) {
   console.warn("Could not restore previous login details:", error);
 }
+
+initializeAuthentication();
