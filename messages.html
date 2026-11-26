@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -13,8 +12,12 @@
   <link rel="stylesheet" href="style.css?v=13">
   <link rel="stylesheet" href="pages.css?v=2">
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+  <script src="supabase-config.js" defer></script>
+  <script src="mb-db.js?v=1" defer></script>
+  <script src="notifications.js?v=1" defer></script>
   <script src="language.js?v=2" defer></script>
-  <script src="messages.js?v=2" defer></script>
+  <script src="messages.js?v=3" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -41,14 +44,12 @@
       <div>
         <p class="eyebrow">STAY CONNECTED</p>
         <h2>Messages</h2>
-        <p class="muted">Chat with demo farmers and ask about their products.</p>
+        <p class="muted">Chat directly with farmers and buyers about their listings and requests.</p>
       </div>
       <a class="button button-green" href="index.html#marketplace">Browse products</a>
     </div>
-
     <div class="messages-notice">
-      Demo mode: sample contacts respond automatically based on your message.
-      Messages stay in this browser and are not delivered to real sellers.
+      Live messaging: your messages are delivered to the other person, and you'll get a notification when they reply. Never share passwords or send money to someone you haven't verified.
     </div>
 
     <section class="messenger">
@@ -61,16 +62,12 @@
         <div class="conversation-header">
           <div>
             <h3 id="conversationTitle">Choose a conversation</h3>
-            <p id="conversationSubtitle">Select a sample contact to begin.</p>
+            <p id="conversationSubtitle">Select a conversation to begin.</p>
           </div>
         </div>
 
         <div id="messageList" class="message-list" aria-live="polite">
           <div class="message-empty">Select a conversation on the left.</div>
-        </div>
-
-        <div id="typingIndicator" class="typing-indicator hidden" aria-live="polite">
-          Demo contact is typing...
         </div>
 
         <form id="messageForm" class="message-compose">
@@ -90,14 +87,13 @@
             id="sendMessageButton"
           >Send</button>
         </form>
-        <p class="chat-disclaimer">Automatic replies are simulated for this website demo.</p>
       </section>
     </section>
   </main>
 
   <footer class="footer">
     <a href="index.html">MavunoBridge Marketplace</a>
-    <p>Demo chat only. Live buyer-to-farmer messaging requires a shared backend.</p>
+    <p>Messages are private between you and the other person.</p>
   </footer>
 </body>
 </html>
