@@ -567,6 +567,7 @@
      shared by every visitor. Built-in samples stay as labelled demos.
   ========================================================= */
   let db = null;
+  let currentUserId = null;
   let remoteListings = [];
   const categoryIdByName = {};
   const categoryNameById = {};
@@ -662,8 +663,38 @@
     return rows.map(row => rowToListing(row, profiles[row.user_id]));
   }
 
+  // Owner actions: only the seller sees these buttons; the database enforces it too (RLS).
+  async function deleteOwnListing(item) {
+    if (!window.confirm(`Delete "${item.name}"? This cannot be undone.`)) return;
+    const client = getDb();
+    if (!client) { showToast("Could not reach the database."); return; }
+    const { error } = await client.from("listings").delete().eq("id", item.id);
+    if (error) { console.error(error); showToast("Could not delete: " + error.message); return; }
+    remoteListings = remoteListings.filter(listing => listing.id !== item.id);
+    listings = [...DEMO_LISTINGS, ...remoteListings];
+    renderListings();
+    showToast("Listing deleted.");
+  }
+
+  async function markOwnListingSold(item) {
+    if (!window.confirm(`Mark "${item.name}" as sold? It will disappear from the marketplace.`)) return;
+    const client = getDb();
+    if (!client) { showToast("Could not reach the database."); return; }
+    const { error } = await client.from("listings").update({ status: "sold" }).eq("id", item.id);
+    if (error) { console.error(error); showToast("Could not update: " + error.message); return; }
+    remoteListings = remoteListings.filter(listing => listing.id !== item.id);
+    listings = [...DEMO_LISTINGS, ...remoteListings];
+    renderListings();
+    showToast("Marked as sold.");
+  }
+
   async function refreshRemoteListings() {
     try {
+      const client = getDb();
+      if (client) {
+        const { data } = await client.auth.getSession();
+        currentUserId = data?.session?.user?.id || null;
+      }
       await loadLookups();
       remoteListings = await fetchRemoteListings();
       listings = [...DEMO_LISTINGS, ...remoteListings];
@@ -1026,6 +1057,22 @@
         callLink
       );
 
+      if (item.remote && currentUserId && item.ownerId === currentUserId) {
+        const soldButton = document.createElement("button");
+        soldButton.type = "button";
+        soldButton.className = "small";
+        soldButton.textContent = "Mark as sold";
+        soldButton.addEventListener("click", () => markOwnListingSold(item));
+
+        const deleteButton = document.createElement("button");
+        deleteButton.type = "button";
+        deleteButton.className = "small";
+        deleteButton.textContent = "Delete my listing";
+        deleteButton.addEventListener("click", () => deleteOwnListing(item));
+
+        actions.append(soldButton, deleteButton);
+      }
+
       body.append(category, title, location, profileStatus, reviewSummary, price, fairBadge, fairDetail, quantity);
       if (description.textContent) body.appendChild(description);
       body.appendChild(actions);
@@ -1221,6 +1268,7 @@
         return;
       }
       const userId = session.user.id;
+      currentUserId = userId;
 
       if (!Object.keys(categoryIdByName).length) await loadLookups();
       const categoryId = categoryIdByName[category];
