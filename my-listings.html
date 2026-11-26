@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#183522">
+
+  <title>My Listings | MavunoBridge</title>
+
+  <link rel="stylesheet" href="style.css?v=17">
+  <link rel="stylesheet" href="pages.css?v=2">
+
+  <style>
+    .ml-list { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); }
+    .ml-card { background: #fff; border: 1px solid #dce8d3; border-radius: 14px; overflow: hidden; display: flex; flex-direction: column; }
+    .ml-card img, .ml-noimg { width: 100%; height: 170px; object-fit: cover; display: block; background: linear-gradient(135deg, #edf4e7, #dce8d3); }
+    .ml-noimg { display: flex; align-items: center; justify-content: center; color: #36553b; font-weight: 700; font-size: .9rem; }
+    .ml-body { padding: 14px; display: grid; gap: 6px; flex: 1; }
+    .ml-body h3 { margin: 0; font-size: 1.05rem; }
+    .ml-meta { margin: 0; color: #5b6b5c; font-size: .88rem; }
+    .ml-price { font-weight: 800; color: #2f5d34; }
+    .ml-badge { display: inline-block; width: fit-content; padding: 2px 10px; border-radius: 999px; font-size: .75rem; font-weight: 800; background: #e4f1dc; color: #2f5d34; }
+    .ml-badge.sold { background: #f3e3d8; color: #8a4a1f; }
+    .ml-badge.hidden-status { background: #ececec; color: #555; }
+    .ml-actions { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 14px 14px; }
+    .ml-edit { display: grid; gap: 8px; padding: 0 14px 14px; }
+    .ml-edit label { display: grid; gap: 3px; font-size: .85rem; font-weight: 700; }
+    .ml-edit input, .ml-edit select, .ml-edit textarea { font: inherit; padding: 8px; border: 1px solid #c9d8c0; border-radius: 8px; }
+    .ml-empty { text-align: center; padding: 40px 16px; }
+    .ml-status { min-height: 1.4em; font-weight: 700; }
+    .ml-status.error { color: #a12a1a; }
+  </style>
+</head>
+
+<body>
+  <header class="topbar">
+    <a class="brand" href="index.html">
+      <span class="brand-mark">M</span>
+      <span>
+        Mavuno<span class="brand-light">Bridge</span>
+        <small>FARMING. CONNECTED.</small>
+      </span>
+    </a>
+
+    <nav class="page-nav" id="mainNav">
+      <a href="index.html">Marketplace</a>
+      <a href="my-listings.html" aria-current="page">My Listings</a>
+      <a href="smart-assist.html">Smart Assist</a>
+      <a href="sacco.html">SACCO Hub</a>
+      <a href="buyer-requests.html">Buyer Requests</a>
+      <a href="messages.html">Messages</a>
+    </nav>
+
+    <div class="top-actions">
+      <a class="text-link" href="index.html">← Marketplace</a>
+    </div>
+  </header>
+
+  <main class="page-shell">
+    <section class="page-hero">
+      <p class="eyebrow">SELLER DASHBOARD</p>
+      <h1>My listings</h1>
+      <p>Everything you've posted in one place. Update prices, mark items as sold, relist them, or remove them.</p>
+      <p><a class="button primary" href="index.html#marketplace" id="postNewLink">+ Post a new listing</a></p>
+    </section>
+
+    <section class="section page-section">
+      <p class="ml-status" id="mlStatus" role="status"></p>
+      <div class="ml-list" id="mlList"></div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script src="my-listings.js?v=1"></script>
+</body>
+</html>
