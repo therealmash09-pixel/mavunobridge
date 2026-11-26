@@ -117,12 +117,16 @@ function redirectToMarketplace() {
 function getFriendlyError(error) {
   const message = String(error?.message || "").toLowerCase();
 
+  if (message.includes("email rate limit exceeded")) {
+    return "Email sending limit reached. Please wait before requesting another email.";
+  }
+
   if (message.includes("invalid login credentials")) {
     return "Incorrect email or password. Please check your details.";
   }
 
   if (message.includes("email not confirmed")) {
-    return "Your email is not confirmed yet.";
+    return "Your email is not confirmed yet. Please check your inbox.";
   }
 
   if (
@@ -149,7 +153,9 @@ function createSupabaseClient() {
     !window.MAVUNO_SUPABASE_URL ||
     !window.MAVUNO_SUPABASE_ANON_KEY
   ) {
-    throw new Error("Supabase has not loaded correctly. Please refresh the page.");
+    throw new Error(
+      "Supabase has not loaded correctly. Please refresh the page."
+    );
   }
 
   return window.supabase.createClient(
@@ -188,16 +194,26 @@ async function initializeAuthentication() {
 
     if (hash.includes("otp_expired")) {
       showNotice(
-        "That verification link has expired. Sign in with your details to request a fresh confirmation email."
+        "That verification link has expired or is invalid. Please wait before requesting a new confirmation email."
       );
 
       setMode(false);
+
+      showNotice(
+        "That verification link has expired or is invalid. Please wait before requesting a new confirmation email."
+      );
+
     } else if (hash.includes("error=access_denied")) {
       showNotice(
-        "We couldn't verify that link. Please request a fresh confirmation email."
+        "We couldn't verify that link. Please check your email or try again later."
       );
 
       setMode(false);
+
+    } else if (hash.includes("access_token")) {
+      showNotice(
+        "Processing your verification. Please wait..."
+      );
     }
 
   } catch (error) {
@@ -215,7 +231,9 @@ async function handleAuthentication(event) {
   const password = passwordInput.value;
 
   if (!authClient) {
-    showNotice("Supabase is still loading. Please refresh and try again.");
+    showNotice(
+      "Supabase is still loading. Please refresh and try again."
+    );
     return;
   }
 
@@ -259,7 +277,7 @@ async function handleAuthentication(event) {
         emailInput.value = email;
 
         showNotice(
-          "Registration successful! Check your inbox for a fresh verification email. Click its link before signing in."
+          "Registration received! Please check your inbox and Spam folder for your confirmation email. Verify your account before signing in."
         );
       }
 
@@ -274,19 +292,8 @@ async function handleAuthentication(event) {
         const message = String(error.message || "").toLowerCase();
 
         if (message.includes("email not confirmed")) {
-          const { error: resendError } =
-            await authClient.auth.resend({
-              type: "signup",
-              email,
-              options: {
-                emailRedirectTo: VERIFY_REDIRECT
-              }
-            });
-
-          if (resendError) throw resendError;
-
           showNotice(
-            "Your email is not verified yet. We've requested a fresh confirmation email. Check your inbox and Spam folder."
+            "Your email is not verified yet. Please check your inbox for the confirmation email. No new email has been requested."
           );
 
           return;
@@ -296,7 +303,9 @@ async function handleAuthentication(event) {
       }
 
       if (!data.user) {
-        throw new Error("Could not retrieve your account details.");
+        throw new Error(
+          "Could not retrieve your account details."
+        );
       }
 
       saveAuthenticatedUser(data.user);
@@ -334,8 +343,12 @@ try {
       ? saved.role
       : "buyer";
   }
+
 } catch (error) {
-  console.warn("Could not restore previous login details:", error);
+  console.warn(
+    "Could not restore previous login details:",
+    error
+  );
 }
 
 initializeAuthentication();
