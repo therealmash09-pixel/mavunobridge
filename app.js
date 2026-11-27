@@ -576,6 +576,7 @@
 
   function getDb() {
     if (db) return db;
+    if (window.mavunoDb) { db = window.mavunoDb; return db; }
     if (!window.supabase || !window.MAVUNO_SUPABASE_URL || !window.MAVUNO_SUPABASE_ANON_KEY) return null;
     db = window.supabase.createClient(window.MAVUNO_SUPABASE_URL, window.MAVUNO_SUPABASE_ANON_KEY, {
       auth: { persistSession: true, autoRefreshToken: true }
@@ -1358,10 +1359,18 @@
     const item = listings.find(listing => listing.id === id);
     if (!item) { showToast(t("cartNotFound")); return; }
 
+    if (!item.remote || !item.ownerId) {
+      showToast("This is a sample listing. Chat works with real sellers' listings.");
+      return;
+    }
+    if (currentUserId && item.ownerId === currentUserId) {
+      showToast("This is your own listing.");
+      return;
+    }
+
     const payload = {
-      productId: item.id, productName: item.name, seller: item.seller,
-      county: item.county, phone: item.phone || "", price: Number(item.price) || 0,
-      quantity: item.qty || "", saleType: item.sale || "Both",
+      productId: item.id, sellerId: item.ownerId, productName: item.name,
+      seller: item.seller, county: item.county,
       message: t("chatDraft", item.name)
     };
 
