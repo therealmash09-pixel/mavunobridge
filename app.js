@@ -1,880 +1,3 @@
-(() => {
-  "use strict";
-
-  /* =========================================================
-     MAVUNOBRIDGE — MARKETPLACE ENGINE
-     Browser-only science-fair demo. No Supabase/backend needed.
-     Built-in demo listings load for every visitor, including QR
-     visitors on the published website. User listings are local
-     to the browser that created them.
-  ========================================================= */
-
-  const STORAGE = {
-    listings: "mavunobridge_listings_v6",
-    cart: "mavunobridge_cart_v6",
-    language: "mavunobridge_language_v2",
-    user: "mavunobridge_demo_user_v1",
-    pendingChat: "mavunobridge_pending_chat_v1",
-    groupBuys: "mavunobridge_group_buys_v1",
-    preOrders: "mavunobridge_preorders_v1",
-    deliveryRequests: "mavunobridge_delivery_requests_v1",
-    countyCircles: "mavunobridge_county_circles_v1",
-    plantingAlerts: "mavunobridge_planting_alerts_v1",
-    demoReviews: "mavunobridge_demo_reviews_v1",
-    learningProgress: "mavunobridge_learning_progress_v1"
-  };
-
-  const LEGACY_LISTING_KEYS = [
-    "mavunobridge_listings_v5",
-    "mavunobridge_listings_v4",
-    "shambamarket_listings_v4"
-  ];
-
-  const PREFILL_KEY = "mavunobridge_prefill_demand";
-  const $ = selector => document.querySelector(selector);
-  const $$ = selector => [...document.querySelectorAll(selector)];
-
-  const CATEGORIES = [
-    ["Fruits", "https://images.unsplash.com/photo-1619566636858-adf3ef46400b?auto=format&fit=crop&w=600&q=80"],
-    ["Vegetables", "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=600&q=80"],
-    ["Nuts", "https://images.unsplash.com/photo-1508061253366-f7da158b6d46?auto=format&fit=crop&w=600&q=80"],
-    ["Starchy Foods", "https://images.unsplash.com/photo-1518977676601-b53f82aba655?auto=format&fit=crop&w=600&q=80"],
-    ["Grains", "https://images.unsplash.com/photo-1551754655-cd27e38d2076?auto=format&fit=crop&w=600&q=80"],
-    ["Cereals", "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&w=600&q=80"],
-    ["Legumes", "https://images.unsplash.com/photo-1515543904379-3d757afe72e4?auto=format&fit=crop&w=600&q=80"],
-    ["Spices", "https://images.unsplash.com/photo-1532336414038-cf19250c5757?auto=format&fit=crop&w=600&q=80"],
-    ["Herbal Products", "https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?auto=format&fit=crop&w=600&q=80"],
-    ["Livestock", "https://cdn.britannica.com/77/245977-050-49358C4E/Cattle-feedlot-west-texas-beef-industry.jpg"],
-    ["Livestock Produce", "https://images.unsplash.com/photo-1506976785307-8732e854ad03?auto=format&fit=crop&w=600&q=80"],
-    ["Agricultural Inputs", "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=600&q=80"],
-    ["Farm Tools & Equipment", "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTNjAixX4z-6m9SMY-FlStrqHLfbR5tC9NIv4En1VUhENAS5x_UQnF3hGSU&s=10"],
-    ["Farmer Services", "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSJaK2kaHO7bAqVCY81kIufzqrcvQ--l5XQUD8HX5bMcFD6Jk-_vYHPy17W&s=10"]
-  ];
-
-  const CATEGORY_NAMES = CATEGORIES.map(([name]) => name);
-
-  const COUNTIES = [
-    "Baringo", "Bomet", "Bungoma", "Busia", "Elgeyo-Marakwet", "Embu",
-    "Garissa", "Homa Bay", "Isiolo", "Kajiado", "Kakamega", "Kericho",
-    "Kiambu", "Kilifi", "Kirinyaga", "Kisii", "Kisumu", "Kitui", "Kwale",
-    "Laikipia", "Lamu", "Machakos", "Makueni", "Mandera", "Marsabit",
-    "Meru", "Migori", "Mombasa", "Murang'a", "Nairobi City", "Nakuru",
-    "Nandi", "Narok", "Nyamira", "Nyandarua", "Nyeri", "Samburu", "Siaya",
-    "Taita-Taveta", "Tana River", "Tharaka-Nithi", "Trans Nzoia", "Turkana",
-    "Uasin Gishu", "Vihiga", "Wajir", "West Pokot"
-  ];
-
-  // Illustrative demo ranges only; these are not live market quotations.
-  const FAIR_GUIDE = [
-    { name: "Tomatoes", min: 60, max: 110, match: n => n.includes("tomato") },
-    { name: "Hass Avocados", min: 90, max: 180, match: n => n.includes("hass avocado") },
-    { name: "Maize", min: 45, max: 80, match: n => n.includes("maize") }
-  ];
-
-  const DEMO_LISTINGS = [
-    // FRUITS
-    {
-      id: "demo-avocado", demo: true, name: "Hass Avocados",
-      category: "Fruits", county: "Kiambu", town: "Limuru",
-      price: 120, unit: "kg", qty: "80 kg", sale: "Both",
-      seller: "Limuru Fresh Farm", phone: "0711223344",
-      image: "https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?auto=format&fit=crop&w=700&q=80",
-      description: "Fresh Hass avocados from a sample farm.", createdAt: 1
-    },
-    {
-      id: "demo-bananas", demo: true, name: "Bananas",
-      category: "Fruits", county: "Kisumu", town: "Kisumu",
-      price: 120, unit: "bunch", qty: "30 bunches", sale: "Retail",
-      seller: "Lake Region Farm", phone: "0777889900",
-      image: "https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?auto=format&fit=crop&w=700&q=80",
-      description: "Bananas available in bunches.", createdAt: 2
-    },
-    {
-      id: "demo-mango", demo: true, name: "Apple Mangoes",
-      category: "Fruits", county: "Makueni", town: "Wote",
-      price: 100, unit: "kg", qty: "100 kg", sale: "Both",
-      seller: "Wote Fruit Farm", phone: "0701234590",
-      image: "https://images.unsplash.com/photo-1553279768-865429fa0078?auto=format&fit=crop&w=700&q=80",
-      description: "Sample seasonal mango listing.", createdAt: 3
-    },
-
-    // VEGETABLES
-    {
-      id: "demo-tomatoes", demo: true, name: "Fresh Tomatoes",
-      category: "Vegetables", county: "Nakuru", town: "Naivasha",
-      price: 75, unit: "kg", qty: "120 kg", sale: "Both",
-      seller: "Naivasha Growers", phone: "0722334455",
-      image: "https://images.unsplash.com/photo-1546094096-0df4bcaaa337?auto=format&fit=crop&w=700&q=80",
-      description: "Fresh tomatoes. Sample demo listing.", createdAt: 4
-    },
-    {
-      id: "demo-onions", demo: true, name: "Red Onions",
-      category: "Vegetables", county: "Nakuru", town: "Gilgil",
-      price: 95, unit: "kg", qty: "90 kg", sale: "Both",
-      seller: "Gilgil Onion Growers", phone: "0788990011",
-      image: "https://images.unsplash.com/photo-1618512496248-a07fe83aa8cb?auto=format&fit=crop&w=700&q=80",
-      description: "Red onions for cooking and retail.", createdAt: 5
-    },
-    {
-      id: "demo-kales", demo: true, name: "Sukuma Wiki (Kale)",
-      category: "Vegetables", county: "Kiambu", town: "Thika",
-      price: 35, unit: "bunch", qty: "60 bunches", sale: "Retail",
-      seller: "Thika Green Farm", phone: "0700112233",
-      image: "https://cdn.mafrservices.com/pim-content/KEN/media/product/1482/1776092400/1482_main.jpg",
-      description: "Fresh kale in bunches from a sample produce listing.", createdAt: 6
-    },
-    {
-      id: "demo-cabbage", demo: true, name: "Green Cabbages",
-      category: "Vegetables", county: "Nyandarua", town: "Ol Kalou",
-      price: 45, unit: "piece", qty: "100 heads", sale: "Both",
-      seller: "Ol Kalou Vegetable Farm", phone: "0700112244",
-      image: "https://cdn.shopify.com/s/files/1/0470/7306/7165/files/freshpoint-green-cabbage-1000x1000.jpg?v=1728919839",
-      description: "Green cabbages sold by piece or in bulk.", createdAt: 7
-    },
-
-    // NUTS
-    {
-      id: "demo-groundnuts", demo: true, name: "Groundnuts (Peanuts)",
-      category: "Nuts", county: "Kilifi", town: "Malindi",
-      price: 220, unit: "kg", qty: "35 kg", sale: "Both",
-      seller: "Coastal Harvest", phone: "0712345601",
-      image: "https://finefolk.ch/cdn/shop/files/finefolk-runner-peanuts.jpg?v=1757598353&width=1200",
-      description: "Groundnuts from a sample coastal seller.", createdAt: 8
-    },
-
-    // STARCHY FOODS
-    {
-      id: "demo-potatoes", demo: true, name: "Irish Potatoes",
-      category: "Starchy Foods", county: "Nyandarua", town: "Ol Kalou",
-      price: 65, unit: "kg", qty: "200 kg", sale: "Bulk",
-      seller: "Nyandarua Potato Farm", phone: "0755667788",
-      image: "https://images.unsplash.com/photo-1518977676601-b53f82aba655?auto=format&fit=crop&w=700&q=80",
-      description: "Potatoes for retailers and food businesses.", createdAt: 9
-    },
-    {
-      id: "demo-sweet-potatoes", demo: true, name: "Orange-Fleshed Sweet Potatoes",
-      category: "Starchy Foods", county: "Busia", town: "Bumala",
-      price: 55, unit: "kg", qty: "85 kg", sale: "Both",
-      seller: "Bumala Root Crop Farm", phone: "0712345612",
-      image: "https://www.akkerbouwbedrijf.nl/content/uploads/sites/10/2021/12/zoeteaardappelennetuitdegrond.jpg",
-      description: "Orange-fleshed sweet potatoes sold by kilogram.", createdAt: 10
-    },
-
-    // GRAINS
-    {
-      id: "demo-maize", demo: true, name: "Dry Maize Grain",
-      category: "Grains", county: "Uasin Gishu", town: "Eldoret",
-      price: 58, unit: "kg", qty: "300 kg", sale: "Bulk",
-      seller: "Rift Valley Grain Hub", phone: "0733445566",
-      image: "https://images.unsplash.com/photo-1551754655-cd27e38d2076?auto=format&fit=crop&w=700&q=80",
-      description: "Dry maize grain for bulk buyers.", createdAt: 11
-    },
-    {
-      id: "demo-wheat", demo: true, name: "Wheat Grain",
-      category: "Grains", county: "Narok", town: "Narok",
-      price: 72, unit: "kg", qty: "250 kg", sale: "Bulk",
-      seller: "Narok Grain Growers", phone: "0790123489",
-      image: "https://i.brecorder.com/large/2026/03/31112158329b037.webp",
-      description: "Sample wheat grain listing for bulk buyers.", createdAt: 12
-    },
-
-    // CEREALS
-    {
-      id: "demo-millet", demo: true, name: "Finger Millet (Wimbi)",
-      category: "Cereals", county: "Kakamega", town: "Kakamega",
-      price: 140, unit: "kg", qty: "70 kg", sale: "Bulk",
-      seller: "Kakamega Wimbi Group", phone: "0799001122",
-      image: "https://ppmoilmill.com/cdn/shop/files/Finger_Millet_1.webp?v=1758176944&width=1200",
-      description: "Finger millet for food preparation and milling.", createdAt: 13
-    },
-    {
-      id: "demo-sorghum", demo: true, name: "Sorghum Grain",
-      category: "Cereals", county: "Kitui", town: "Kitui",
-      price: 95, unit: "kg", qty: "90 kg", sale: "Both",
-      seller: "Kitui Cereal Growers", phone: "0712345623",
-      image: "https://img500.exportersindia.com/product_images/bc-500/2024/8/13582260/richbloom-sorghum-seeds-1722589470-7524009.jpg",
-      description: "Sorghum grain available in sample quantities.", createdAt: 14
-    },
-
-    // LEGUMES
-    {
-      id: "demo-beans", demo: true, name: "Rosecoco Beans",
-      category: "Legumes", county: "Meru", town: "Meru",
-      price: 150, unit: "kg", qty: "60 kg", sale: "Both",
-      seller: "Meru Bean Farmers", phone: "0744556677",
-      image: "https://britnuts.co.uk/cdn/shop/files/rosecoco-beans.jpg?v=1694121682",
-      description: "Dry Rosecoco beans for home and business use.", createdAt: 15
-    },
-    {
-      id: "demo-green-grams", demo: true, name: "Green Grams (Ndengu)",
-      category: "Legumes", county: "Machakos", town: "Mwala",
-      price: 180, unit: "kg", qty: "45 kg", sale: "Both",
-      seller: "Machakos Dry Foods", phone: "0766778899",
-      image: "https://www.grocery.com/store/image/cache/catalog/aiva-we-believe-in-quality/aiva-green-moong-whole-mung-beans-green-gram-natur-0-500x500w.jpg",
-      description: "Green grams from a sample seller.", createdAt: 16
-    },
-    {
-      id: "demo-cowpeas", demo: true, name: "Cowpeas (Kunde Seeds)",
-      category: "Legumes", county: "Kitui", town: "Mwingi",
-      price: 130, unit: "kg", qty: "50 kg", sale: "Bulk",
-      seller: "Mwingi Legume Group", phone: "0712345634",
-      image: "https://organicsphere.com/cdn/shop/files/il_1588xN.3243093955_ox5e.jpg?v=1758899103",
-      description: "Dry cowpeas for cooking or planting only when seed suitability is confirmed with the seller.", createdAt: 17
-    },
-
-    // SPICES
-    {
-      id: "demo-cinnamon", demo: true, name: "Cinnamon Sticks",
-      category: "Spices", county: "Kwale", town: "Ukunda",
-      price: 450, unit: "kg", qty: "15 kg", sale: "Retail",
-      seller: "Coast Spice Farm", phone: "0723456712",
-      image: "https://images.unsplash.com/photo-1532336414038-cf19250c5757?auto=format&fit=crop&w=700&q=80",
-      description: "Cinnamon for cooking and food businesses.", createdAt: 18
-    },
-    {
-      id: "demo-ginger", demo: true, name: "Fresh Ginger Root",
-      category: "Spices", county: "Kakamega", town: "Mumias",
-      price: 160, unit: "kg", qty: "25 kg", sale: "Both",
-      seller: "Mumias Spice Growers", phone: "0712345645",
-      image: "https://images.ctfassets.net/3s5io6mnxfqz/3l70gsqlimAbkHsfA6jLkb/4a530ade13a910b3792103aafb56d1b6/AdobeStock_384941354_2.jpeg?w=1200",
-      description: "Fresh ginger root for cooking.", createdAt: 19
-    },
-
-    // HERBAL PRODUCTS
-    {
-      id: "demo-lemongrass", demo: true, name: "Dried Lemongrass",
-      category: "Herbal Products", county: "Kiambu", town: "Thika",
-      price: 250, unit: "kg", qty: "12 kg", sale: "Retail",
-      seller: "Thika Herb Garden", phone: "0700112255",
-      image: "https://dehaat.in/_next/image?q=75&url=https%3A%2F%2Fdehaat-kheti-prod.s3.amazonaws.com%2Fdjango-summernote%2F2021-07-26%2F147502b5-893c-4eff-8648-aed85183b153.png&w=3840",
-      description: "Dried lemongrass sold as a herbal plant product. No medical claims are made.", createdAt: 20
-    },
-    {
-      id: "demo-aloe", demo: true, name: "Aloe Vera Leaves",
-      category: "Herbal Products", county: "Makueni", town: "Wote",
-      price: 30, unit: "piece", qty: "80 leaves", sale: "Retail",
-      seller: "Wote Plant Nursery", phone: "0700112266",
-      image: "https://greenparadiselive.com/cdn/shop/files/Aloe_vera_plant_1.png?v=1729578285&width=1920",
-      description: "Aloe vera leaves sold as a plant product; use and suitability should be checked independently.", createdAt: 21
-    },
-
-    // LIVESTOCK
-    {
-      id: "demo-chicken", demo: true, name: "Indigenous Chickens",
-      category: "Livestock", county: "Kakamega", town: "Shinyalu",
-      price: 1200, unit: "animal", qty: "12 birds", sale: "Retail",
-      seller: "Western Poultry Demo Farm", phone: "0700223344",
-      image: "https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=700&q=80",
-      description: "Sample livestock listing. Confirm age and availability with the seller.", createdAt: 22
-    },
-    {
-      id: "demo-goat", demo: true, name: "Dairy Goat",
-      category: "Livestock", county: "Nyeri", town: "Othaya",
-      price: 12500, unit: "animal", qty: "2 goats", sale: "Retail",
-      seller: "Othaya Livestock Demo Farm", phone: "0700223355",
-      image: "https://images.pexels.com/photos/15084412/pexels-photo-15084412.jpeg?auto=compress&cs=tinysrgb&w=900",
-      description: "Sample dairy-goat listing. Confirm breed, health records and availability with the seller.", createdAt: 23
-    },
-
-    // LIVESTOCK PRODUCE
-    {
-      id: "demo-eggs", demo: true, name: "Fresh Chicken Eggs",
-      category: "Livestock Produce", county: "Kiambu", town: "Ruiru",
-      price: 450, unit: "tray", qty: "20 trays", sale: "Both",
-      seller: "Ruiru Poultry Demo Farm", phone: "0700334455",
-      image: "https://www.puga.es/php/thumbnail.php?alto=550&ancho=550&carpeta=articulos&img=articulo12343_1.jpg",
-      description: "Sample egg listing. Confirm tray size and availability with seller.", createdAt: 24
-    },
-    {
-      id: "demo-milk", demo: true, name: "Raw Cow's Milk",
-      category: "Livestock Produce", county: "Nakuru", town: "Njoro",
-      price: 70, unit: "litre", qty: "40 litres", sale: "Retail",
-      seller: "Njoro Dairy Demo Farm", phone: "0700334466",
-      image: "https://static.tygodnik-rolniczy.pl/images/2022/10/21/219264.webp",
-      description: "Illustrative raw-milk listing. Buyers should follow local food-safety and handling requirements.", createdAt: 25
-    },
-
-    // AGRICULTURAL INPUTS
-    {
-      id: "demo-onion-seedlings", demo: true, name: "Onion Seedlings",
-      category: "Agricultural Inputs", county: "Nakuru", town: "Njoro",
-      price: 2, unit: "piece", qty: "2,000 onion seedlings", sale: "Both",
-      seller: "Njoro Seedling Nursery", phone: "0700445566",
-      image: "https://www.jains.com/Tissue/Nursery/images/Seedling/Onion_770x441.jpg",
-      description: "Onion seedlings for transplanting. Confirm onion variety, seedling age and quantity before purchase.", createdAt: 26
-    },
-    {
-      id: "demo-tomato-seedlings", demo: true, name: "Tomato Seedlings",
-      category: "Agricultural Inputs", county: "Kiambu", town: "Limuru",
-      price: 3, unit: "piece", qty: "1,500 tomato seedlings", sale: "Both",
-      seller: "Limuru Seedling Nursery", phone: "0700445577",
-      image: "https://tarimdanhabercom.teimg.com/tarimdanhaber-com/images/upload/domatesfidesi_1.jpg",
-      description: "Tomato seedlings. Ask the nursery which tomato variety is available.", createdAt: 27
-    },
-    {
-      id: "demo-cabbage-seedlings", demo: true, name: "Cabbage Seedlings",
-      category: "Agricultural Inputs", county: "Nyandarua", town: "Ol Kalou",
-      price: 2, unit: "piece", qty: "1,000 cabbage seedlings", sale: "Both",
-      seller: "Ol Kalou Seedling Nursery", phone: "0700445588",
-      image: "https://www.epicgardening.com/wp-content/uploads/2023/05/Sowing-Cabbage-Seeds-Indoor.jpeg",
-      description: "Cabbage seedlings ready for transplanting. Confirm the variety with the nursery.", createdAt: 28
-    },
-    {
-      id: "demo-maize-seeds", demo: true, name: "Certified Maize Seeds",
-      category: "Agricultural Inputs", county: "Trans Nzoia", town: "Kitale",
-      price: 450, unit: "unit", qty: "15 packets", sale: "Retail",
-      seller: "Kitale Farm Inputs Demo Shop", phone: "0700445599",
-      image: "https://imaginecare.co.ke/wp-content/uploads/2022/09/Kenya-Seed-Maize-H629-Highland-2kg.jpg",
-      description: "Sample maize-seed listing. Confirm seed variety, packet weight and certification details with seller.", createdAt: 29
-    },
-    {
-      id: "demo-compost", demo: true, name: "Organic Farm Compost",
-      category: "Agricultural Inputs", county: "Murang'a", town: "Kangema",
-      price: 250, unit: "bag", qty: "40 bags", sale: "Both",
-      seller: "Kangema Soil Care Demo", phone: "0700445500",
-      image: "https://grow.ifa.coop/hs-fs/hubfs/Imported_Blog_Media/webimg_oakdell_compost.jpg?height=1800&name=webimg_oakdell_compost.jpg&width=1800",
-      description: "Sample compost listing; check bag size and contents with seller.", createdAt: 30
-    },
-
-    // FARM TOOLS & EQUIPMENT
-    {
-      id: "demo-jembe", demo: true, name: "Jembe Hand Hoe",
-      category: "Farm Tools & Equipment", county: "Nairobi City", town: "Nairobi",
-      price: 650, unit: "unit", qty: "20 hoes", sale: "Retail",
-      seller: "Farm Tools Demo Shop", phone: "0700556677",
-      image: "https://www.lehmans.com/cdn/shop/files/504eb2714521519b1600d3b4e45e9fe278213a48_100068957_1_L.png?v=1778777825&width=800",
-      description: "Sample listing for jembe hand hoes. Confirm handle and head type with seller.", createdAt: 31
-    },
-    {
-      id: "demo-sprayer", demo: true, name: "Knapsack Sprayer",
-      category: "Farm Tools & Equipment", county: "Nakuru", town: "Nakuru",
-      price: 3500, unit: "unit", qty: "8 sprayers", sale: "Retail",
-      seller: "Nakuru Equipment Demo Shop", phone: "0700556688",
-      image: "https://image.made-in-china.com/2f0j00OZTiVaWgHlry/16-Litres-Agriculture-Knapsack-Hand-Sprayer-Pump-for-Farm.webp",
-      description: "Sample knapsack sprayer listing. Confirm capacity and condition before purchase.", createdAt: 32
-    },
-
-    // FARMER SERVICES
-    {
-      id: "demo-plough", demo: true, name: "Land Ploughing Service",
-      category: "Farmer Services", county: "Trans Nzoia", town: "Kitale",
-      price: 3500, unit: "service", qty: "Bookings by arrangement", sale: "Both",
-      seller: "Kitale Farm Services Demo", phone: "0700667788",
-      image: "https://stories.cpre.org.uk/saveoursoils/assets/hgVcNoUE0l/tractor-ploughing-2560x1707.jpeg",
-      description: "Example ploughing service. Confirm acreage, date and final cost.", createdAt: 33
-    },
-    {
-      id: "demo-tractor-hire", demo: true, name: "Tractor Hire Service",
-      category: "Farmer Services", county: "Uasin Gishu", town: "Eldoret",
-      price: 5000, unit: "service", qty: "Bookings by arrangement", sale: "Both",
-      seller: "Eldoret Machinery Demo", phone: "0700667799",
-      image: "https://images.stockcake.com/public/2/4/5/245849e8-dc80-4a6f-9982-b48584318807_large/tractor-on-field-stockcake.jpg",
-      description: "Sample tractor-hire service. Confirm hourly/acre rate, fuel, schedule and travel costs.", createdAt: 34
-    },
-    {
-      id: "demo-soil-test", demo: true, name: "Farm Soil Testing Service",
-      category: "Farmer Services", county: "Nairobi City", town: "Nairobi",
-      price: 1500, unit: "service", qty: "Appointments available", sale: "Retail",
-      seller: "Agri Test Demo Service", phone: "0700667700",
-      image: "https://orbitoglobal.com/wp-content/uploads/2024/05/Lab-Tester-4-1024x678.jpg",
-      description: "Illustrative soil-testing service. Ask the provider what the test includes and how to submit a sample.", createdAt: 35
-    },
-    {
-      id: "demo-maize-starter-bundle", demo: true, name: "Quarter-Acre Maize Starter Bundle",
-      category: "Agricultural Inputs", county: "Trans Nzoia", town: "Kitale",
-      price: 3600, unit: "bundle", qty: "1 sample starter bundle", sale: "Retail",
-      seller: "MavunoBridge Input Bundle Demo", phone: "0700445501",
-      image: "https://imaginecare.co.ke/wp-content/uploads/2022/09/Kenya-Seed-Maize-H629-Highland-2kg.jpg",
-      description: "Illustrative input bundle concept: maize seed, a crop-planning checklist and a fertiliser-planning guide. Confirm product varieties, quantities and suitability with the supplier; delivery and fertiliser are not guaranteed to be included.", createdAt: 36
-    }
-  ];
-
-  let listings = [];
-  let cart = [];
-  let activeCategory = "All";
-  let visibleListingLimit = 12;
-  let categoryImageObserver = null;
-  let toastTimeout = null;
-  let isPublishing = false;
-  let currentLang = "mix";
-
-  const D = {
-    mix: {
-      addCart: "Add to cart", chatSeller: "Chat seller", contact: "Contact seller",
-      demoBadge: "DEMO LISTING", saleRetail: "Retail", saleBulk: "Bulk", saleBoth: "Both",
-      qtyOnRequest: "Quantity on request", sellerFallback: "Seller", fairNoLabel: "No guide yet",
-      fairNoDetail: "No matching demo price guide.", fairBelow: "Below demo guide",
-      fairAbove: "Above demo guide", fairWithin: "Within demo guide",
-      showing: n => `Showing ${n} listing${n === 1 ? "" : "s"}`,
-      categoryLabel: c => `Category: ${c}`,
-      hintAll: "Discover products and services from Kenyan sellers.",
-      hintCat: c => `Showing ${c}. Chagua product unayohitaji.`,
-      noContact: "No contact number was provided for this listing.",
-      chatDraft: n => `${n} bado iko? Bei ya mwisho ni ngapi?`,
-      chatFailed: "Imeshindwa kufungua chat. Hakikisha browser inaruhusu local storage.",
-      greeting: n => `Sasa, ${n}`, signedOut: "Umetoka kwa account.",
-      cartEmpty: "Your cart is empty. Browse the marketplace to add items.",
-      remove: "Remove", subtotal: v => `Demo subtotal: ${v}`,
-      cartAdded: n => `${n} added to your demo cart.`,
-      cartNotFound: "Listing not found. Refresh the page and try again.",
-      cartSaveFail: "Cart could not be saved in this browser.",
-      cartRemoved: "Item removed from cart.", cartCleared: "Cart cleared.",
-      publish: "Publish listing", publishing: "Publishing...",
-      published: "Listing published! Iko live kwenye marketplace hii browser.",
-      publishedNoPhoto: "Listing published without the photo (it was too big to save).",
-      publishedNoSave: "Listing added, but your browser blocked saving. It will disappear when you refresh.",
-      formMissing: "Listing form could not be found.", fillAll: "Tafadhali jaza required fields zote.",
-      badCategory: "Please choose a valid product category.", badCounty: "Please choose a valid county.",
-      badPrice: "Enter a price greater than zero.",
-      badPhone: "Enter a valid Kenyan phone number, e.g. 0712345678 or +254712345678.",
-      publishFailed: "Could not publish the listing. Please try again.",
-      langChanged: "Language set to Sheng + English."
-    },
-    en: {
-      addCart: "Add to cart", chatSeller: "Chat seller", contact: "Contact seller",
-      demoBadge: "DEMO LISTING", saleRetail: "Retail", saleBulk: "Bulk", saleBoth: "Retail + bulk",
-      qtyOnRequest: "Quantity on request", sellerFallback: "Seller", fairNoLabel: "No guide yet",
-      fairNoDetail: "No matching demo price guide.", fairBelow: "Below demo guide",
-      fairAbove: "Above demo guide", fairWithin: "Within demo guide",
-      showing: n => `Showing ${n} listing${n === 1 ? "" : "s"}`,
-      categoryLabel: c => `Category: ${c}`,
-      hintAll: "Discover products and services from Kenyan sellers.",
-      hintCat: c => `Showing ${c}. Pick the product you need.`,
-      noContact: "No contact number was provided for this listing.",
-      chatDraft: n => `Is the ${n} still available? What is your best price?`,
-      chatFailed: "Could not open the chat. Check that your browser allows local storage.",
-      greeting: n => `Hi, ${n}`, signedOut: "You have signed out.",
-      cartEmpty: "Your cart is empty. Browse the marketplace to add items.",
-      remove: "Remove", subtotal: v => `Demo subtotal: ${v}`,
-      cartAdded: n => `${n} added to your demo cart.`,
-      cartNotFound: "Listing not found. Refresh the page and try again.",
-      cartSaveFail: "Cart could not be saved in this browser.",
-      cartRemoved: "Item removed from cart.", cartCleared: "Cart cleared.",
-      publish: "Publish listing", publishing: "Publishing...",
-      published: "Listing published! It is now live on the marketplace in this browser.",
-      publishedNoPhoto: "Listing published without the photo (it was too big to save).",
-      publishedNoSave: "Listing added, but your browser blocked saving. It will disappear when you refresh.",
-      formMissing: "Listing form could not be found.", fillAll: "Please fill in all required fields.",
-      badCategory: "Please choose a valid product category.", badCounty: "Please choose a valid county.",
-      badPrice: "Enter a price greater than zero.",
-      badPhone: "Enter a valid Kenyan phone number, e.g. 0712345678 or +254712345678.",
-      publishFailed: "Could not publish the listing. Please try again.", langChanged: "Language changed to English."
-    },
-    sw: {
-      addCart: "Weka kikapuni", chatSeller: "Ongea na muuzaji", contact: "Wasiliana na muuzaji",
-      demoBadge: "TANGAZO LA MFANO", saleRetail: "Rejareja", saleBulk: "Jumla", saleBoth: "Rejareja + jumla",
-      qtyOnRequest: "Kiasi kwa ombi", sellerFallback: "Muuzaji", fairNoLabel: "Hakuna mwongozo bado",
-      fairNoDetail: "Hakuna mwongozo wa bei unaolingana.", fairBelow: "Chini ya mwongozo wa majaribio",
-      fairAbove: "Juu ya mwongozo wa majaribio", fairWithin: "Ndani ya mwongozo wa majaribio",
-      showing: n => n === 1 ? "Tangazo 1 linaonyeshwa" : `Matangazo ${n} yanaonyeshwa`,
-      categoryLabel: c => `Aina: ${c}`, hintAll: "Gundua bidhaa na huduma kutoka kwa wauzaji wa Kenya.",
-      hintCat: c => `Inaonyesha ${c}. Chagua bidhaa unayohitaji.`,
-      noContact: "Hakuna namba ya mawasiliano iliyotolewa kwa tangazo hili.",
-      chatDraft: n => `Je, ${n} bado ipo? Bei yako ya mwisho ni ngapi?`,
-      chatFailed: "Imeshindwa kufungua mazungumzo. Hakikisha kivinjari kinaruhusu hifadhi ya ndani.",
-      greeting: n => `Habari, ${n}`, signedOut: "Umetoka kwenye akaunti.",
-      cartEmpty: "Kikapu chako ni tupu. Tazama soko ili uongeze bidhaa.", remove: "Ondoa",
-      subtotal: v => `Jumla ndogo ya majaribio: ${v}`,
-      cartAdded: n => `${n} imewekwa kwenye kikapu chako cha majaribio.`,
-      cartNotFound: "Tangazo halikupatikana. Onyesha upya ukurasa kisha ujaribu tena.",
-      cartSaveFail: "Kikapu hakikuweza kuhifadhiwa kwenye kivinjari hiki.",
-      cartRemoved: "Bidhaa imeondolewa kwenye kikapu.", cartCleared: "Kikapu kimefutwa.",
-      publish: "Chapisha tangazo", publishing: "Inachapisha...",
-      published: "Tangazo limechapishwa! Sasa lipo kwenye soko katika kivinjari hiki.",
-      publishedNoPhoto: "Tangazo limechapishwa bila picha (ilikuwa kubwa mno kuhifadhiwa).",
-      publishedNoSave: "Tangazo limeongezwa, lakini kivinjari kimezuia kuhifadhi. Litatoweka ukionyesha upya ukurasa.",
-      formMissing: "Fomu ya tangazo haikupatikana.", fillAll: "Tafadhali jaza sehemu zote zinazohitajika.",
-      badCategory: "Tafadhali chagua aina halali ya bidhaa.", badCounty: "Tafadhali chagua kaunti halali.",
-      badPrice: "Weka bei inayozidi sifuri.",
-      badPhone: "Weka namba halali ya simu ya Kenya, mfano 0712345678 au +254712345678.",
-      publishFailed: "Imeshindwa kuchapisha tangazo. Tafadhali jaribu tena.", langChanged: "Lugha imebadilishwa."
-    }
-  };
-
-  function t(key, ...args) {
-    const table = D[currentLang] || D.mix;
-    const value = table[key] !== undefined ? table[key] : D.mix[key];
-    return typeof value === "function" ? value(...args) : value;
-  }
-
-  function saleLabel(sale) {
-    if (sale === "Bulk") return t("saleBulk");
-    if (sale === "Both") return t("saleBoth");
-    return t("saleRetail");
-  }
-
-  function money(value) {
-    return "KSh " + Number(value || 0).toLocaleString("en-KE", { maximumFractionDigits: 2 });
-  }
-
-  function normalizePhone(value) {
-    return String(value || "").trim().replace(/[\s()-]/g, "");
-  }
-
-  function validPhone(value) {
-    return /^(\+?254|0)?[17]\d{8}$/.test(normalizePhone(value));
-  }
-
-  function makeId() {
-    if (window.crypto && typeof window.crypto.randomUUID === "function") return "listing-" + window.crypto.randomUUID();
-    return "listing-" + Date.now() + "-" + Math.random().toString(36).slice(2, 10);
-  }
-
-  function escapeHTML(value) {
-    return String(value ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
-  }
-
-  function loadStorage(key, fallback) {
-    try {
-      const saved = localStorage.getItem(key);
-      if (!saved) return fallback;
-      return JSON.parse(saved);
-    } catch (error) {
-      console.warn("MavunoBridge: could not read local storage", error);
-      return fallback;
-    }
-  }
-
-  function saveStorage(key, value) {
-    try {
-      localStorage.setItem(key, JSON.stringify(value));
-      return true;
-    } catch (error) {
-      console.error("MavunoBridge: could not save local storage", error);
-      return false;
-    }
-  }
-    function updateHint() {
-    const hint = $("#marketHint");
-    if (hint) hint.textContent = activeCategory === "All" ? t("hintAll") : t("hintCat", activeCategory);
-  }
-
-  function normalizeCategory(category) {
-    const aliases = {
-      "Livestock Products": "Livestock Produce",
-      "Farm Inputs": "Agricultural Inputs",
-      "Tools & Equipment": "Farm Tools & Equipment",
-      "Starchy food": "Starchy Foods",
-      "Herbs": "Herbal Products"
-    };
-    const cleaned = aliases[String(category || "").trim()] || String(category || "").trim();
-    return CATEGORY_NAMES.includes(cleaned) ? cleaned : cleaned;
-  }
-
-  /* =========================================================
-     SUPABASE DATA LAYER
-     Real listings live in the Supabase `listings` table and are
-     shared by every visitor. Built-in samples stay as labelled demos.
-  ========================================================= */
-  let db = null;
-  let currentUserId = null;
-  let remoteListings = [];
-  const categoryIdByName = {};
-  const categoryNameById = {};
-  const countyIdByKey = {};
-  const countyNameById = {};
-
-  function getDb() {
-    if (db) return db;
-    if (window.mavunoDb) { db = window.mavunoDb; return db; }
-    if (!window.supabase || !window.MAVUNO_SUPABASE_URL || !window.MAVUNO_SUPABASE_ANON_KEY) return null;
-    db = window.supabase.createClient(window.MAVUNO_SUPABASE_URL, window.MAVUNO_SUPABASE_ANON_KEY, {
-      auth: { persistSession: true, autoRefreshToken: true }
-    });
-    return db;
-  }
-
-  // "Nairobi City County" and "Nairobi" must match; so must "Murang'a" and "Muranga".
-  function countyKey(name) {
-    let key = String(name || "").toLowerCase().replace(/\s*county$/, "").replace(/[^a-z]/g, "");
-    if (key === "nairobicity") key = "nairobi";
-    return key;
-  }
-
-  async function loadLookups() {
-    const client = getDb();
-    if (!client) throw new Error("Supabase is not available.");
-    const [cats, counties] = await Promise.all([
-      client.from("categories").select("id,name"),
-      client.from("counties").select("*")
-    ]);
-    if (cats.error) throw cats.error;
-    if (counties.error) throw counties.error;
-
-    (cats.data || []).forEach(row => {
-      const name = normalizeCategory(row.name);
-      categoryIdByName[name] = row.id;
-      categoryNameById[row.id] = name;
-    });
-
-    const appCountyByKey = {};
-    COUNTIES.forEach(name => { appCountyByKey[countyKey(name)] = name; });
-    (counties.data || []).forEach(row => {
-      const dbName = row.name || row.county_name || row.title || "";
-      const key = countyKey(dbName);
-      const appName = appCountyByKey[key] || dbName;
-      countyIdByKey[key] = row.id;
-      countyNameById[row.id] = appName;
-    });
-  }
-
-  function rowToListing(row, profile) {
-    const created = Date.parse(row.created_at);
-    return {
-      id: row.id,
-      demo: false,
-      remote: true,
-      ownerId: row.user_id,
-      name: row.product_name,
-      category: categoryNameById[row.category_id] || "",
-      county: countyNameById[row.county_id] || "",
-      town: row.town || "",
-      price: Number(row.price),
-      unit: row.price_unit || "kg",
-      qty: row.quantity_available || "",
-      sale: row.sale_type || "Both",
-      condition: row.condition || "",
-      description: row.description || "",
-      image: row.image_url || "",
-      seller: (profile && profile.display_name) || "MavunoBridge seller",
-      phone: (profile && profile.phone) || "",
-      createdAt: Number.isFinite(created) ? created : Date.now()
-    };
-  }
-
-  async function fetchRemoteListings() {
-    const client = getDb();
-    if (!client) return [];
-    const { data, error } = await client
-      .from("listings")
-      .select("id,user_id,category_id,county_id,product_name,town,price,price_unit,quantity_available,sale_type,condition,description,image_url,created_at")
-      .eq("status", "active")
-      .order("created_at", { ascending: false })
-      .limit(300);
-    if (error) throw error;
-
-    const rows = data || [];
-    const ids = [...new Set(rows.map(row => row.user_id))];
-    const profiles = {};
-    if (ids.length) {
-      let res = await client.from("profiles").select("id,display_name,phone").in("id", ids);
-      if (res.error) res = await client.from("profiles").select("id,display_name").in("id", ids);
-      (res.data || []).forEach(profile => { profiles[profile.id] = profile; });
-    }
-    return rows.map(row => rowToListing(row, profiles[row.user_id]));
-  }
-
-  // Owner actions: only the seller sees these buttons; the database enforces it too (RLS).
-  async function deleteOwnListing(item) {
-    if (!window.confirm(`Delete "${item.name}"? This cannot be undone.`)) return;
-    const client = getDb();
-    if (!client) { showToast("Could not reach the database."); return; }
-    const { error } = await client.from("listings").delete().eq("id", item.id);
-    if (error) { console.error(error); showToast("Could not delete: " + error.message); return; }
-    remoteListings = remoteListings.filter(listing => listing.id !== item.id);
-    listings = [...DEMO_LISTINGS, ...remoteListings];
-    renderListings();
-    showToast("Listing deleted.");
-  }
-
-  async function markOwnListingSold(item) {
-    if (!window.confirm(`Mark "${item.name}" as sold? It will disappear from the marketplace.`)) return;
-    const client = getDb();
-    if (!client) { showToast("Could not reach the database."); return; }
-    const { error } = await client.from("listings").update({ status: "sold" }).eq("id", item.id);
-    if (error) { console.error(error); showToast("Could not update: " + error.message); return; }
-    remoteListings = remoteListings.filter(listing => listing.id !== item.id);
-    listings = [...DEMO_LISTINGS, ...remoteListings];
-    renderListings();
-    showToast("Marked as sold.");
-  }
-
-  async function refreshRemoteListings() {
-    try {
-      const client = getDb();
-      if (client) {
-        const { data } = await client.auth.getSession();
-        currentUserId = data?.session?.user?.id || null;
-      }
-      await loadLookups();
-      remoteListings = await fetchRemoteListings();
-      listings = [...DEMO_LISTINGS, ...remoteListings];
-      renderListings();
-    } catch (error) {
-      console.error("MavunoBridge: could not load live listings", error);
-      showToast("Could not load live listings. Showing sample listings only.");
-    }
-  }
-
-  /* LOAD DATA: built-in samples load instantly; live listings follow from Supabase. */
-  function loadData() {
-    listings = [...DEMO_LISTINGS];
-    const savedCart = loadStorage(STORAGE.cart, []);
-    cart = Array.isArray(savedCart) ? savedCart : [];
-  }
-
-  function getUser() {
-    const saved = loadStorage(STORAGE.user, null);
-    return saved && typeof saved === "object" && saved.name ? saved : null;
-  }
-
-  function renderUser() {
-    const user = getUser();
-    const link = $("#authLink");
-    const chip = $("#userChip");
-    const greeting = $("#userGreeting");
-    if (link) link.classList.toggle("hidden", Boolean(user));
-    if (chip) chip.classList.toggle("hidden", !user);
-    if (user && greeting) greeting.textContent = t("greeting", String(user.name).trim().split(/\s+/)[0].slice(0, 18));
-  }
-
-  function signOut() {
-    try { localStorage.removeItem(STORAGE.user); } catch (error) { console.warn("Could not clear the demo session", error); }
-    const client = getDb();
-    if (client) client.auth.signOut().catch(error => console.warn("Supabase sign-out failed", error));
-    renderUser();
-    showToast(t("signedOut"));
-  }
-
-  function populateSelects() {
-    const categoryFilter = $("#categoryFilter");
-    const productCategory = $("#productCategory");
-    const locationFilter = $("#locationFilter");
-    const productCounty = $("#productCounty");
-
-    if (categoryFilter) {
-      const current = categoryFilter.value || "All";
-      categoryFilter.innerHTML = '<option value="All">All Products</option>';
-      CATEGORIES.forEach(([name]) => categoryFilter.add(new Option(name, name)));
-      categoryFilter.value = CATEGORY_NAMES.includes(current) || current === "All" ? current : "All";
-    }
-
-    if (productCategory) {
-      const current = productCategory.value;
-      productCategory.innerHTML = '<option value="">Choose a category</option>';
-      CATEGORIES.forEach(([name]) => productCategory.add(new Option(name, name)));
-      if (CATEGORY_NAMES.includes(current)) productCategory.value = current;
-    }
-
-    if (locationFilter) {
-      const current = locationFilter.value || "All";
-      locationFilter.innerHTML = '<option value="All">All counties</option>';
-      COUNTIES.forEach(county => locationFilter.add(new Option(county, county)));
-      locationFilter.value = COUNTIES.includes(current) || current === "All" ? current : "All";
-    }
-
-    if (productCounty) {
-      const current = productCounty.value;
-      productCounty.innerHTML = '<option value="">Choose a county</option>';
-      COUNTIES.forEach(county => productCounty.add(new Option(county, county)));
-      if (COUNTIES.includes(current)) productCounty.value = current;
-    }
-  }
-
-  function renderCategories() {
-    const grid = $("#categoryGrid");
-    if (!grid) return;
-
-    grid.innerHTML = "";
-
-    if (categoryImageObserver) {
-      categoryImageObserver.disconnect();
-      categoryImageObserver = null;
-    }
-
-    const canObserve = "IntersectionObserver" in window;
-
-    if (canObserve) {
-      categoryImageObserver = new IntersectionObserver((entries, observer) => {
-        entries.forEach(entry => {
-          if (!entry.isIntersecting) return;
-          const imageEl = entry.target;
-          const imageUrl = imageEl.dataset.categoryImage;
-          if (imageUrl) {
-            imageEl.style.backgroundImage = `url("${imageUrl.replace(/"/g, "%22")}")`;
-            imageEl.removeAttribute("data-category-image");
-          }
-          observer.unobserve(imageEl);
-        });
-      }, { rootMargin: "80px 0px" });
-    }
-
-    // All Products is a marketplace view only; never add it to seller categories.
-    const categoryCards = [
-      ["All Products", "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=500&q=75", "All"],
-      ...CATEGORIES.map(([name, image]) => [name, image, name])
-    ];
-
-    categoryCards.forEach(([label, image, categoryValue]) => {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "category-card";
-      button.dataset.category = categoryValue;
-      const selected = activeCategory === categoryValue;
-      button.setAttribute("aria-pressed", String(selected));
-      if (selected) button.classList.add("selected");
-      button.innerHTML = `<span class="cat-image"></span><span class="cat-shade"></span><span class="cat-name">${escapeHTML(label)}</span>`;
-
-      const imageEl = button.querySelector(".cat-image");
-      imageEl.style.backgroundImage = "linear-gradient(135deg, #edf4e7, #cfe0c3)";
-
-      if (canObserve) {
-        imageEl.dataset.categoryImage = image;
-        categoryImageObserver.observe(imageEl);
-      } else {
-        imageEl.style.backgroundImage = `url("${image.replace(/"/g, "%22")}")`;
-      }
-
-      grid.appendChild(button);
-    });
-  }
-
-  function selectCategory(category) {
-    activeCategory = CATEGORY_NAMES.includes(category) ? category : "All";
-    visibleListingLimit = 12;
-    const filter = $("#categoryFilter");
-    if (filter) filter.value = activeCategory;
-    renderCategories();
-    renderListings();
-    updateHint();
-    $("#marketplace")?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }
-
-  function getFairPrice(item) {
-    const name = String(item.name || "").toLowerCase();
-    const guide = FAIR_GUIDE.find(entry => entry.match(name));
-    if (!guide || item.unit !== "kg") return { status: "no-guide", label: t("fairNoLabel"), detail: t("fairNoDetail") };
-
-    const detail = `${guide.name}: ${money(guide.min)}–${money(guide.max)} / kg`;
-    if (Number(item.price) < guide.min) return { status: "below", label: t("fairBelow"), detail };
-    if (Number(item.price) > guide.max) return { status: "above", label: t("fairAbove"), detail };
-    return { status: "within", label: t("fairWithin"), detail };
-  }
-
-  function getFilteredListings() {
-    const search = ($("#searchInput")?.value || "").trim().toLowerCase();
-    const county = $("#locationFilter")?.value || "All";
-    const saleType = $("#saleFilter")?.value || "All";
-    const fairFilter = $("#fairPriceFilter")?.value || "All";
-    const sort = $("#sortFilter")?.value || "recommended";
-
-    const results = listings.filter(item => {
-      const searchText = [item.name, item.category, item.county, item.town, item.seller, item.description, item.condition].join(" ").toLowerCase();
-      const categoryMatches = activeCategory === "All" || normalizeCategory(item.category) === activeCategory;
-      const countyMatches = county === "All" || item.county === county;
-      const saleMatches = saleType === "All" || item.sale === saleType || item.sale === "Both";
-      const fairMatches = fairFilter === "All" || getFairPrice(item).status === fairFilter;
-      const searchMatches = !search || searchText.includes(search);
-      return categoryMatches && countyMatches && saleMatches && fairMatches && searchMatches;
-    });
-
-    if (sort === "newest") results.sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
-    else if (sort === "price-low") results.sort((a, b) => Number(a.price) - Number(b.price));
-    else if (sort === "price-high") results.sort((a, b) => Number(b.price) - Number(a.price));
-    else results.sort((a, b) => Number(Boolean(a.demo)) - Number(Boolean(b.demo)) || Number(b.createdAt || 0) - Number(a.createdAt || 0));
-
-    return results;
-  }
 
   function setImageFallback(image, item) {
     if (!image || image.dataset.fallbackApplied === "yes") return;
@@ -1057,6 +180,16 @@
         reviewButton,
         callLink
       );
+
+      if (item.remote && item.ownerId && item.ownerId !== currentUserId) {
+        const orderButton = document.createElement("button");
+        orderButton.type = "button";
+        orderButton.className = "small primary";
+        orderButton.dataset.mbAction = "order";
+        orderButton.dataset.listingId = item.id;
+        orderButton.textContent = "Request order";
+        actions.insertBefore(orderButton, addButton.nextSibling);
+      }
 
       if (item.remote && currentUserId && item.ownerId === currentUserId) {
         const soldButton = document.createElement("button");
@@ -2013,6 +1146,30 @@
 
       form.appendChild(demoNote);
       submit.textContent = "Save demo review";
+      
+    } else if (type === "order") {
+      title.textContent = `Request order: ${name}`;
+
+      description.textContent =
+        `${money(item.price)} per ${item.unit || "unit"}. The seller is notified and can accept or decline. No payment is taken here; agree payment and delivery with the seller in Messages.`;
+
+      addFeatureField(form, "Quantity wanted", "quantity", "e.g. 20", "number", true);
+      form.elements.quantity.step = "any";
+      addFeatureField(
+        form,
+        "Note to the seller (optional)",
+        "note",
+        "e.g. delivery to Nakuru by Friday",
+        "textarea",
+        false
+      );
+      form.elements.note.maxLength = 500;
+
+      demoNote.textContent =
+        `Enter the quantity in the listing's price unit (${item.unit || "unit"}). The final price and delivery are agreed with the seller.`;
+
+      form.appendChild(demoNote);
+      submit.textContent = "Send order request";
 
     } else if (type === "circle") {
       title.textContent = "County Grower Circles";
@@ -2176,6 +1333,10 @@
       key = STORAGE.demoReviews;
       success = "Demo review saved locally. It is not a verified public rating.";
 
+    } else if (type === "order") {
+      submitOrder(item, data);
+      return;
+
     } else if (type === "circle") {
       key = STORAGE.countyCircles;
       success =
@@ -2252,6 +1413,42 @@
         ? success
         : "Could not save this demo preference in local browser storage."
     );
+  }
+
+  async function submitOrder(item, data) {
+    const submitButton = $("#mbFeatureSubmit");
+    const quantity = Number(data.quantity);
+
+    if (!item || !item.remote) { showToast("Orders work with real sellers' listings."); return; }
+    if (!Number.isFinite(quantity) || quantity <= 0) { showToast("Enter a quantity greater than zero."); return; }
+
+    const client = getDb();
+    if (!client) { showToast("Could not reach the database. Please refresh and try again."); return; }
+
+    if (submitButton) submitButton.disabled = true;
+    try {
+      const { data: sessionData } = await client.auth.getSession();
+      if (!sessionData?.session) {
+        showToast("Please sign in to request an order. Taking you to the sign-in page...");
+        window.setTimeout(() => { window.location.href = "login.html"; }, 1500);
+        return;
+      }
+
+      const { error } = await client.from("orders").insert({
+        listing_id: item.id,
+        quantity,
+        note: data.note || null
+      });
+      if (error) throw error;
+
+      closeMavunoFeatureModal();
+      showToast("Order request sent. The seller has been notified. Track it on the Orders page.");
+    } catch (error) {
+      console.error("MavunoBridge order error:", error);
+      showToast(error.message || "Could not send the order request.");
+    } finally {
+      if (submitButton) submitButton.disabled = false;
+    }
   }
 
   function bindMavunoHubEvents() {
