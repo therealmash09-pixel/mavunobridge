@@ -1,3 +1,9 @@
+    // Ask Unsplash for a smaller picture: cards are small, so 420px wide is plenty and loads much faster.
+  function lightImage(url) {
+    const value = String(url || "");
+    if (!value.includes("images.unsplash.com")) return value;
+    return value.replace(/([?&])w=\d+/, "$1w=420").replace(/([?&])q=\d+/, "$1q=62");
+  }
 
   function setImageFallback(image, item) {
     if (!image || image.dataset.fallbackApplied === "yes") return;
