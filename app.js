@@ -52,7 +52,7 @@
       image.decoding = "async";
       image.fetchPriority = "low";
       image.addEventListener("error", () => setImageFallback(image, item), { once: true });
-      if (typeof item.image === "string" && item.image.trim()) image.src = item.image;
+      if (typeof item.image === "string" && item.image.trim()) image.src = lightImage(item.image);
       imageWrap.appendChild(image);
       if (!item.image || !String(item.image).trim()) setImageFallback(image, item);
 
