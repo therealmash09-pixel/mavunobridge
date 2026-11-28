@@ -3,20 +3,30 @@
 /* One shared Supabase connection for every MavunoBridge page.
    Load this after supabase-js and supabase-config.js.
 
-   It also decides who sees the "My Listings" link: only signed-in
-   farmers, sellers and "both" accounts. Buyer-only accounts never see it. */
+   It also decides what each kind of account sees:
+   - "My Listings" link: only signed-in farmers, sellers and "both" accounts.
+   - "Create listing" buttons: hidden for signed-in buyer-only accounts.
+   Visitors who are signed out still see the sell buttons (they are sent to sign in). */
 (() => {
   const SELLER_ROLES = ["farmer", "both", "service_provider"];
-  const ROLE_CACHE_KEY = "mavunobridge_is_seller_v1";
+  const ROLE_CACHE_KEY = "mavunobridge_account_kind_v2";   // "seller" | "buyer" | "anon"
 
-  // Hide the link by default; it appears only when <html> has the mb-seller class.
   const style = document.createElement("style");
-  style.textContent = 'html:not(.mb-seller) a[href="my-listings.html"] { display: none !important; }';
+  style.textContent =
+    'html:not(.mb-seller) a[href="my-listings.html"] { display: none !important; }' +
+    'html.mb-buyer #sellButton, html.mb-buyer #heroSellButton, html.mb-buyer #emptySellButton { display: none !important; }';
   document.head.append(style);
 
-  // Use the last known answer straight away so the link doesn't flicker.
+  function setKind(kind) {
+    const root = document.documentElement;
+    root.classList.toggle("mb-seller", kind === "seller");
+    root.classList.toggle("mb-buyer", kind === "buyer");
+  }
+
+  // Use the last known answer straight away so nothing flickers.
   try {
-    if (localStorage.getItem(ROLE_CACHE_KEY) === "1") document.documentElement.classList.add("mb-seller");
+    const cached = localStorage.getItem(ROLE_CACHE_KEY);
+    if (cached) setKind(cached);
   } catch (_) { /* storage blocked: fine */ }
 
   if (window.mavunoDb) return;
@@ -32,14 +42,14 @@
   window.mavunoDb = db;
 
   async function applyRole(session) {
-    let isSeller = false;
+    let kind = "anon";
     if (session) {
       const { data, error } = await db.from("profiles").select("role").eq("id", session.user.id).maybeSingle();
       if (error) { console.warn("Could not read your account type", error); return; }
-      isSeller = Boolean(data && SELLER_ROLES.includes(data.role));
+      kind = data && SELLER_ROLES.includes(data.role) ? "seller" : "buyer";
     }
-    document.documentElement.classList.toggle("mb-seller", isSeller);
-    try { localStorage.setItem(ROLE_CACHE_KEY, isSeller ? "1" : "0"); } catch (_) { /* ignore */ }
+    setKind(kind);
+    try { localStorage.setItem(ROLE_CACHE_KEY, kind); } catch (_) { /* ignore */ }
   }
 
   db.auth.getSession().then(({ data }) => applyRole(data.session));
