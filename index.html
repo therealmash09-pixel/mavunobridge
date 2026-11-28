@@ -32,7 +32,7 @@
   <!-- Supabase (must load before app.js) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
   <script src="supabase-config.js" defer></script>
-  <script src="mb-db.js?v=1" defer></script>
+  <script src="mb-db.js?v=2" defer></script>
   <script src="notifications.js?v=1" defer></script>
   <script src="app.js?v=21" defer></script>
   <script src="buyer-guide.js?v=3" defer></script>
@@ -64,6 +64,7 @@
     <nav class="main-nav" id="mainNav" aria-label="Main navigation">
       <a href="#marketplace">Marketplace</a>
       <a href="my-listings.html">My Listings</a>
+      <a href="orders.html">Orders</a>
       <a href="smart-assist.html">Smart Assist</a>
       <a href="sacco.html">SACCO Hub</a>
       <a href="buyer-requests.html">Buyer Requests</a>
@@ -317,8 +318,7 @@
           </span>
         </div>
       </aside>
-      
-      <!-- RESULTS -->
+            <!-- RESULTS -->
       <div class="result-row">
         <span id="resultCount" aria-live="polite">
           Loading listings...
@@ -669,8 +669,7 @@
       </form>
     </div>
   </div>
-  
-  <!-- ==================== SHOPPING CART MODAL ==================== -->
+    <!-- ==================== SHOPPING CART MODAL ==================== -->
   <div
     id="cartModal"
     class="modal hidden"
